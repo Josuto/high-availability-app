@@ -1,0 +1,89 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+jobs:
+  setup-ecr:
+    name: Setup ECR with Terraform
+    runs-on: ubuntu-latest
+
+    outputs:
+      ecr_repository_name: ${{ steps.get-ecr-output.outputs.ecr_repository_name }}
+
+    steps:
+      # Step 1: Checkout the repository to enable the runner clone the project repo into its filesystem from the last repo
+      # commit, and make the files available to other steps of the workflow
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7 # Update to your required version
+
+      # Step 3: Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+        working-directory: deployment/ecr
+
+      # Step 4: Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        working-directory: deployment/ecr
+
+      # Step 5: Terraform Apply (if plan succeeds)
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan.binary
+        working-directory: deployment/ecr
+
+      # Step 6: Fetch Terraform output
+      - name: Get ECR repository name
+        id: get-ecr-output
+        run: |
+          ecr_name=$(terraform output -raw ecr_repository_name)
+          echo "ecr_repository_name=$ecr_name" >> $GITHUB_ENV
+        working-directory: deployment/ecr
+        env:
+          TF_IN_AUTOMATION: true
+
+  build-and-push:
+    name: Build and Push Docker Image to ECR
+    needs: setup-ecr
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: eu-west-1
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Step 3: Log in to ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Step 4: Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.ecr_repository_name }}:${{ github.sha }} .
+
+      # Step 5: Push the Docker image
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.ecr_repository_name }}:${{ github.sha }}
+
+# TODO
+# - Run: pnpm install
+# - Run: pnpm build
+# - Run: docker build -t terraform-course-dummy-nestjs-app -f deployment/Dockerfile .
