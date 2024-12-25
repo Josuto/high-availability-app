@@ -7,6 +7,9 @@ jobs:
   setup-ecr:
     name: Setup ECR with Terraform
     runs-on: ubuntu-latest
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     outputs:
       ecr_repository_name: ${{ steps.get-ecr-output.outputs.ecr_repository_name }}
