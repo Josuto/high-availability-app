@@ -43,13 +43,13 @@ jobs:
 
       # Step 6: Fetch Terraform output
       - name: Get ECR repository name
-        id: get-ecr-output
+        id: get-ecr-output # make the output available to other jobs
         run: |
-          ecr_name=$(terraform output -raw ecr_repository_name)
+          ecr_name=$(terraform output -raw dummy-app-ecr-repository-url)
           echo "ecr_repository_name=$ecr_name" >> $GITHUB_ENV
         working-directory: deployment/ecr
         env:
-          TF_IN_AUTOMATION: true
+          TF_IN_AUTOMATION: true # suppresses prompts
 
   build-and-push:
     name: Build and Push Docker Image to ECR
