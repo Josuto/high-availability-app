@@ -81,6 +81,7 @@ jobs:
         run: |
           corepack enable
           corepack prepare pnpm@latest --activate
+          pnpm install
           pnpm build
 
       # Step 5: Build the Docker image
