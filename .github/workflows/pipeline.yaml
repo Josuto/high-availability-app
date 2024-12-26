@@ -78,7 +78,10 @@ jobs:
 
       # Step 4: Build the NestJS app
       - name: Build the NestJS app
-        run: pnpm build
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm build
 
       # Step 5: Build the Docker image
       - name: Build Docker image
