@@ -76,12 +76,16 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Step 4: Build the Docker image
+      # Step 4: Set ECR repository name for Docker build and push
+      - name: Set ECR Repository Name
+        run: echo "ecr_repository_name=${{ needs.setup-ecr.outputs.ecr_repository_name }}" >> $GITHUB_ENV
+
+      # Step 5: Build the Docker image
       - name: Build Docker image
         run: |
           docker build -t ${{ env.ecr_repository_name }}:${{ github.sha }} .
 
-      # Step 5: Push the Docker image
+      # Step 6: Push the Docker image
       - name: Push Docker image
         run: |
           docker push ${{ env.ecr_repository_name }}:${{ github.sha }}
