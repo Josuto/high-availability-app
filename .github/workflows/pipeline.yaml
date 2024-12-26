@@ -44,7 +44,7 @@ jobs:
       # Step 6: Fetch Terraform output
       - name: Get ECR repository name
         id: get-ecr-output # make the output available to other jobs
-        run: |
+        run: | # FIXME: set-output is deprecated
           ecr_name=$(terraform output -raw dummy-app-ecr-repository-url)
           echo "::set-output name=ecr_repository_name::$ecr_name"
         working-directory: deployment/ecr
@@ -79,7 +79,7 @@ jobs:
       # Step 4: Build the Docker image
       - name: Build Docker image
         run: |
-          docker build -t ${{ needs.setup-ecr.outputs.ecr_repository_name }}:${{ github.sha }} .
+          docker build -t ${{ needs.setup-ecr.outputs.ecr_repository_name }}:${{ github.sha }} -f deployment/Dockerfile .
 
       # Step 5: Push the Docker image
       - name: Push Docker image
