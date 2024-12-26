@@ -46,7 +46,7 @@ jobs:
         id: get-ecr-output # make the output available to other jobs
         run: |
           ecr_name=$(terraform output -raw dummy-app-ecr-repository-url)
-          echo "ecr_repository_name=$ecr_name" >> $GITHUB_ENV
+          echo "::set-output name=ecr_repository_name::$ecr_name"
         working-directory: deployment/ecr
         env:
           TF_IN_AUTOMATION: true # suppresses prompts
