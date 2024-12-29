@@ -32,27 +32,17 @@ jobs:
         run: terraform init
         working-directory: deployment/ecr
 
-      # Step 4: Check if ECR repository exists and import it if it does
-      - name: Import Existing ECR Repository
-        run: |
-          if aws ecr describe-repositories --repository-names "${{ env.ECR_REPO_NAME }}" >/dev/null 2>&1; then
-            echo "ECR repository exists. Importing into Terraform state."
-            terraform import aws_ecr_repository.my-ecr-repository "${{ env.ECR_REPO_NAME }}"
-          else
-            echo "ECR repository does not exist. Skipping import."
-          fi
-
-      # Step 5: Terraform Plan
+      # Step 4: Terraform Plan
       - name: Terraform Plan
         run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
         working-directory: deployment/ecr
 
-      # Step 6: Terraform Apply (if plan succeeds)
+      # Step 5: Terraform Apply (if plan succeeds)
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan.binary
         working-directory: deployment/ecr
 
-      # Step 7: Fetch Terraform output
+      # Step 6: Fetch Terraform output
       - name: Get ECR repository name
         id: get-ecr-output # make the output available to other jobs
         run: | # FIXME: set-output is deprecated
