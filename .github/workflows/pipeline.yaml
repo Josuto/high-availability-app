@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+
+env:
+  AWS_REGION: eu-west-1
+
 jobs:
   setup-ecr:
     name: Setup ECR with Terraform
@@ -35,10 +39,10 @@ jobs:
       # Step 4: Check if ECR repository exists and import it if it does
       - name: Import Existing ECR Repository
         run: |
-          ecr_repo_info=$(aws ecr describe-repositories --repository-names "${{ env.ECR_REPO_NAME }}")
+          ecr_repo_info=$(aws ecr describe-repositories --repository-names "${{ env.ECR_REPO_NAME }} --region ${{ env.AWS_REGION }}")
           echo "The ECR repository name is: ${{ env.ECR_REPO_NAME }}"
           echo "The ECR repository info is: $ecr_repo_info"
-          if aws ecr describe-repositories --repository-names "${{ env.ECR_REPO_NAME }}" >/dev/null 2>&1; then
+          if aws ecr describe-repositories --repository-names "${{ env.ECR_REPO_NAME }}" --region ${{ env.AWS_REGION }} >/dev/null 2>&1; then
             echo "ECR repository exists. Importing into Terraform state."
             terraform import aws_ecr_repository.my-ecr-repository "${{ env.ECR_REPO_NAME }}"
           else
@@ -69,8 +73,6 @@ jobs:
     name: Build and Push Docker Image to ECR
     needs: setup-ecr
     runs-on: ubuntu-latest
-    env:
-      AWS_REGION: eu-west-1
 
     steps:
       # Step 1: Checkout the repository
