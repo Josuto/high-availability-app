@@ -44,7 +44,7 @@ jobs:
           echo "The ECR repository info is: $ecr_repo_info"
           if aws ecr describe-repositories --repository-names "${{ env.ECR_REPO_NAME }}" --region ${{ env.AWS_REGION }} >/dev/null 2>&1; then
             echo "ECR repository exists. Importing into Terraform state."
-            terraform import aws_ecr_repository.my-ecr-repository "${{ env.ECR_REPO_NAME }}"
+            terraform import -config=./deployment/ecr aws_ecr_repository.my-ecr-repository "${{ env.ECR_REPO_NAME }}"
           else
             echo "ECR repository does not exist. Skipping import."
           fi
