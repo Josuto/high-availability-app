@@ -39,7 +39,7 @@ jobs:
       # Step 4: Check if ECR repository exists and import it if it does
       - name: Import Existing ECR Repository
         run: |
-          ecr_repo_info=$(aws ecr describe-repositories --repository-names "${{ env.ECR_REPO_NAME }} --region ${{ env.AWS_REGION }}")
+          ecr_repo_info=$(aws ecr describe-repositories --repository-names "${{ env.ECR_REPO_NAME }}" --region ${{ env.AWS_REGION }})
           echo "The ECR repository name is: ${{ env.ECR_REPO_NAME }}"
           echo "The ECR repository info is: $ecr_repo_info"
           if aws ecr describe-repositories --repository-names "${{ env.ECR_REPO_NAME }}" --region ${{ env.AWS_REGION }} >/dev/null 2>&1; then
