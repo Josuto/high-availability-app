@@ -1,103 +1,37 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# AWS Elastic Container Service (ECS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+AWS ECS is a fully managed container orchestration service that allows to run, stop, and manage Docker containers on a ECS Cluster. It takes care of
+the underlying infrastructure (i.e., it is an abstraction layer at infrastructure level), allowing developers to focus on their applications.
+Its benefits are:
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+- automatic provisioning and scaling of resources, thus reducing efforts on infrastructure tasks
+- traffic load balancing
+- resource optimisation
+  - specially useful on high-low system services demand transition
+  - doable thanks to the integration with other AWS services such as ELB
+  - hence, cost-effectiveness
+- portability e.g., avoid configuration drift between dev/prod enviroments
 
-# Important notes:
+## Key Concepts
 
-- This project uses `pnpm` as package manager. You need to install it first
+- **ECS Task Definition**: configuration and deployment blueprint for _containers_ (i.e., _tasks_). It includes container images, CPU and memory limits,
+  environment variables, and networking settings. An ECS task can be run in a standalone way (e.g., as a batch job or a short-lived container) or as part of
+  an _ECS Service_. ECS tasks are defined by developers.
 
-## Description
+- **ECS Service**: defines how many copies of a container definition should run on a given _ECS Cluster_. Hence, the _ECS Control Plane_ knows how to scale
+  containers. Furthermore, an ECS service can be associated with an _AWS Elastic Load Balancer (ELB)_ for even distribution of traffic among running containers.
+  ECS services are defined by developers.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **ECS Agent**: ensures that the containers hosted on an _EC2 Instance_ run correctly and efficiently. It reports all containers' health to _ECS Control Plane_
+  and executes the commands ordered by the latter e.g., start or stop a container. There must be an EC2 agent running in each _EC2 Instance_. ECS agents can be
+  customised by developers, but AWS offers some [ECS-optimised AMIs](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html)
+  that include a standard ECS agent.
 
-## Project setup
+- **ECS Control Plane**: central container coordination component on an _EC2 Cluster_. It ensures the wellbeing of the cluster, taking decisions such as running
+  containers on available EC2 instances or scaling up/down containers based on the health status provided by the _ECS Agents_ included at the cluster. When
+  _Auto Scaling Groups_ and/or _ECS Capacity Providers_ are provided, the ECS control plane can also scale _EC2 Instances_. ECS Control Plane is the backbone
+  of ECS and implemented by AWS.
 
-```bash
-$ pnpm install
-```
-
-## Compile and run the project
-
-```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ pnpm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **ECS Cluster**: composes a collection of related _EC2 Instances_ (i.e., the computing resources) registered with the _ECS Control Plane_. An EC2 cluster
+  is managed at the infrastructure level, often using _Auto Scaling Groups_ and/or _ECS Capacity Providers_. Moreover, an EC2 cluster can provide some logical
+  separation based on a particular purpose such as dev/prod environments, thus preventing issues during system execution. ECS clusters are defined by developers.
