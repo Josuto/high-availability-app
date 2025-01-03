@@ -35,3 +35,10 @@ Its benefits are:
 - **ECS Cluster**: composes a collection of related _EC2 Instances_ (i.e., the computing resources) registered with the _ECS Control Plane_. An EC2 cluster
   is managed at the infrastructure level, often using _Auto Scaling Groups_ and/or _ECS Capacity Providers_. Moreover, an EC2 cluster can provide some logical
   separation based on a particular purpose such as dev/prod environments, thus preventing issues during system execution. ECS clusters are defined by developers.
+
+> [!NOTE]
+> The sources of the contents of this section are:
+>
+> - [The Ultimate Beginner's Guide to AWS ECS](https://blog.awsfundamentals.com/aws-ecs-beginner-guide)
+> - Section 8: Docker on AWS using ECS and ECR - AWS Infrastructure as Code With Terraform Course by Edward Viaene
+> - ChatGPT
