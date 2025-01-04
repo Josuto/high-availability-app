@@ -4,13 +4,13 @@ AWS ECS is a fully managed container orchestration service that allows to run, s
 the underlying infrastructure (i.e., it is an abstraction layer at infrastructure level), allowing developers to focus on their applications.
 Its benefits are:
 
-- automatic provisioning and scaling of resources, thus reducing efforts on infrastructure tasks
-- traffic load balancing
-- resource optimisation
+- Automatic provisioning and scaling of resources, thus reducing efforts on infrastructure tasks
+- Traffic load balancing
+- Resource optimisation
   - specially useful on high-low system services demand transition
   - doable thanks to the integration with other AWS services such as ELB
-  - hence, cost-effectiveness
-- portability e.g., avoid configuration drift between dev/prod enviroments
+- Cost-effectiveness
+- Portability e.g., avoid configuration drift between dev/prod enviroments
 
 ## Key Concepts
 
