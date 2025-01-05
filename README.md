@@ -15,8 +15,8 @@ Its benefits are:
 ## Key Concepts
 
 - **ECS Task Definition**: configuration and deployment blueprint for _containers_ (i.e., _tasks_). It includes container images, CPU and memory limits,
-  environment variables, and networking settings. An ECS task can be run in a standalone way (e.g., as a batch job or a short-lived container) or as part of
-  an _ECS Service_. ECS tasks are defined by developers.
+  networking settings such as container linking with other containers (e.g., DB container), and environment variables (e.g., DB access credentials). An ECS
+  task can be run in a standalone way (e.g., as a batch job or a short-lived container) or as part of an _ECS Service_. ECS tasks are defined by developers.
 
 - **ECS Service**: defines how many copies of a container definition should run on a given _ECS Cluster_. Hence, the _ECS Control Plane_ knows how to scale
   containers. Furthermore, an ECS service can be associated with an _AWS Elastic Load Balancer (ELB)_ for even distribution of traffic among running containers.
