@@ -6,6 +6,7 @@ on:
 
 env:
   AWS_REGION: eu-west-1
+  TERRAFORM_VERSION: 1.5.7 # Update to your required version
 
 jobs:
   setup-ecr:
@@ -28,7 +29,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.5.7 # Update to your required version
+          terraform_version: ${{env.TERRAFORM_VERSION}}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -37,7 +38,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Initialise Terraform
+      - name: Initialise Terraform on ECR module
         run: terraform init
         working-directory: deployment/ecr
 
@@ -121,6 +122,11 @@ jobs:
       - name: Checkout code from the repository
         uses: actions/checkout@v4
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -131,6 +137,10 @@ jobs:
       - name: Login to AWS ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Initialise Terraform on ECS module
+        run: terraform init
+        working-directory: deployment/ecs
 
       - name: Validate IaC changes on ECS module
         run: terraform plan -var="ECR_APP_IMAGE=${{env.ECR_APP_IMAGE}}" -out=tfplan.binary
