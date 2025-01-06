@@ -147,5 +147,5 @@ jobs:
         working-directory: deployment/ecs
 
       - name: Deploy the app to ECS
-        run: terraform apply -var="ECR_APP_IMAGE=${{env.ECR_APP_IMAGE}}" -out=tfplan.binary
+        run: terraform apply -var="ECR_APP_IMAGE=${{env.ECR_APP_IMAGE}}" -auto-approve tfplan.binary
         working-directory: deployment/ecs
