@@ -1,7 +1,9 @@
 resource "aws_ecs_task_definition" "dummy-app-ecs-task-definition" {
   family                = "dummy-app"
   container_definitions = templatefile("dummy-app-ecs-task-definition-template.json.tpl", {
-    ECR_APP_IMAGE = var.ECR_APP_IMAGE
+    ECR_APP_IMAGE = var.ECR_APP_IMAGE,
+    CONTAINER_NAME = var.CONTAINER_NAME,
+    CONTAINER_PORT = var.CONTAINER_PORT
   })
 }
 

@@ -6,14 +6,14 @@
 # IAM role to assume by each EC2 instance running in the ECS cluster
 resource "aws_iam_role" "ecs-ec2-role" {
   name               = "ecs-ec2-role"
-  assume_role_policy = file("${path.module}/ecs-ec2-role-assumption.json")
+  assume_role_policy = file("iam-policies/ecs-ec2-role-assumption.json")
 }
 
 # IAM role policy to grant the necessary permissions to the ecs-ec2-role to interact with ECS, ECR, and CloudWatch Logs
 resource "aws_iam_role_policy" "ecs-ec2-role-policy" {
   name   = "ecs-ec2-role-policy"
   role   = aws_iam_role.ecs-ec2-role.id
-  policy = file("${path.module}/ecs-ec2-role-policy.json")
+  policy = file("iam-policies/ecs-ec2-role-policy.json")
 }
 
 # IAM instance profile to allow EC2 instances to access AWS services with the permissions granted by the ecs-ec2-role
@@ -30,8 +30,8 @@ resource "aws_iam_instance_profile" "ecs-ec2-role" {
 
 # IAM role to assume by the ECS service
 resource "aws_iam_role" "ecs-service-role" {
-name = "ecs-service-role"
-assume_role_policy = file("${path.module}/ecs-service-role-assumption.json")
+  name = "ecs-service-role"
+  assume_role_policy = file("iam-policies/ecs-service-role-assumption.json")
 }
 
 # Attach the AmazonEC2ContainerServiceRole policy to the ECS service role
