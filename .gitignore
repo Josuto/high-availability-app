@@ -20,9 +20,8 @@ lerna-debug.log*
 **/terraform.tfvars
 **/.terraform*
 
-# SSH keys
-**/mykey*
-
+# SSH private keys
+**/mykey
 
 # Tests
 /coverage
