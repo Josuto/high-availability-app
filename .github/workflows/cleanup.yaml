@@ -7,30 +7,9 @@ env:
   TERRAFORM_VERSION: 1.5.7
 
 jobs:
-  cleanup-ecr:
-    name: Destroy ECR-related resources
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code from the repository
-        uses: actions/checkout@v4
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{env.TERRAFORM_VERSION}}
-
-      - name: Initialize Terraform on the ECR directory
-        run: terraform init
-        working-directory: deployment/ecr
-
-      - name: Destroy Resources on the ECR directory
-        run: terraform destroy -auto-approve
-        working-directory: deployment/ecr
-
   cleanup-ecs:
     name: Destroy ECS-related resources
     runs-on: ubuntu-latest
-    needs: cleanup-ecr
     steps:
       - name: Checkout code from the repository
         uses: actions/checkout@v4
@@ -47,3 +26,24 @@ jobs:
       - name: Destroy Resources on the ECS directory
         run: terraform destroy -var="ECR_APP_IMAGE=some_non_relevant_value" -auto-approve
         working-directory: deployment/ecs
+
+  cleanup-ecr:
+    name: Destroy ECR-related resources
+    runs-on: ubuntu-latest
+    needs: cleanup-ecs
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Initialize Terraform on the ECR directory
+        run: terraform init
+        working-directory: deployment/ecr
+
+      - name: Destroy Resources on the ECR directory
+        run: terraform destroy -auto-approve
+        working-directory: deployment/ecr
