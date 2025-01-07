@@ -30,7 +30,7 @@ resource "aws_iam_instance_profile" "ecs-ec2-role" {
 
 # IAM role to assume by the ECS service
 resource "aws_iam_role" "ecs-service-role" {
-  name = "ecs-service-role"
+  name               = "ecs-service-role"
   assume_role_policy = file("iam-policies/ecs-service-role-assumption.json")
 }
 
