@@ -9,8 +9,44 @@ env:
   TERRAFORM_VERSION: 1.5.7 # Update to your required version
 
 jobs:
+  setup-terraform-state-bucket:
+    name: Setup Terraform State Bucket
+    runs-on: ubuntu-latest
+
+    env:
+      BUCKET_NAME: dummy-app-terraform-state-bucket
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create S3 bucket if it does not yet exist
+        run: |
+          if aws s3api head-bucket --bucket ${{ env.BUCKET_NAME }} 2>/dev/null; then
+            echo "The Terraform state bucket does yet exist. Creating it now."
+            terraform init
+            terraform plan -out=tfplan.binary
+            terraform apply -auto-approve tfplan.binary
+          else
+            echo "The Terraform state bucket already exists. Skipping creation."
+          fi
+        working-directory: deployment/s3
+
   setup-ecr:
     name: Setup ECR
+    needs: setup-terraform-state-bucket
     runs-on: ubuntu-latest
     env: # required by some steps
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
