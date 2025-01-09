@@ -78,17 +78,6 @@ jobs:
         run: terraform init
         working-directory: deployment/ecr
 
-      # Step 5: Check if ECR repository exists and import it if it does
-      - name: Import existing ECR Repository if it exists
-        run: |
-          if aws ecr describe-repositories --repository-names "${{ env.ECR_REPO_NAME }}" --region ${{ env.AWS_REGION }} >/dev/null 2>&1; then
-            echo "ECR repository exists. Importing into Terraform state."
-            terraform import aws_ecr_repository.my-ecr-repository "${{ env.ECR_REPO_NAME }}"
-          else
-            echo "ECR repository does not exist. Skipping import."
-          fi
-        working-directory: deployment/ecr
-
       - name: Validate IaC changes on ECR directory
         run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
         working-directory: deployment/ecr
