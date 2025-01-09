@@ -35,12 +35,12 @@ jobs:
       - name: Create S3 bucket if it does not yet exist
         run: |
           if aws s3api head-bucket --bucket ${{ env.BUCKET_NAME }} 2>/dev/null; then
+            echo "The Terraform state bucket already exists. Skipping creation."
+          else
             echo "The Terraform state bucket does yet exist. Creating it now."
             terraform init
             terraform plan -out=tfplan.binary
             terraform apply -auto-approve tfplan.binary
-          else
-            echo "The Terraform state bucket already exists. Skipping creation."
           fi
         working-directory: deployment/s3
 
