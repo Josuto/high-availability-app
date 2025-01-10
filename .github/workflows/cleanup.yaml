@@ -6,6 +6,7 @@ on:
 env:
   TERRAFORM_VERSION: 1.5.7
   AWS_REGION: eu-west-1
+  BUCKET_NAME: dummy-app-terraform-state-bucket
 
 jobs:
   cleanup-ecs:
@@ -55,6 +56,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Delete existing dummy app images
+        run: |
+          aws ecr list-images --repository-name ${{ env.BUCKET_NAME }} --query 'imageIds[*]' --output json |
+          jq -c '.[]' |
+          xargs -n1 -I {} aws ecr batch-delete-image --repository-name ${{ env.BUCKET_NAME }} --image-ids {}
+
       - name: Initialize Terraform on the ECR directory
         run: terraform init
         working-directory: deployment/ecr
@@ -62,3 +69,35 @@ jobs:
       - name: Destroy Resources on the ECR directory
         run: terraform destroy -auto-approve
         working-directory: deployment/ecr
+
+  cleanup-terraform-state-bucket:
+    name: Destroy Terraform state bucket
+    runs-on: ubuntu-latest
+    needs: cleanup-ecr
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Delete all the Terraform state files from the S3 bucket
+        run: aws s3 rm s3://${{ env.BUCKET_NAME }} --recursive
+
+      - name: Initialize Terraform
+        run: terraform init
+
+      - name: Import the Terraform state bucket state
+        run: terraform import aws_s3_bucket.my_bucket ${{ env.BUCKET_NAME }}
+
+      - name: Destroy the Terraform state bucket
+        run: terraform destroy -auto-approve

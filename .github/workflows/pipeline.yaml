@@ -82,7 +82,7 @@ jobs:
         run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
         working-directory: deployment/ecr
 
-      - name: Create ECR repository
+      - name: Create ECR repository if it does not yet exist
         run: terraform apply -auto-approve tfplan.binary
         working-directory: deployment/ecr
 
