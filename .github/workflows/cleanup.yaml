@@ -58,9 +58,9 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Delete existing dummy app images
-        run: aws ecr batch-delete-image \
-          --repository-name ${{ env.ECR_REPO_NAME }} \
-          --image-ids "$(aws ecr list-images --repository-name ${{ env.ECR_REPO_NAME }} --query 'imageIds[*]' --output json --region ${{ env.AWS_REGION }})" \
+        run: aws ecr batch-delete-image
+          --repository-name ${{ env.ECR_REPO_NAME }}
+          --image-ids "$(aws ecr list-images --repository-name ${{ env.ECR_REPO_NAME }} --query 'imageIds[*]' --output json --region ${{ env.AWS_REGION }})"
           --region ${{ env.AWS_REGION }}
 
       - name: Initialize Terraform on the ECR directory
