@@ -100,7 +100,7 @@ jobs:
         run: terraform init
 
       - name: Import the Terraform state bucket state
-        run: terraform import aws_s3_bucket.my_bucket ${{ env.BUCKET_NAME }}
+        run: terraform import aws_s3_bucket.dummy-app-terraform-state-bucket ${{ env.BUCKET_NAME }}
 
       - name: Destroy the Terraform state bucket
         run: terraform destroy -auto-approve
