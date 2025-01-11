@@ -52,9 +52,6 @@ jobs:
     needs: setup-terraform-state-bucket
     runs-on: ubuntu-latest
 
-    # Skip this job if the commit message starts with 'ci:'
-    if: ${{!startsWith(github.event.head_commit.message, 'ci:')}}
-
     env: # required by some steps
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -107,9 +104,6 @@ jobs:
     needs: setup-ecr
     runs-on: ubuntu-latest
 
-    # Skip this job if the commit message starts with 'ci:'
-    if: ${{!startsWith(github.event.head_commit.message, 'ci:')}}
-
     env:
       ECR_APP_IMAGE: ${{ needs.setup-ecr.outputs.ecr_repository_name }}:${{ github.sha }}
 
@@ -149,9 +143,6 @@ jobs:
       - setup-ecr
       - build-and-push-app-docker-image-to-ecr
     runs-on: ubuntu-latest
-
-    # Skip this job if the commit message starts with 'ci:'
-    if: ${{!startsWith(github.event.head_commit.message, 'ci:')}}
 
     env:
       ECR_APP_IMAGE: ${{ needs.setup-ecr.outputs.ecr_repository_name }}:${{ github.sha }}
