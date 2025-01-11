@@ -93,6 +93,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Delete all the Terraform state files from the S3 bucket
+        run: aws s3 rm s3://${{ env.BUCKET_NAME }} --recursive
+
       - name: Initialize Terraform
         run: terraform init
         working-directory: deployment/s3
