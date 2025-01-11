@@ -60,8 +60,8 @@ jobs:
       - name: Delete existing dummy app images
         run: |
           aws ecr list-images --repository-name ${{ env.ECR_REPO_NAME }} --query 'imageIds[*]' --output json |
-          jq -c '.[]' |
-          xargs -n1 -I {} aws ecr batch-delete-image --repository-name ${{ env.ECR_REPO_NAME }} --image-ids {}
+          jq -c '.[] | {"imageDigest": .imageDigest, "imageTag": .imageTag}' |
+          xargs -n1 -I {} aws ecr batch-delete-image --repository-name ${{ env.ECR_REPO_NAME }} --image-ids '{}'
 
       - name: Initialize Terraform on the ECR directory
         run: terraform init
