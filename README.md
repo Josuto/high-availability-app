@@ -1,21 +1,20 @@
 # AWS Elastic Container Service (ECS)
 
-AWS ECS is a fully managed container orchestration service that allows to run, stop, and manage Docker containers on a ECS Cluster. It takes care of
-the underlying infrastructure (i.e., it is an abstraction layer at infrastructure level), allowing developers to focus on their applications.
-Its benefits are:
+AWS ECS is a fully managed container orchestration service that allows to run, stop, and manage Docker and Fargate containers on a ECS Cluster. It consists of
+an abstraction of the underlying infrastructure, allowing developers to focus on application development. The key benefits of ECS are:
 
-- Automatic provisioning and scaling of resources, thus reducing efforts on infrastructure tasks
+- Automatic provisioning and scaling of resources
 - Traffic load balancing
 - Resource optimisation
   - specially useful on high-low system services demand transition
   - doable thanks to the integration with other AWS services such as ELB
-- Cost-effectiveness
 - Portability e.g., avoid configuration drift between dev/prod enviroments
+- Cost-effectiveness
 
 ## Key Concepts
 
-- **ECS Task Definition**: configuration and deployment blueprint for _containers_ (i.e., _tasks_). It includes container images, CPU and memory limits,
-  networking settings such as container linking with other containers (e.g., DB container), and environment variables (e.g., DB access credentials). An ECS
+- **ECS Task Definition**: configuration and deployment blueprint for _containers_ (i.e., _tasks_). It includes container image definition, CPU and memory limits,
+  networking settings such as container linking to other containers (e.g., DB container), and environment variables (e.g., DB access credentials). An ECS
   task can be run in a standalone way (e.g., as a batch job or a short-lived container) or as part of an _ECS Service_. ECS tasks are defined by developers.
 
 - **ECS Service**: defines how many copies of a container definition should run on a given _ECS Cluster_. Hence, the _ECS Control Plane_ knows how to scale

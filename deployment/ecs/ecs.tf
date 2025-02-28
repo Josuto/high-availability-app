@@ -10,6 +10,7 @@ resource "aws_launch_template" "my-ecs-launch-template" {
   image_id      = data.aws_ami.ecs-ami-linux-2023.id # Use the latest ECS-optimized AMI for Amazon Linux 2023
   instance_type = var.ECS_INSTANCE_TYPE
   key_name      = aws_key_pair.my-key-pair.key_name
+  user_data     = filebase64("ec2-instance-init.sh") # Base64-encoded EC2 instance bootstrapping process
 
   iam_instance_profile {
     name = aws_iam_instance_profile.ecs-ec2-role.name # ECS and ECR access permissions
@@ -18,8 +19,6 @@ resource "aws_launch_template" "my-ecs-launch-template" {
   network_interfaces {
     security_groups = [aws_security_group.ecs-security-group.id]
   }
-
-  user_data = filebase64("ec2-instance-init.sh") # Base64-encoded EC2 instance bootstrapping process
 
   tag_specifications {
     resource_type = "instance"
