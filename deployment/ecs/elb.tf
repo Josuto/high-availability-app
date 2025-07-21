@@ -15,7 +15,7 @@ resource "aws_elb" "dummy-app-elb" {
   }
 
   health_check {
-    target              = "HTTP:${var.CONTAINER_PORT}/" # check if the container is healty
+    target              = "HTTP:${var.CONTAINER_PORT}/" # check if the container is healthy
     interval            = 30 # check every 30 seconds whether the server is healthy
     timeout             = 5
     healthy_threshold   = 2 # two consecutive checks before must be successful before sending traffic to the server

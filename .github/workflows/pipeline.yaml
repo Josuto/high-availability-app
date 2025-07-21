@@ -13,8 +13,8 @@ jobs:
     name: Setup Terraform State Bucket
     runs-on: ubuntu-latest
 
-    # Skip this job if the commit message starts with 'ci:' or 'doc:'
-    if: ${{ !startsWith(github.event.head_commit.message, 'ci:') && !startsWith(github.event.head_commit.message, 'doc:') }}
+    # Skip this job if the commit message starts with 'ci:' or 'docs:'
+    if: ${{ !startsWith(github.event.head_commit.message, 'ci:') && !startsWith(github.event.head_commit.message, 'docs:') }}
 
     env:
       BUCKET_NAME: dummy-app-terraform-state-bucket
