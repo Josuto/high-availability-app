@@ -3,6 +3,13 @@ resource "aws_ecs_cluster" "my-ecs-cluster" {
   name = "my-ecs-cluster"
 }
 
+# EC2 instance bootstrapping process
+data "template_file" "ec2_instance_init" {
+    template = templatefile("templates/ec2-instance-init.tpl", {
+        ECS_CLUSTER_NAME   = "my-ecs-cluster"
+    })
+}
+
 # Launch template used by the Auto Scaling Group to create EC2 instances
 # Note: Launch templates do not replace existing EC2 instances; Auto Scaling Groups do
 resource "aws_launch_template" "my-ecs-launch-template" {
@@ -10,7 +17,7 @@ resource "aws_launch_template" "my-ecs-launch-template" {
   image_id      = data.aws_ami.ecs-ami-linux-2023.id # Use the latest ECS-optimized AMI for Amazon Linux 2023
   instance_type = var.ECS_INSTANCE_TYPE
   key_name      = aws_key_pair.my-key-pair.key_name
-  user_data     = filebase64("ec2-instance-init.sh") # Base64-encoded EC2 instance bootstrapping process
+  user_data     = filebase64(data.template_file.ec2_instance_init.rendered) # Base64-encoded EC2 instance bootstrapping process
 
   iam_instance_profile {
     name = aws_iam_instance_profile.ecs-ec2-role.name # ECS and ECR access permissions
