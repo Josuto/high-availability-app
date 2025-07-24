@@ -31,3 +31,8 @@ variable "CONTAINER_PORT" {
   description = "Dummy app container port"
   default     = 3000
 }
+
+variable "LOG_GROUP" {
+  description = "Name of the group to send logs to at AWS Cloudwatch"
+  default     = "my-log-group"
+}
