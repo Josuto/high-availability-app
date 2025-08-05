@@ -1,8 +1,8 @@
 # ALB security group. It defines the ALB's "Front Door".
 resource "aws_security_group" "alb" {
-  name        = "${var.ALB_NAME}"
-  vpc_id      = "${var.VPC_ID}"
-  description = "${var.ALB_NAME}"
+  name        = "my-alb-sg"
+  vpc_id      = module.vpc.vpc_id
+  description = "The ALB security group."
 
   ingress { # Enable all inbound traffic to the ALB via HTTP
     from_port   = 80
@@ -26,11 +26,10 @@ resource "aws_security_group" "alb" {
   }
 }
 
-# Rule that defines what traffic can come into the ECS tasks/instances. Allow traffic if it originates from resources that are themselves 
-# associated with the ALB security group. These two resources work hand-in-hand to establish a secure and functional network path for your 
-# ECS-based application.
+# Rule that defines what traffic can come into the ECS tasks/instances. It secures your backend ECS tasks by allowing incoming traffic only from 
+# your trusted ALB, ensuring your containers aren't directly exposed to the internet on their dynamic ports
 resource "aws_security_group_rule" "cluster-allow-alb" {
-  security_group_id        = "${var.ECS_SG}"
+  security_group_id        = aws_security_group.cluster.id
   type                     = "ingress"
   from_port                = 32768
   to_port                  = 61000

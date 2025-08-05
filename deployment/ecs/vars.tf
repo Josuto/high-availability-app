@@ -36,3 +36,53 @@ variable "LOG_GROUP" {
   description = "Name of the group to send logs to at AWS Cloudwatch"
   default     = "my-log-group"
 }
+
+variable "ALB_RULE_PRIORITY" {
+  description = "Priority of the ALB rule (over the default ALB listener)"
+  default     = 100 
+}
+
+variable "DEREGISTRATION_DELAY" {
+  description = "The amount seconds for the ALB to wait before completing the deregistration of a target"
+  default     = 30
+}
+
+variable "HEALTHCHECK_MATCHER" {
+  description = "The expected HTTP response code or codes for a successful health check"
+  default     = "200"
+}
+
+variable "ACM_CERTIFICATE_DOMAIN" {
+  description = "Specifies the domain name of the ACM certificate to retrieve"
+  default     = "*.josumartinez.com" 
+}
+
+variable "ECS_CLUSTER_NAME" {
+  description = "Name of the ECS cluster"
+  default     = "my-cluster" 
+}
+
+variable "ECS_CLUSTER_ENABLE_SSH" {
+  description = "Enable/disable SSH access to the tasks deployed at the ECS cluster"
+  default     = true 
+}
+
+variable "TASK_ROLE_ARN" {
+  description = "Specifies the ARN of an IAM role that the ECS tasks will assume"
+  default     = ""
+}
+
+variable "ECS_TASK_DESIRED_COUNT" {
+  description = "The number of tasks that you want to run for this service"
+  default     = 2
+}
+
+variable "DEPLOYMENT_MINIMUM_HEALTHY_PERCENT" {
+  description = "Lower limit of healthy tasks that must be running during deployment so that the service remains available"
+  default     = 100
+}
+
+variable "DEPLOYMENT_MAXIMUM_PERCENT" {
+  description = "Upper limit of health tasks that must be running during deployment"
+  default     = 200
+}

@@ -1,21 +1,21 @@
 # ECS cluster security group that acts as a firewall for your ECS cluster's compute resources. It controls all network traffic 
 # to and from these compute resources.
 resource "aws_security_group" "cluster" {
-  name        = "${var.CLUSTER_NAME}"
-  vpc_id      = "${var.VPC_ID}"
-  description = "${var.CLUSTER_NAME}"
+  name        = "${var.ECS_CLUSTER_NAME}-sg"
+  vpc_id      = module.vpc.vpc_id
+  description = "ECS cluster security group"
 }
 
 # Conditional inbound traffic rule that enables/disables SSH access to your ECS cluster's underlying instances/tasks with 
 # a simple variable toggle.
 resource "aws_security_group_rule" "cluster-allow-ssh" {
-  count                    = "${ var.ENABLE_SSH ? 1 : 0}"
+  count                    = "${ var.ECS_CLUSTER_ENABLE_SSH ? 1 : 0}"
   security_group_id        = aws_security_group.cluster.id # Apply rule to the cluster security group
   type                     = "ingress"
   from_port                = 22
   to_port                  = 22
   protocol                 = "tcp"
-  source_security_group_id = "${var.SSH_SG}" # Only resources belonging to the source security group can initiate an SSH connection to the cluster's instances/tasks
+  source_security_group_id = aws_security_group.allow-ssh.id # Only resources belonging to the source security group can initiate an SSH connection to the cluster's instances/tasks
 }
 
 # Rule that allows all outbound traffic from your ECS cluster's instances/tasks to anywhere on the internet. 

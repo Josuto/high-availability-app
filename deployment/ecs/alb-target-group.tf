@@ -9,11 +9,11 @@ resource "aws_alb_target_group" "ecs-service" {
   # Name of the target group aimed to be unique within the AWS region and account they belong to. This value is obtained following a common 
   # pattern. If any of these variables change, a new target group with a different name will be created. This can be beneficial for blue/green 
   # deployments or when you need to ensure a new target group is deployed when certain application parameters change. 
-  name                 = "${var.APPLICATION_NAME}-${substr(md5(format("%s%s%s", var.APPLICATION_PORT, var.DEREGISTRATION_DELAY, var.HEALTHCHECK_MATCHER)), 0, 12)}"
-  port                 = "${var.APPLICATION_PORT}" # Port on which the targets in this target group are listening for traffic forwarded by the ALB
+  name                 = "${var.CONTAINER_NAME}-${substr(md5(format("%s%s%s", var.CONTAINER_PORT, var.DEREGISTRATION_DELAY, var.HEALTHCHECK_MATCHER)), 0, 12)}"
+  port                 = var.CONTAINER_PORT # Port on which the targets in this target group are listening for traffic forwarded by the ALB
   protocol             = "HTTP" # Communication protocol used between the ALB and the targets in this group
-  vpc_id               = "${var.VPC_ID}" # The targets registered with this target group must reside within this VPC
-  deregistration_delay = "${var.DEREGISTRATION_DELAY}" # This is the amount of time, in seconds, for the ALB to wait before completing the deregistration of a target. During this time, the ALB stops sending new requests to the target, but it continues to allow existing in-flight requests to complete. This helps gracefully drain connections from targets that are being stopped or replaced
+  vpc_id               = module.vpc.vpc_id # The targets registered with this target group must reside within this VPC
+  deregistration_delay = var.DEREGISTRATION_DELAY # This is the amount seconds for the ALB to wait before completing the deregistration of a target. During this time, the ALB stops sending new requests to the target, but it continues to allow existing in-flight requests to complete. This helps gracefully drain connections from targets that are being stopped or replaced
 
   health_check { # The health check parameters that the ALB uses to monitor the health of the registered targets. If a target fails the health checks, the ALB stops sending traffic to it until it becomes healthy again
     healthy_threshold   = 3 # The number of consecutive successful health checks required for a target to be considered healthy
@@ -21,6 +21,6 @@ resource "aws_alb_target_group" "ecs-service" {
     protocol            = "HTTP" # The protocol to use for health checks
     path                = "/" # Path used by the ALB to make requests on each target
     interval            = 60 # Seconds between health checks
-    matcher             = "${var.HEALTHCHECK_MATCHER}" # The expected HTTP response code or codes for a successful health check e.g., 200
+    matcher             = var.HEALTHCHECK_MATCHER # The expected HTTP response code or codes for a successful health check e.g., 200
   }
 }
