@@ -18,7 +18,7 @@ variable "PATH_TO_PRIVATE_KEY" {
 }
 
 variable "ECR_APP_IMAGE" {
-  description = "Dummy app ECR Image"
+  description = "Dummy app ECR Image. Specified at the infra creation/destruction pipelines"
   type        = string
 }
 

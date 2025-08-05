@@ -23,7 +23,7 @@ resource "aws_iam_instance_profile" "ecs-ec2-role" {
 }
 
 # ECS Service Role:
-# This section is composed of the Terraform resources required to create a role for the dummy-app-ecs-service ECS service 
+# This section is composed of the Terraform resources required to create a role for the ecs-service ECS service 
 # and attach an AWS-managed policy to it. This policy grants the necessary permissions to the ECS service to register 
 # tasks and containers, monitor ECS clusters, log activity to CloudWatch Logs, and perform other actions required to manage 
 # ECS tasks and services
