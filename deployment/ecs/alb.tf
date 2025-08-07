@@ -3,7 +3,7 @@ resource "aws_alb" "alb" {
   name            = "my-alb"
   internal        = false # Determines if the ALB is internal (accessible from within the VPC via a private IP) or Internet-facing (accessible from the Internet via a public IP)
   security_groups = [aws_security_group.alb.id] # The security groups that are associated with the ALB
-  subnets         = ["${split(",", module.vpc.public_subnets)}"] # The ALB must be deployed into at least two Availability Zones for high availability
+  subnets         = module.vpc.public_subnets # The ALB must be deployed into at least two Availability Zones for high availability
 
   enable_deletion_protection = false # When set to true, prevents the accidental deletion of the ALB
 }

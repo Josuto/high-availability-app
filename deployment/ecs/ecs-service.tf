@@ -8,7 +8,8 @@ resource "aws_ecs_task_definition" "ecs-service-taskdef" {
     ECR_APP_IMAGE       = var.ECR_APP_IMAGE,
     CONTAINER_NAME      = var.CONTAINER_NAME,
     CONTAINER_PORT      = var.CONTAINER_PORT,
-    LOG_GROUP           = var.LOG_GROUP
+    LOG_GROUP           = var.LOG_GROUP,
+    AWS_REGION          = var.AWS_REGION
   })
   task_role_arn         = var.TASK_ROLE_ARN # Specifies the ARN of an IAM role that the ECS tasks will assume. This role grants permissions to the containers (e.g., to write logs to CloudWatch, access S3 buckets, etc.)
 }
@@ -18,7 +19,7 @@ resource "aws_ecs_task_definition" "ecs-service-taskdef" {
 # or a previous revision that might still be active.
 data "aws_ecs_task_definition" "ecs-service" {
   task_definition = aws_ecs_task_definition.ecs-service-taskdef.family # Look for the latest active revision of the task definition that matches that family name
-  depends_on      = ["aws_ecs_task_definition.ecs-service-taskdef"] # Depends on the previously defined `ecs-service-taskdef`
+  depends_on      = [aws_ecs_task_definition.ecs-service-taskdef] # Depends on the previously defined `ecs-service-taskdef`
 }
 
 # Generic resource that doesn't map to any specific cloud provider resource. It's primarily used for executing arbitrary scripts or, 
@@ -51,5 +52,5 @@ resource "aws_ecs_service" "ecs-service" {
     container_port   = var.CONTAINER_PORT # The port on the specified container that the load balancer should forward traffic to. Important: This port must be exposed in your `ecs-service.json.tpl` container definition's portMappings
   }
 
-  depends_on = ["terraform_data.alb_exists"] # Ensure that this ECS service is only created/updated after the ALB is provisioned
+  depends_on = [terraform_data.alb_exists] # Ensure that this ECS service is only created/updated after the ALB is provisioned
 }
