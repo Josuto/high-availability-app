@@ -8,7 +8,7 @@
 # - Header-based routing: Directing traffic based on custom HTTP headers, useful for A/B testing or blue/green deployments where a specific header indicates a new version
 # - Method-based routing: Sending e.g., `POST` requests to a specific service endpoint while `GET` requests go elsewhere
 resource "aws_lb_listener_rule" "alb_rule" {
-  listener_arn = aws_alb_target_group.ecs-service.arn # Amazon Resource Name (ARN) of the listener to which this rule will be attached
+  listener_arn = aws_alb_listener.alb-http.arn # Amazon Resource Name (ARN) of the listener to which this rule will be attached
   priority     = var.ALB_RULE_PRIORITY # Sets the priority for the rule. Rules are evaluated in order of their priority, from the lowest value (highest priority) to the highest value
 
   action { # Action the listener rule should take when an incoming request matches its conditions
