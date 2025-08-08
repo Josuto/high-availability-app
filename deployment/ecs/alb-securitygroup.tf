@@ -31,7 +31,7 @@ resource "aws_security_group" "alb" {
 resource "aws_security_group_rule" "cluster-allow-alb" {
   security_group_id        = aws_security_group.cluster.id
   type                     = "ingress"
-  from_port                = 32768
+  from_port                = 32768 # Assign a dynamic port to each container running on an EC2 instance. Such ports are picked from 32768-61000
   to_port                  = 61000
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.alb.id
