@@ -28,3 +28,11 @@ AWS ECS is a fully managed container orchestration service that allows to run, s
 > - [The Ultimate Beginner's Guide to AWS ECS](https://blog.awsfundamentals.com/aws-ecs-beginner-guide)
 > - Section 8: Docker on AWS using ECS and ECR - AWS Infrastructure as Code With Terraform Course by Edward Viaene
 > - ChatGPT
+
+---
+
+## TODO
+- Configure EC2 instance auto-scaling
+- How to enable EC2 instances and containers hand-by-hand auto-scaling?
+- Use `host-header` insteand at the ALB rule definition
+- Disallow HTTP access
