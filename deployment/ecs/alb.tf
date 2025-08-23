@@ -36,17 +36,19 @@ resource "aws_alb_listener" "alb-https" {
 }
 
 # HTTP listener
-# To accept incoming HTTP connections and forward them to the configured target group.
-#
-# Extra note: In a production environment, this listener should be configured to redirect all HTTP traffic to HTTPS to ensure all communication 
-# is encrypted.
+# Redirect all HTTP requests to HTTPS requests. To do so, the ALB is to issue a redirect response to the client so that it makes an HTTPS request 
+# instead.
 resource "aws_alb_listener" "alb-http" {
   load_balancer_arn = aws_alb.alb.arn # Link this listener to the ALB
   port              = "80" # HTTP standard port
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = aws_alb_target_group.ecs-service.arn
-    type             = "forward"
+    type = "redirect"
+    redirect {
+      port        = "443"    # Specify the port to redirect to, which is the standard HTTPS port
+      protocol    = "HTTPS"  # Specify the protocol to redirect to
+      status_code = "HTTP_301" # Use a 301 status code for a permanent redirect. This is good for SEO and tells browsers to cache the redirect.
+    }
   }
 }
