@@ -8,6 +8,17 @@ resource "aws_alb" "alb" {
   enable_deletion_protection = false # When set to true, prevents the accidental deletion of the ALB
 }
 
+# ACM Certificate Data Source
+# Required to retrieve the ARN (Amazon Resource Name) of an existing SSL/TLS certificate managed by AWS Certificate Manager (ACM). 
+# This certificate will be used by the HTTPS listener to enable secure communication.
+#
+# Extra note: A data source allows you to fetch information about existing AWS resources managed outside of your current Terraform configuration or 
+# by a different Terraform configuration.
+data "aws_acm_certificate" "certificate" {
+  domain   = "${var.ACM_CERTIFICATE_DOMAIN}" # Specifies the domain name of the ACM certificate to retrieve
+  statuses = ["ISSUED", "PENDING_VALIDATION"] # Filter that tells Terraform to find certificates that are either ISSUED (ready to use) or PENDING_VALIDATION (currently being validated, but still potentially useful for setting up listeners if you plan to validate it shortly)
+}
+
 # HTTPS listener
 # To accept incoming HTTPS connections, decrypt them using the specified certificate, and forward the unencrypted traffic to the configured 
 # target group (your ECS services).
@@ -16,7 +27,7 @@ resource "aws_alb_listener" "alb-https" {
   port              = "443" # HTTPS standard port
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-Res-2021-06" # Dictates the SSL/TLS protocols and ciphers that are allowed for secure connections
-  certificate_arn   = aws_acm_certificate_validation.certificate_validation.certificate_arn # Attaches the retrieved ACM certificate to this listener, enabling SSL/TLS termination at the ALB i.e., all traffic encrypted with this certificate will be decrypted by the ALB
+  certificate_arn   = data.aws_acm_certificate.certificate.arn # Attaches the retrieved ACM certificate to this listener, enabling SSL/TLS termination at the ALB i.e., all traffic encrypted with this certificate will be decrypted by the ALB
 
   default_action { # Defines what the listener should do with incoming requests that don't match any specific rules (if you had more complex rules)
     target_group_arn = aws_alb_target_group.ecs-service.arn # Specifies the ARN of the default target group (defines your ECS service's tasks) to which requests will be forwarded
