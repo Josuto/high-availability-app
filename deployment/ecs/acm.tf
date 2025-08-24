@@ -27,7 +27,7 @@ resource "aws_route53_record" "certificate_validation" {
 
 # 3. Wait for the certificate to be validated
 resource "aws_acm_certificate_validation" "certificate_validation" {
-  certificate_arn         = aws_acm_certificate.certificate.arn
+  certificate_arn         = data.aws_acm_certificate.certificate.arn
   # This tells Terraform to wait for the validation records to be created and propagated
   validation_record_fqdns = [for record in aws_route53_record.certificate_validation : record.fqdn]
 }
