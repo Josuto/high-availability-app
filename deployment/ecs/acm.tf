@@ -1,9 +1,9 @@
 # 1. Request the SSL/TLS certificate required to access the HTTPS root domain via AWS Certificate Manager (ACM)
 # This certificate will be used by the ALB HTTPS listener to enable secure communication.
 resource "aws_acm_certificate" "certificate" {
-  domain_name               = "josumartinez.com"
+  domain_name               = "*.josumartinez.com"
   validation_method         = "DNS"
-  subject_alternative_names = ["www.josumartinez.com"] # Include the www subdomain as a Subject Alternative Name (SAN)
+  subject_alternative_names = ["josumartinez.com"] # Include the root domain as a Subject Alternative Name (SAN)
 
   # This is a good practice to ensure the new certificate is created before the old one is destroyed, minimizing downtime.
   lifecycle {
