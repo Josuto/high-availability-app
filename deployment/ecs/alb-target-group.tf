@@ -20,7 +20,7 @@ resource "aws_alb_target_group" "ecs-service" {
     unhealthy_threshold = 3 # The number of consecutive successful health checks required for a target to be considered unhealthy
     protocol            = "HTTP" # The protocol to use for health checks
     path                = "/health" # Path used by the ALB to make requests on each target
-    interval            = 60 # Seconds between health checks
+    interval            = 300 # Seconds between health checks
     matcher             = var.HEALTHCHECK_MATCHER # The expected HTTP response code or codes for a successful health check e.g., 200
   }
 }
