@@ -14,7 +14,7 @@ data "aws_acm_certificate" "certificate" {
 # This record is defined here since it is a temporary, behind-the-scenes record for AWS's internal validation process only.
 resource "aws_route53_record" "certificate_validation" {
   for_each = {
-    for dvo in aws_acm_certificate.certificate.domain_validation_options : dvo.domain_name => dvo
+    for dvo in data.aws_acm_certificate.certificate.domain_validation_options : dvo.domain_name => dvo
   }
 
   allow_overwrite = true
