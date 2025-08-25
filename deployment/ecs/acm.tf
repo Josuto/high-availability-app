@@ -10,7 +10,7 @@ resource "aws_route53_record" "root_certificate_validation" {
   allow_overwrite = true
   name            = var.root_validation_name
   type            = "CNAME"
-  zone_id         = data.aws_route53_zone.my_domain_zone.zone_id
+  zone_id         = aws_route53_zone.my-domain-zone.zone_id
   records         = [var.root_validation_value]
   ttl             = 60
 }
@@ -20,7 +20,7 @@ resource "aws_route53_record" "wildcard_certificate_validation" {
   allow_overwrite = true
   name            = var.wildcard_validation_name
   type            = "CNAME"
-  zone_id         = data.aws_route53_zone.my_domain_zone.zone_id
+  zone_id         = aws_route53_zone.my-domain-zone.zone_id
   records         = [var.wildcard_validation_value]
   ttl             = 60
 }
