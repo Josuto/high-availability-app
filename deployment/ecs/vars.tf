@@ -86,3 +86,23 @@ variable "DEPLOYMENT_MAXIMUM_PERCENT" {
   description = "Upper limit of health tasks that must be running during deployment"
   default     = 200
 }
+
+variable "root_validation_name" {
+  description = "The CNAME name provided by ACM for the root domain."
+  type        = string
+}
+
+variable "root_validation_value" {
+  description = "The CNAME value provided by ACM for the root domain."
+  type        = string
+}
+
+variable "wildcard_validation_name" {
+  description = "The CNAME name provided by ACM for the wildcard subdomain."
+  type        = string
+}
+
+variable "wildcard_validation_value" {
+  description = "The CNAME value provided by ACM for the wildcard subdomain."
+  type        = string
+}

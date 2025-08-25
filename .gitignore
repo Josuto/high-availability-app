@@ -17,7 +17,6 @@ lerna-debug.log*
 
 # Terraform files
 **/terraform.tfstate*
-**/terraform.tfvars
 **/.terraform*
 
 # SSH private keys
