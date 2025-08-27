@@ -42,8 +42,7 @@ resource "aws_iam_policy_attachment" "ecs-service-attach1" {
 }
 
 # Attach the AmazonSSMManagedInstanceCore policy to the EC2 Role to enable access to each instance via AWS SSM (alternative to SSH)
-# Disabled as it may have an impact in costs
-# resource "aws_iam_role_policy_attachment" "ecs-ec2-ssm-attach" {
-#   role       = aws_iam_role.ecs-ec2-role.name
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-# }
+resource "aws_iam_role_policy_attachment" "ecs-ec2-ssm-attach" {
+  role       = aws_iam_role.ecs-ec2-role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
