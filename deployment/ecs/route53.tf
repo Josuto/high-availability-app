@@ -1,13 +1,12 @@
-# Route 53 hosted zone, a container of DNS records of a domain. It manages where the domain points to (e.g., a web server).
-resource "aws_route53_zone" "my-domain-zone" {
-  name    = "josumartinez.com."
-  comment = "Hosted zone for my domain"
+# Data source to retrieve the AWS hosted zone, created in some previous deployment pipeline
+data "aws_route53_zone" "my-domain-zone" {
+  name = "josumartinez.com."
 }
 
 # DNS A record for the root domain that points to the ALB
 resource "aws_route53_record" "root-domain-record" {
   name    = "josumartinez.com"
-  zone_id = aws_route53_zone.my-domain-zone.zone_id
+  zone_id = data.aws_route53_zone.my-domain-zone.zone_id
   type    = "A"
   alias { # Alias to point directly to the ALB
     name                   = aws_alb.alb.dns_name
@@ -21,7 +20,7 @@ resource "aws_route53_record" "root-domain-record" {
 # level via a HTTP listener, which is a better practice. 
 resource "aws_route53_record" "www-domain-record" {
   name    = "www.josumartinez.com"
-  zone_id = aws_route53_zone.my-domain-zone.zone_id
+  zone_id = data.aws_route53_zone.my-domain-zone.zone_id
   type    = "A"
   alias { # Alias to point directly to the ALB
     name                   = aws_alb.alb.dns_name
