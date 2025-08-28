@@ -8,6 +8,11 @@ env:
   AWS_REGION: eu-west-1
 
 jobs:
+  setup-terraform-state-bucket:
+    uses: ./.github/workflows/backend_setup.yml@main # reusable workflow
+    with:
+      github_head_commit_message: ${{ github.event.head_commit.message }}
+
   create-hosted-zone:
     name: Create AWS Route53 Hosted Zone
     runs-on: ubuntu-latest
