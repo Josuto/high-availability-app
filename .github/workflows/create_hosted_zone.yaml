@@ -9,7 +9,7 @@ env:
 
 jobs:
   setup-terraform-state-bucket:
-    uses: ./.github/workflows/backend_setup.yml # reusable workflow
+    uses: ./.github/workflows/backend_setup.yaml # reusable workflow
     with:
       github_head_commit_message: ${{ github.event.head_commit.message }}
 
