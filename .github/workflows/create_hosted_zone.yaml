@@ -12,6 +12,9 @@ jobs:
     uses: ./.github/workflows/backend_setup.yaml # reusable workflow
     with:
       github_head_commit_message: ${{ github.event.head_commit.message }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   create-hosted-zone:
     name: Create AWS Route53 Hosted Zone
