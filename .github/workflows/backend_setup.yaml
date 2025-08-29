@@ -9,8 +9,10 @@ on:
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
+        description: "AWS access key ID"
       AWS_SECRET_ACCESS_KEY:
         required: true
+        description: "AWS secret"
 
 env:
   AWS_REGION: eu-west-1
