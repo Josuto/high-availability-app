@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Manual trigger
 
 env:
-  TERRAFORM_VERSION: 1.5.7
+  TERRAFORM_VERSION: 1.5.7 # Update to version when needed
   AWS_REGION: eu-west-1
 
 jobs:
