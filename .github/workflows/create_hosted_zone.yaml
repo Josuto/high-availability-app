@@ -18,6 +18,7 @@ jobs:
 
   create-hosted-zone:
     name: Create AWS Route53 Hosted Zone
+    needs: setup-terraform-state-bucket
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from the repository
