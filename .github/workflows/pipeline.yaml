@@ -109,9 +109,7 @@ jobs:
 
   deploy-app-to-ecs:
     name: Deploy App to ECS
-    needs:
-      - setup-ecr
-      - build-and-push-app-docker-image-to-ecr
+    needs: build-and-push-app-docker-image-to-ecr
     runs-on: ubuntu-latest
 
     env:
