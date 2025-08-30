@@ -1,5 +1,6 @@
 # Route 53 hosted zone, a container of DNS records of a domain. It manages where the domain points to (e.g., a web server).
 resource "aws_route53_zone" "my-domain-zone" {
-  name    = "josumartinez.com."
-  comment = "Hosted zone for my domain"
+  name          = "josumartinez.com."
+  comment       = "Hosted zone for my domain"
+  force_destroy = true # do not use this in a production environment
 }
