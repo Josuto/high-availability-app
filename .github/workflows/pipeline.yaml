@@ -135,6 +135,10 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Show content of ECR_APP_IMAGE
+        run: echo "ECR_APP_IMAGE: ${{ env.ECR_APP_IMAGE }}"
+        working-directory: deployment/ecs
+
       - name: Initialise Terraform on ECS directory
         run: terraform init
         working-directory: deployment/ecs
