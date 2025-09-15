@@ -9,15 +9,15 @@ env:
 
 jobs:
   setup-terraform-state-bucket:
-    uses: ./.github/workflows/backend_setup.yaml # reusable workflow
+    uses: ./.github/workflows/create_state_bucket.yaml # reusable workflow
     with:
       github_head_commit_message: ${{ github.event.head_commit.message }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  create-hosted-zone:
-    name: Create AWS Route53 Hosted Zone
+  deploy-hosted-zone:
+    name: Deploy Route53 Hosted Zone on AWS
     needs: setup-terraform-state-bucket
     runs-on: ubuntu-latest
     steps:
@@ -37,13 +37,13 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Initialize Terraform
-        run: terraform init
-        working-directory: deployment/hosted_zone
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra/deployment/hosted_zone
 
       - name: Validate IaC changes
         run: terraform plan
-        working-directory: deployment/hosted_zone
+        working-directory: infra/deployment/hosted_zone
 
       - name: Create AWS Route53 Hosted Zone
         run: terraform apply -auto-approve
-        working-directory: deployment/hosted_zone
+        working-directory: infra/deployment/hosted_zone
