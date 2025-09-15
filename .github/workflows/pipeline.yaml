@@ -9,23 +9,23 @@ env:
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
 
 jobs:
-  setup-terraform-state-bucket:
-    uses: ./.github/workflows/backend_setup.yaml # reusable workflow
+  deploy-terraform-state-bucket:
+    uses: ./.github/workflows/create_state_bucket.yaml # reusable workflow
     with:
       github_head_commit_message: ${{ github.event.head_commit.message }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  setup-ecr:
-    name: Setup ECR
-    needs: setup-terraform-state-bucket
+  deploy-ecr:
+    name: Deploy ECR on AWS
+    needs: deploy-terraform-state-bucket
     runs-on: ubuntu-latest
 
     env: # required by some steps
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      ECR_REPO_NAME: dummy-app-ecr-repository
+      ECR_REPO_NAME: my-app-ecr-repository # Must match that given at aws_ecr_repository.app-ecr-repository
 
     outputs:
       ecr_repository_name: ${{ steps.get-ecr-output.outputs.ecr_repository_name }}
@@ -49,16 +49,16 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Initialise Terraform on ECR directory
-        run: terraform init
-        working-directory: deployment/ecr
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra/deployment/ecr
 
       - name: Validate IaC changes on ECR directory
         run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
-        working-directory: deployment/ecr
+        working-directory: infra/deployment/ecr
 
       - name: Create ECR repository if it does not yet exist
         run: terraform apply -auto-approve tfplan.binary
-        working-directory: deployment/ecr
+        working-directory: infra/deployment/ecr
 
       - name: Fetch ECR repository name from Terraform output
         id: get-ecr-output # make the output available to other jobs
@@ -66,17 +66,56 @@ jobs:
           ecr_name=$(terraform output -raw ${{ env.ECR_REPO_NAME }}-url)
           echo "Debug: ECR_REPO_NAME_URL is: $ecr_name"
           echo "ecr_repository_name=$ecr_name" >> $GITHUB_OUTPUT
-        working-directory: deployment/ecr
+        working-directory: infra/deployment/ecr
         env:
           TF_IN_AUTOMATION: true # suppresses prompts
 
+  retrieve-ssl:
+    name: Retrieve SSL certificate
+    needs: deploy-terraform-state-bucket
+    runs-on: ubuntu-latest
+
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      # Checkout the repository to enable the runner clone the project repo into its filesystem from the last repo
+      # commit, and make the files available to other steps of the workflow
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialise Terraform on SSL directory
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra/deployment/ssl
+
+      - name: Validate IaC changes on SSL directory
+        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        working-directory: infra/deployment/ssl
+
+      - name: Retrieve SSL certificate
+        run: terraform apply -auto-approve tfplan.binary
+        working-directory: infra/deployment/ssl
+
   build-and-push-app-docker-image-to-ecr:
     name: Build and Push App Docker Image to ECR
-    needs: setup-ecr
+    needs: deploy-ecr
     runs-on: ubuntu-latest
 
     env:
-      ECR_APP_IMAGE: ${{ needs.setup-ecr.outputs.ecr_repository_name }}:${{ github.sha }}
+      ECR_APP_IMAGE: ${{ needs.deploy-ecr.outputs.ecr_repository_name }}:${{ github.sha }}
 
     steps:
       - name: Checkout code from the repository
@@ -102,21 +141,142 @@ jobs:
 
       - name: Build the Docker image
         run: |
-          docker build -t ${{ env.ECR_APP_IMAGE }} -f deployment/Dockerfile .
+          docker build -t ${{ env.ECR_APP_IMAGE }} -f Dockerfile .
 
       - name: Push the Docker image to ECR
         run: |
           docker push ${{ env.ECR_APP_IMAGE }}
 
-  deploy-app-to-ecs:
-    name: Deploy App to ECS
-    needs: [setup-ecr, build-and-push-app-docker-image-to-ecr]
+  deploy-vpc:
+    name: Deploy the VPC on AWS
+    needs: deploy-ecr
     runs-on: ubuntu-latest
 
-    env:
-      ECR_APP_IMAGE: ${{ needs.setup-ecr.outputs.ecr_repository_name }}:${{ github.sha }}
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
+      # Checkout the repository to enable the runner clone the project repo into its filesystem from the last repo
+      # commit, and make the files available to other steps of the workflow
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialise Terraform on the VPC directory
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra/deployment/prod/vpc
+
+      - name: Validate IaC changes on the VPC directory
+        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        working-directory: infra/deployment/prod/vpc
+
+      - name: Deploy the VPC
+        run: terraform apply -auto-approve tfplan.binary
+        working-directory: infra/deployment/prod/vpc
+
+  deploy-ecs-cluster:
+    name: Deploy the ECS cluster on AWS
+    needs: deploy-vpc
+    runs-on: ubuntu-latest
+
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      # Checkout the repository to enable the runner clone the project repo into its filesystem from the last repo
+      # commit, and make the files available to other steps of the workflow
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialise Terraform on ECS cluster directory
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra/deployment/prod/ecs_cluster
+
+      - name: Validate IaC changes on ECS cluster directory
+        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        working-directory: infra/deployment/prod/ecs_cluster
+
+      - name: Deploy the ECS cluster
+        run: terraform apply -auto-approve tfplan.binary
+        working-directory: infra/deployment/prod/ecs_cluster
+
+  deploy-alb:
+    name: Deploy the ALB on AWS
+    needs: [retrieve-ssl, deploy-vpc, deploy-ecs-cluster]
+    runs-on: ubuntu-latest
+
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      # Checkout the repository to enable the runner clone the project repo into its filesystem from the last repo
+      # commit, and make the files available to other steps of the workflow
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialise Terraform on the ALB directory
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra/deployment/prod/alb
+
+      - name: Validate IaC changes on the ALB directory
+        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        working-directory: infra/deployment/prod/alb
+
+      - name: Deploy the ALB
+        run: terraform apply -auto-approve tfplan.binary
+        working-directory: infra/deployment/prod/alb
+
+  deploy-ecs-service:
+    name: Deploy the ECS service on AWS
+    needs: [deploy-ecr, build-and-push-app-docker-image-to-ecr, deploy-ecs-cluster, deploy-alb]
+    runs-on: ubuntu-latest
+
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ECR_APP_IMAGE: ${{ needs.deploy-ecr.outputs.ecr_repository_name }}:${{ github.sha }}
+
+    steps:
+      # Checkout the repository to enable the runner clone the project repo into its filesystem from the last repo
+      # commit, and make the files available to other steps of the workflow
       - name: Checkout code from the repository
         uses: actions/checkout@v4
 
@@ -136,14 +296,93 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Initialise Terraform on ECS directory
-        run: terraform init
-        working-directory: deployment/ecs
+      - name: Initialise Terraform on the ECS service directory
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra/deployment/prod/ecs_service
 
-      - name: Validate IaC changes on ECS directory
-        run: terraform plan -var="ECR_APP_IMAGE=${{env.ECR_APP_IMAGE}}"
-        working-directory: deployment/ecs
+      - name: Validate IaC changes on the ECS service directory
+        run: terraform plan -out=tfplan.binary -var="ECR_APP_IMAGE=${{env.ECR_APP_IMAGE}}" # Save the plan as a binary file to ensure consistency between plan and apply
+        working-directory: infra/deployment/prod/ecs_service
 
-      - name: Deploy the app to ECS
-        run: terraform apply -var="ECR_APP_IMAGE=${{env.ECR_APP_IMAGE}}" -auto-approve
-        working-directory: deployment/ecs
+      - name: Deploy the ECS service
+        run: terraform apply -var="ECR_APP_IMAGE=${{env.ECR_APP_IMAGE}}" -auto-approve tfplan.binary
+        working-directory: infra/deployment/prod/ecs_service
+
+  deploy-routing:
+    name: Deploy the Route53 on AWS
+    needs: deploy-alb
+    runs-on: ubuntu-latest
+
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      # Checkout the repository to enable the runner clone the project repo into its filesystem from the last repo
+      # commit, and make the files available to other steps of the workflow
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialise Terraform on the routing directory
+        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra/deployment/prod/routing
+
+      - name: Validate IaC changes on the routing directory
+        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        working-directory: infra/deployment/prod/routing
+
+      - name: Deploy the Route53
+        run: terraform apply -auto-approve tfplan.binary
+        working-directory: infra/deployment/prod/routing
+
+  # deploy-app-to-ecs:
+  #   name: Deploy App to ECS
+  #   needs: [deploy-ecr, build-and-push-app-docker-image-to-ecr]
+  #   runs-on: ubuntu-latest
+
+  #   env:
+  #     ECR_APP_IMAGE: ${{ needs.deploy-ecr.outputs.ecr_repository_name }}:${{ github.sha }}
+
+  #   steps:
+  #     - name: Checkout code from the repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@v3
+  #       with:
+  #         terraform_version: ${{env.TERRAFORM_VERSION}}
+
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ env.AWS_REGION }}
+
+  #     - name: Login to AWS ECR
+  #       id: login-ecr
+  #       uses: aws-actions/amazon-ecr-login@v2
+
+  #     - name: Initialise Terraform on ECS directory
+  #       run: terraform init
+  #       working-directory: deployment/ecs
+
+  #     - name: Validate IaC changes on ECS directory
+  #       run: terraform plan -var="ECR_APP_IMAGE=${{env.ECR_APP_IMAGE}}"
+  #       working-directory: deployment/ecs
+
+  #     - name: Deploy the app to ECS
+  #       run: terraform apply -var="ECR_APP_IMAGE=${{env.ECR_APP_IMAGE}}" -auto-approve
+  #       working-directory: deployment/ecs

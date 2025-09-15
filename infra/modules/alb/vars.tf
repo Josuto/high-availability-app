@@ -1,0 +1,48 @@
+variable "alb_name" {
+  description = "Name of the ALB"
+  default     = "my-alb" 
+}
+
+# module.vpc.vpc_id
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
+}
+
+# module.vpc.public_subnets
+variable "vpc_public_subnets" {
+  description = "The list of existing VPC public subnets"
+  type        = list(string) 
+}
+
+# aws_security_group.cluster.id
+variable "ecs_security_group_id" {
+  description = "The ID of the ECS security group"
+  type        = string
+}
+
+variable "container_name" {
+  description = "Name of the app container to be deployed"
+  default     = "my-app"
+}
+
+variable "container_port" {
+  description = "Port the app container is available from"
+  default     = 3000 
+}
+
+variable "deregistration_delay" {
+  description = "The amount seconds for the ALB to wait before completing the deregistration of a target"
+  default     = 30
+}
+
+variable "healthcheck_matcher" {
+  description = "The expected HTTP response code or codes for a successful health check"
+  default     = "200"
+}
+
+# aws_acm_certificate_validation.certificate_validation.certificate_arn
+variable "acm_certificate_validation_arn" {
+  description = "The ARN of the ACM certificate attached to the ALB"
+  type        = string
+}
