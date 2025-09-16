@@ -1,7 +1,7 @@
 data "terraform_remote_state" "vpc" {
   backend = "s3"
   config = {
-    bucket = "josumartinez-terraform-state"
+    bucket = "josumartinez-terraform-state-bucket"
     key    = "deployment/prod/vpc/terraform.tfstate"
     # region = "eu-west-1" # When omitted, that of the provider is taken
   }

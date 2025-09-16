@@ -1,7 +1,7 @@
 data "terraform_remote_state" "hosted_zone" {
   backend = "s3"
   config = {
-    bucket = "josumartinez-terraform-state"
+    bucket = "josumartinez-terraform-state-bucket"
     key    = "deployment/hosted_zone/terraform.tfstate"
     # region = "eu-west-1" # When omitted, that of the provider is taken
   }
