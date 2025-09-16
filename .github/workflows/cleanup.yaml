@@ -64,7 +64,7 @@ jobs:
 
   destroy-alb:
     name: Destroy all ALB-related resources
-    needs: [deploy-ecs-service, deploy-routing]
+    needs: [destroy-ecs-service, destroy-routing]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from the repository
@@ -120,7 +120,7 @@ jobs:
 
   destroy-vpc:
     name: Destroy all VPC-related resources
-    needs: [deploy-ecs-cluster, deploy-alb]
+    needs: [destroy-ecs-cluster, destroy-alb]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from the repository
@@ -148,7 +148,7 @@ jobs:
 
   destroy-ssl:
     name: Destroy all SSL certificate-related resources
-    needs: [deploy-alb]
+    needs: [destroy-alb]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from the repository
