@@ -25,7 +25,7 @@ jobs:
     env: # required by some steps
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      ECR_REPO_NAME: my-app-ecr-repository # Must match that given at aws_ecr_repository.app-ecr-repository
+      ECR_REPO_URL: app-ecr-repository-url # Must match that of the output variable at ECR module
 
     outputs:
       ecr_repository_name: ${{ steps.get-ecr-output.outputs.ecr_repository_name }}
@@ -63,9 +63,9 @@ jobs:
       - name: Fetch ECR repository name from Terraform output
         id: get-ecr-output # make the output available to other jobs
         run: |
-          ecr_name=$(terraform output -raw ${{ env.ECR_REPO_NAME }}-url)
-          echo "Debug: ECR_REPO_NAME_URL is: $ecr_name"
-          echo "ecr_repository_name=$ecr_name" >> $GITHUB_OUTPUT
+          ecr_repo_url=$(terraform output -raw ${{ env.ECR_REPO_URL }})
+          echo "Debug: ECR repo URL is: $ecr_repo_url"
+          echo "ecr_repository_name=$ecr_repo_url" >> $GITHUB_OUTPUT
         working-directory: infra/deployment/ecr
         env:
           TF_IN_AUTOMATION: true # suppresses prompts
