@@ -4,7 +4,7 @@
 # their images, ports, CPU/memory allocation, and logging configuration.
 resource "aws_ecs_task_definition" "ecs-service-taskdef" {
   family                = var.container_name # A family groups together revisions of a task definition. When you make changes to a task definition, ECS creates a new revision within the same family
-  container_definitions = templatefile("ecs-service.json.tpl", { # It takes the dynamically generated JSON string from the given TPL and uses it to define the containers that will run as part of this task
+  container_definitions = templatefile("${path.module}/ecs-service.json.tpl", { # It takes the dynamically generated JSON string from the given TPL and uses it to define the containers that will run as part of this task
     ecr_app_image       = var.ecr_app_image,
     container_name      = var.container_name,
     container_port      = var.container_port,

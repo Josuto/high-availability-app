@@ -7,7 +7,7 @@
 # IAM role to assume by the ECS service
 resource "aws_iam_role" "ecs-service-role" {
   name               = "ecs-service-role"
-  assume_role_policy = file("iam-policies/ecs-service-role-assumption.json")
+  assume_role_policy = file("${path.module}/iam-policies/ecs-service-role-assumption.json")
 }
 
 # Attach the AmazonEC2ContainerServiceRole policy to the ECS service role

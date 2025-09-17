@@ -5,7 +5,7 @@ resource "aws_ecs_cluster" "ecs-cluster" {
 
 # EC2 instance bootstrapping process
 locals {
-  template = templatefile("templates/ec2-instance-init.tpl", {
+  template = templatefile("${path.module}/templates/ec2-instance-init.tpl", {
     ECS_CLUSTER_NAME   = var.cluster_name
   })
 }
