@@ -59,7 +59,7 @@ jobs:
         working-directory: infra/deployment/prod/routing
 
       - name: Destroy Resources on the routing directory
-        run: terraform destroy -var="ECR_APP_IMAGE=some_non_relevant_value" -auto-approve
+        run: terraform destroy -var="ecr_app_image=some_non_relevant_value" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
 
   destroy-alb:
@@ -115,7 +115,7 @@ jobs:
         working-directory: deployment/ecs
 
       - name: Destroy Resources on the ECS directory
-        run: terraform destroy -var="ECR_APP_IMAGE=some_non_relevant_value" -auto-approve
+        run: terraform destroy -auto-approve
         working-directory: deployment/ecs
 
   destroy-vpc:
