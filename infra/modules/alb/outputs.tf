@@ -1,4 +1,3 @@
-# Output the ECR repository URL to consume in the GitHub Actions pipeline
 output "alb_target_group_id" {
   value = aws_alb_target_group.ecs-service.id
 }
