@@ -9,7 +9,7 @@ env:
 
 jobs:
   destroy-routing:
-    name: Destroy all routing-related resources
+    name: Destroy routing-related resources
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from the repository
@@ -36,7 +36,7 @@ jobs:
         working-directory: infra/deployment/prod/routing
 
   destroy-ecs-service:
-    name: Destroy all ECS service-related resources
+    name: Destroy ECS service-related resources
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from the repository
@@ -63,7 +63,7 @@ jobs:
         working-directory: infra/deployment/prod/ecs_service
 
   destroy-alb:
-    name: Destroy all ALB-related resources
+    name: Destroy ALB-related resources
     needs: [destroy-ecs-service, destroy-routing]
     runs-on: ubuntu-latest
     steps:
@@ -91,7 +91,7 @@ jobs:
         working-directory: infra/deployment/prod/alb
 
   destroy-ecs-cluster:
-    name: Destroy all ECS cluster-related resources
+    name: Destroy ECS cluster-related resources
     needs: [destroy-alb, destroy-ecs-service]
     runs-on: ubuntu-latest
     steps:
@@ -112,14 +112,14 @@ jobs:
 
       - name: Initialize Terraform on the ECS directory
         run: terraform init
-        working-directory: deployment/ecs
+        working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Destroy Resources on the ECS directory
         run: terraform destroy -auto-approve
-        working-directory: deployment/ecs
+        working-directory: infra/deployment/prod/ecs_cluster
 
   destroy-vpc:
-    name: Destroy all VPC-related resources
+    name: Destroy VPC-related resources
     needs: [destroy-ecs-cluster, destroy-alb]
     runs-on: ubuntu-latest
     steps:
@@ -147,7 +147,7 @@ jobs:
         working-directory: infra/deployment/prod/vpc
 
   destroy-ssl:
-    name: Destroy all SSL certificate-related resources
+    name: Destroy SSL certificate-related resources
     needs: [destroy-alb]
     runs-on: ubuntu-latest
     steps:
@@ -196,11 +196,11 @@ jobs:
 
       - name: Initialize Terraform on the hosted zone directory
         run: terraform init
-        working-directory: deployment/hosted_zone
+        working-directory: infra/deployment/hosted_zone
 
       - name: Destroy resources on the hosted zone directory
         run: terraform destroy -auto-approve
-        working-directory: deployment/hosted_zone
+        working-directory: infra/deployment/hosted_zone
 
   destroy-ecr:
     name: Destroy ECR-related resources
@@ -232,11 +232,11 @@ jobs:
 
       - name: Initialize Terraform on the ECR directory
         run: terraform init
-        working-directory: deployment/ecr
+        working-directory: infra/deployment/ecr
 
       - name: Destroy resources on the ECR directory
         run: terraform destroy -auto-approve
-        working-directory: deployment/ecr
+        working-directory: infra/deployment/ecr
 
   destroy-terraform-state-bucket:
     name: Destroy Terraform state bucket
@@ -260,17 +260,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Delete all the Terraform state files from the S3 bucket
+      - name: Delete the Terraform state files from the S3 bucket
         run: aws s3 rm s3://${{ env.BUCKET_NAME }} --recursive
 
       - name: Initialize Terraform
         run: terraform init
-        working-directory: deployment/s3
+        working-directory: infra/deployment/backend
 
       - name: Import the Terraform state bucket state
         run: terraform import aws_s3_bucket.dummy-app-terraform-state-bucket ${{ env.BUCKET_NAME }}
-        working-directory: deployment/s3
+        working-directory: infra/deployment/backend
 
       - name: Destroy the Terraform state bucket
         run: terraform destroy -auto-approve
-        working-directory: deployment/s3
+        working-directory: infra/deployment/backend
