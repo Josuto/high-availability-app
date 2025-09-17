@@ -56,7 +56,7 @@ jobs:
 
       - name: Initialize Terraform on the routing directory
         run: terraform init
-        working-directory: infra/deployment/prod/routing
+        working-directory: infra/deployment/prod/ecs_service
 
       - name: Destroy Resources on the routing directory
         run: terraform destroy -var="ecr_app_image=some_non_relevant_value" -auto-approve
