@@ -1,4 +1,4 @@
-name: Destroy Route53 Hosted Zone and Remote State Bucket
+name: Destroy AWS Route53 Hosted Zone and Terraform State Bucket
 
 on:
   workflow_dispatch: # Manual trigger
