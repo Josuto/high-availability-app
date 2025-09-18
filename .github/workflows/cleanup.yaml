@@ -224,7 +224,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Delete existing dummy app images
+      - name: Delete existing app images
         run: aws ecr batch-delete-image
           --repository-name ${{ env.ECR_REPO_NAME }}
           --image-ids "$(aws ecr list-images --repository-name ${{ env.ECR_REPO_NAME }} --query 'imageIds[*]' --output json --region ${{ env.AWS_REGION }})"
@@ -243,7 +243,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [destroy-ssl, destroy-hosted-zone, destroy-ecr]
     env:
-      BUCKET_NAME: dummy-app-terraform-state-bucket
+      BUCKET_NAME: josumartinez-terraform-state-bucket
     steps:
       - name: Checkout code from the repository
         uses: actions/checkout@v4
@@ -268,7 +268,7 @@ jobs:
         working-directory: infra/deployment/backend
 
       - name: Import the Terraform state bucket state
-        run: terraform import aws_s3_bucket.dummy-app-terraform-state-bucket ${{ env.BUCKET_NAME }}
+        run: terraform import aws_s3_bucket.josumartinez-terraform-state-bucket ${{ env.BUCKET_NAME }}
         working-directory: infra/deployment/backend
 
       - name: Destroy the Terraform state bucket
