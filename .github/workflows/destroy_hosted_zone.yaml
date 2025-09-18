@@ -35,7 +35,7 @@ jobs:
         run: terraform destroy -auto-approve
         working-directory: infra/deployment/hosted_zone
 
-destroy-terraform-state-bucket:
+  destroy-terraform-state-bucket:
     name: Destroy Terraform state bucket
     runs-on: ubuntu-latest
     needs: [destroy-hosted-zone]
