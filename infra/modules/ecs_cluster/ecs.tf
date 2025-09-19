@@ -19,7 +19,7 @@ resource "aws_launch_template" "ecs-launch-template" {
   user_data     = base64encode(local.template) # Base64-encoded EC2 instance bootstrapping process
 
   iam_instance_profile {
-    name = aws_iam_instance_profile.ecs-ec2-role.name # ECS and ECR access permissions
+    name = aws_iam_instance_profile.ecs_instance_profile.name # AWS services access permissions
   }
 
   network_interfaces {
