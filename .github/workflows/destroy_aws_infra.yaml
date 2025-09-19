@@ -8,33 +8,6 @@ env:
   AWS_REGION: eu-west-1
 
 jobs:
-  destroy-routing:
-    name: Destroy routing-related resources
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code from the repository
-        uses: actions/checkout@v4
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{env.TERRAFORM_VERSION}}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Initialize Terraform on the routing directory
-        run: terraform init
-        working-directory: infra/deployment/prod/routing
-
-      - name: Destroy Resources on the routing directory
-        run: terraform destroy -auto-approve
-        working-directory: infra/deployment/prod/routing
-
   destroy-ecs-service:
     name: Destroy ECS service-related resources
     runs-on: ubuntu-latest
@@ -62,9 +35,37 @@ jobs:
         run: terraform destroy -var="ecr_app_image=some_non_relevant_value" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
 
+  destroy-routing:
+    name: Destroy routing-related resources
+    needs: destroy-ecs-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on the routing directory
+        run: terraform init
+        working-directory: infra/deployment/prod/routing
+
+      - name: Destroy Resources on the routing directory
+        run: terraform destroy -auto-approve
+        working-directory: infra/deployment/prod/routing
+
   destroy-alb:
     name: Destroy ALB-related resources
-    needs: [destroy-ecs-service, destroy-routing]
+    needs: destroy-ecs-service
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from the repository
@@ -92,7 +93,7 @@ jobs:
 
   destroy-ecs-cluster:
     name: Destroy ECS cluster-related resources
-    needs: [destroy-alb, destroy-ecs-service]
+    needs: [destroy-ecs-service, destroy-alb]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from the repository
@@ -118,37 +119,9 @@ jobs:
         run: terraform destroy -auto-approve
         working-directory: infra/deployment/prod/ecs_cluster
 
-  destroy-vpc:
-    name: Destroy VPC-related resources
-    needs: [destroy-ecs-cluster, destroy-alb]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code from the repository
-        uses: actions/checkout@v4
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{env.TERRAFORM_VERSION}}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Initialize Terraform on the VPC directory
-        run: terraform init
-        working-directory: infra/deployment/prod/vpc
-
-      - name: Destroy Resources on the VPC directory
-        run: terraform destroy -auto-approve
-        working-directory: infra/deployment/prod/vpc
-
   destroy-ssl:
     name: Destroy SSL certificate-related resources
-    needs: [destroy-alb]
+    needs: destroy-alb
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from the repository
@@ -177,7 +150,7 @@ jobs:
   destroy-ecr:
     name: Destroy ECR-related resources
     runs-on: ubuntu-latest
-    needs: [destroy-vpc, destroy-ecs-service]
+    needs: [destroy-ecs-service, destroy-alb]
     env:
       ECR_REPO_NAME: app-ecr-repository
     steps:
@@ -209,3 +182,31 @@ jobs:
       - name: Destroy resources on the ECR directory
         run: terraform destroy -auto-approve
         working-directory: infra/deployment/ecr
+
+  destroy-vpc:
+    name: Destroy VPC-related resources
+    needs: [destroy-ecs-cluster, destroy-alb, destroy-ssl, destroy-ecr]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on the VPC directory
+        run: terraform init
+        working-directory: infra/deployment/prod/vpc
+
+      - name: Destroy Resources on the VPC directory
+        run: terraform destroy -auto-approve
+        working-directory: infra/deployment/prod/vpc
