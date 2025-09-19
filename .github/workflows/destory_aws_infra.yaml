@@ -1,4 +1,4 @@
-name: Cleanup AWS Resources
+name: Destroy AWS Infrastructure
 
 on:
   workflow_dispatch: # Manual trigger
