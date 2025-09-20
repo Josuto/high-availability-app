@@ -32,7 +32,7 @@ jobs:
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Scale down ECS service
-        run: terraform apply -var="ecr_app_image=some_non_relevant_value" -var="ecs_task_desired_count=0" -auto-approve
+        run: terraform apply -var="ecs_task_desired_count=0" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Destroy Resources on the routing directory
