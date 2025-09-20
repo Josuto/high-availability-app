@@ -31,7 +31,7 @@ variable "ecs_cluster_arn" {
 
 variable "ecs_task_desired_count" {
   description = "The number of tasks that you want to run for this service"
-  default     = 2
+  type        = number
 }
 
 variable "deployment_minimum_healthy_percent" {
