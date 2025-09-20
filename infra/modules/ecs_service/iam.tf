@@ -11,8 +11,19 @@ resource "aws_iam_role" "ecs-service-role" {
 }
 
 # Attach the AmazonEC2ContainerServiceRole policy to the ECS service role
-resource "aws_iam_policy_attachment" "ecs-service-attach1" {
-  name       = "ecs-service-attach1"
-  roles      = [aws_iam_role.ecs-service-role.name]
+resource "aws_iam_role_policy_attachment" "ecs-service-policy-attachment" {
+  role       = aws_iam_role.ecs-service-role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
+}
+
+# IAM role policy to enable the ECS service interact with the ALB to describe, register, and desregister targets
+resource "aws_iam_policy" "ecs-service-alb-policy" {
+  name   = "ecs-service-alb-policy"
+  policy = file("${path.module}/iam-policies/ecs-service-alb-ops-role.json")
+}
+
+# Attach the policy to enable the ECS service interact with the ALB to the ECS service role
+resource "aws_iam_role_policy_attachment" "ecs-service-alb-policy-attachment" {
+  role       = aws_iam_role.ecs-service-role.name
+  policy_arn = aws_iam_policy.ecs-service-alb-policy.arn
 }

@@ -12,8 +12,8 @@ resource "aws_iam_role" "ecs_instance_role" {
 
 # IAM role policy to grant the necessary permissions for ECS EC2 instances to interact with ECS, ECR, and CloudWatch Logs
 resource "aws_iam_policy" "ecs_ec2_policy" {
-  name        = "ecs-ec2-policy"
-  policy      = file("${path.module}/iam-policies/ecs-ec2-role-policy.json")
+  name   = "ecs-ec2-policy"
+  policy = file("${path.module}/iam-policies/ecs-ec2-role-policy.json")
 }
 
 # Attach the policy for ECS and ECR access
