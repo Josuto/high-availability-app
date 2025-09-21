@@ -31,14 +31,14 @@ jobs:
         run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: infra/deployment/prod/ecs_service
 
-      - name: Get ECS cluster and service names from remote state
-        id: get_names
-        run: |
-          echo "ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name)" >> $GITHUB_ENV
-          echo "ECS_SERVICE_NAME=$(terraform output -raw ecs_service_name)" >> $GITHUB_ENV
-        working-directory: infra/deployment/prod/ecs_service
-        env:
-          TF_IN_AUTOMATION: true
+      # - name: Get ECS cluster and service names from remote state
+      #   id: get_names
+      #   run: |
+      #     echo "ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name)" >> $GITHUB_ENV
+      #     echo "ECS_SERVICE_NAME=$(terraform output -raw ecs_service_name)" >> $GITHUB_ENV
+      #   working-directory: infra/deployment/prod/ecs_service
+      #   env:
+      #     TF_IN_AUTOMATION: true
 
       - name: Scale down ECS service
         run: aws ecs update-service --cluster demo-ecs-cluster --service demo-app-ecs-service --desired-count 0 --force-new-deployment --region ${{ env.AWS_REGION }}
