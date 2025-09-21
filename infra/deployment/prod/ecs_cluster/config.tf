@@ -9,7 +9,7 @@ data "terraform_remote_state" "vpc" {
 
 module "ecs_cluster" {
   source              = "../../../modules/ecs_cluster"
-  cluster_name        = "my-cluster"
+  cluster_name        = "demo-ecs-cluster"
   vpc_id              = data.terraform_remote_state.vpc.outputs.vpc_id
   vpc_private_subnets = data.terraform_remote_state.vpc.outputs.private_subnets
 }

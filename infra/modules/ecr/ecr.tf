@@ -1,6 +1,6 @@
 # Create the app ECR repository
 resource "aws_ecr_repository" "app-ecr-repository" {
-  name = "app-ecr-repository"
+  name = var.ecr_repository_name
 }
 
 # ECR policy to retain only the most recent app image

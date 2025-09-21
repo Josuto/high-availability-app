@@ -27,7 +27,7 @@ jobs:
     env: # required by some steps
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      ECR_REPO_URL: app-ecr-repository-url # Must match that of the output variable at ECR module
+      ECR_REPO_URL: ecr_repository_url # Must match that of the output variable at ECR module
 
     outputs:
       ecr_repository_name: ${{ steps.get-ecr-output.outputs.ecr_repository_name }}
