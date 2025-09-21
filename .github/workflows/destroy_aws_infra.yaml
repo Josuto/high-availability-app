@@ -31,6 +31,12 @@ jobs:
         run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: infra/deployment/prod/ecs_service
 
+      - name: Scale down ECS service
+        run: aws ecs update-service --cluster my-cluster --service my-app --desired-count 0 --force-new-deployment --region ${{ env.AWS_REGION }}
+
+      - name: Wait for the ECS service to become stable
+        run: aws ecs wait services-stable --cluster my-cluster --services my-app --region ${{ env.AWS_REGION }}
+
       - name: Destroy Resources on the routing directory
         run: terraform destroy -var="ecr_app_image=some_non_relevant_value" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
