@@ -38,3 +38,4 @@ AWS ECS is a fully managed container orchestration service that allows to run, s
 - Disallow HTTP access
 - Enable EC2 instance access via AWS SSM 
 - Distinguish prod/dev environments
+- Add tags to every resource to easily find them at the AWS console
