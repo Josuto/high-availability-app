@@ -41,11 +41,9 @@ jobs:
           TF_IN_AUTOMATION: true
 
       - name: Scale down ECS service
-        # run: aws ecs update-service --cluster demo-ecs-cluster --service demo-app-ecs-service --desired-count 0 --force-new-deployment --region ${{ env.AWS_REGION }}
         run: aws ecs update-service --cluster ${{ env.ECS_CLUSTER_NAME }} --service ${{ env.ECS_SERVICE_NAME }} --desired-count 0 --force-new-deployment --region ${{ env.AWS_REGION }}
 
       - name: Wait for the ECS service to become stable
-        # run: aws ecs wait services-stable --cluster demo-ecs-cluster --services demo-app-ecs-service --region ${{ env.AWS_REGION }}
         run: aws ecs wait services-stable --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }} --region ${{ env.AWS_REGION }}
 
       - name: Destroy Resources on the routing directory
