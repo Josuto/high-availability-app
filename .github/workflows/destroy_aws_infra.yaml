@@ -27,20 +27,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Initialize Terraform on the routing directory
-        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra/deployment/prod/ecs_service
-
       - name: Get ECS cluster name from remote state
         id: get_ecs_cluster_name
-        run: echo "ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name)" >> $GITHUB_ENV
+        run: |
+          terraform init -backend-config="region=${{ env.AWS_REGION }}"
+          echo "ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name)" >> $GITHUB_ENV
         working-directory: infra/deployment/prod/ecs_cluster
         env:
           TF_IN_AUTOMATION: true
 
       - name: Get ECS service name from remote state
         id: get_ecs_service_name
-        run: echo "ECS_SERVICE_NAME=$(terraform output -raw ecs_service_name)" >> $GITHUB_ENV
+        run: |
+          terraform init -backend-config="region=${{ env.AWS_REGION }}"
+          echo "ECS_SERVICE_NAME=$(terraform output -raw ecs_service_name)" >> $GITHUB_ENV
         working-directory: infra/deployment/prod/ecs_service
         env:
           TF_IN_AUTOMATION: true
