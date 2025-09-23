@@ -34,8 +34,10 @@ AWS ECS is a fully managed container orchestration service that allows to run, s
 ## TODO
 - Configure EC2 instance auto-scaling
 - How to enable EC2 instances and containers hand-by-hand auto-scaling?
-- Use `host-header` insteand at the ALB rule definition
-- Disallow HTTP access
-- Enable EC2 instance access via AWS SSM 
+- Use `host-header` instead at the ALB rule definition
++ Disallow HTTP access
+  - any HTTP request is now redirected to a HTTPS request
++ Enable EC2 instance access via AWS SSM 
 - Distinguish prod/dev environments
 - Add tags to every resource to easily find them at the AWS console
+- Change name of LogGroup (CloudWatch)
