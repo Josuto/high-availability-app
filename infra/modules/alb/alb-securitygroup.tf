@@ -24,6 +24,10 @@ resource "aws_security_group" "alb" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Project = var.project_name
+  }
 }
 
 # Rule that defines what traffic can come into the ECS tasks/instances. It secures your backend ECS tasks by allowing incoming traffic only from 

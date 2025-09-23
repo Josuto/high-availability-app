@@ -9,6 +9,7 @@ data "terraform_remote_state" "hosted_zone" {
 
 module "ssl" {
   source                   = "../../modules/ssl" 
+  project_name             = "high-availability-app"
   root_domain_name         = "josumartinez.com"
   subject_alternative_name = "*.josumartinez.com"
   hosted_zone_id           = data.terraform_remote_state.hosted_zone.outputs.hosted_zone_id

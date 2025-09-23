@@ -12,6 +12,10 @@ resource "aws_ecs_task_definition" "ecs-service-taskdef" {
     aws_region          = var.aws_region
   })
   task_role_arn         = var.task_role_arn # Specifies the ARN of an IAM role that the ECS tasks will assume. This role grants permissions to the containers (e.g., to write logs to CloudWatch, access S3 buckets, etc.)
+
+  tags = {
+    Project = var.project_name
+  }
 }
 
 # Data source used to retrieve the latest revision number of the task definition. This is particularly useful for ensuring that the 
@@ -21,20 +25,6 @@ data "aws_ecs_task_definition" "ecs-service" {
   task_definition = aws_ecs_task_definition.ecs-service-taskdef.family # Look for the latest active revision of the task definition that matches that family name
   depends_on      = [aws_ecs_task_definition.ecs-service-taskdef] # Depends on the previously defined `ecs-service-taskdef`
 }
-
-# Generic resource that doesn't map to any specific cloud provider resource. It's primarily used for executing arbitrary scripts or, 
-# as in this case, for managing complex dependencies. Particularly, this resource ensures that the ALB has already been instantiated.
-# FIXME: try to delete this resource once the pipeline is completed; the ALB module should be instanciated befrore the ECS service module
-# resource "terraform_data" "alb_exists" {
-#   input = {
-#     alb_name = aws_alb.alb.arn # FIXME: possible source of failure
-#   }
-#   # You might not strictly need the "output" block, but it's good practice for clarity and future extensibility if you ever needed 
-#   # to output data from this resource.
-#   # output = {
-#   #   alb_name_output = terraform_data.alb_exists.input.alb_name
-#   # }
-# }
 
 # This resource manages the desired number of running tasks of a specific task definition within an ECS cluster.
 resource "aws_ecs_service" "ecs-service" {
@@ -53,6 +43,7 @@ resource "aws_ecs_service" "ecs-service" {
     container_port   = var.container_port # The port on the specified container that the load balancer should forward traffic to. Important: This port must be exposed in your `ecs-service.json.tpl` container definition's portMappings
   }
 
-  # FIXME: delete the following line if not required
-  # depends_on = [terraform_data.alb_exists] # Ensure that this ECS service is only created/updated after the ALB is provisioned
+  tags = {
+    Project = var.project_name
+  }
 }

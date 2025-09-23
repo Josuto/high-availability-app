@@ -8,12 +8,20 @@
 resource "aws_iam_role" "ecs_instance_role" {
   name               = "ecs_instance_role"
   assume_role_policy = file("${path.module}/iam-policies/ecs-ec2-role-assumption.json")
+
+  tags = {
+    Project = var.project_name
+  }
 }
 
 # IAM role policy to grant the necessary permissions for ECS EC2 instances to interact with ECS, ECR, and CloudWatch Logs
 resource "aws_iam_policy" "ecs_ec2_policy" {
   name   = "ecs-ec2-policy"
   policy = file("${path.module}/iam-policies/ecs-ec2-role-policy.json")
+
+  tags = {
+    Project = var.project_name
+  }
 }
 
 # Attach the policy for ECS and ECR access
@@ -32,4 +40,8 @@ resource "aws_iam_role_policy_attachment" "ssm_policy_attachment" {
 resource "aws_iam_instance_profile" "ecs_instance_profile" {
   name = "ecs-instance-profile"
   role = aws_iam_role.ecs_instance_role.name
+
+  tags = {
+    Project = var.project_name
+  }
 }

@@ -1,21 +1,23 @@
+variable "project_name" {
+  description = "The name of the project this module belongs to"
+  type        = string
+}
+
 variable "alb_name" {
   description = "Name of the ALB"
   default     = "my-alb" 
 }
 
-# module.vpc.vpc_id
 variable "vpc_id" {
   description = "VPC ID"
   type        = string
 }
 
-# module.vpc.public_subnets
 variable "vpc_public_subnets" {
   description = "The list of existing VPC public subnets"
   type        = list(string) 
 }
 
-# aws_security_group.cluster.id
 variable "ecs_security_group_id" {
   description = "The ID of the ECS security group"
   type        = string
@@ -41,7 +43,6 @@ variable "healthcheck_matcher" {
   default     = "200"
 }
 
-# aws_acm_certificate_validation.certificate_validation.certificate_arn
 variable "acm_certificate_validation_arn" {
   description = "The ARN of the ACM certificate attached to the ALB"
   type        = string

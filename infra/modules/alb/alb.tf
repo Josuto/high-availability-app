@@ -6,6 +6,10 @@ resource "aws_alb" "alb" {
   subnets         = var.vpc_public_subnets # The ALB must be deployed into at least two Availability Zones for high availability
 
   enable_deletion_protection = false # When set to true, prevents the accidental deletion of the ALB
+
+  tags = {
+    Project = var.project_name
+  }
 }
 
 # HTTPS listener
@@ -21,6 +25,10 @@ resource "aws_alb_listener" "alb-https" {
   default_action { # Defines what the listener should do with incoming requests that don't match any specific rules (if you had more complex rules)
     target_group_arn = aws_alb_target_group.ecs-service.arn # Specifies the ARN of the default target group (defines your ECS service's tasks) to which requests will be forwarded
     type             = "forward" # Indicates that the action is to forward the request to the specified target group
+  }
+
+  tags = {
+    Project = var.project_name
   }
 }
 
@@ -39,5 +47,9 @@ resource "aws_alb_listener" "alb-http" {
       protocol    = "HTTPS"  # Specify the protocol to redirect to
       status_code = "HTTP_301" # Use a 301 status code for a permanent redirect. This is good for SEO and tells browsers to cache the redirect.
     }
+  }
+
+  tags = {
+    Project = var.project_name
   }
 }

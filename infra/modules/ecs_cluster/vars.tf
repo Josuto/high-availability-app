@@ -1,3 +1,8 @@
+variable "project_name" {
+  description = "The name of the project this module belongs to"
+  type        = string
+}
+
 variable "cluster_name" {
     description = "Name of the ECS cluster"
     default     = "my-ecs"
@@ -8,13 +13,11 @@ variable "ecs_instance_type" {
     default     = "t2.micro" 
 }
 
-# module.vpc.vpc_id
 variable "vpc_id" {
     description = "VPC ID"
     type        = string
 }
 
-# module.vpc.private_subnets
 variable "vpc_private_subnets" {
     description = "The list of existing VPC private subnets"
     type        = list(string) 

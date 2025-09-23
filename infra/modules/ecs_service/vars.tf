@@ -3,6 +3,11 @@ variable "aws_region" {
   default     = "eu-west-1" 
 }
 
+variable "project_name" {
+  description = "The name of the project this module belongs to"
+  type        = string
+}
+
 variable "container_name" {
   description = "Name of the app container to be deployed"
   default     = "my-app"
@@ -23,7 +28,6 @@ variable "task_role_arn" {
   default     = ""
 }
 
-# aws_ecs_cluster.ecs-cluster.arn
 variable "ecs_cluster_arn" {
   description = "ECS cluster ARN"
   type        = string 
@@ -44,7 +48,6 @@ variable "deployment_maximum_percent" {
   default     = 200
 }
 
-# aws_alb_target_group.ecs-service.id
 variable "alb_target_group_id" {
   description = "The target group to link the ECS service to"
   type        = string

@@ -29,7 +29,8 @@ resource "aws_launch_template" "ecs-launch-template" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "ecs-ec2-container"
+      Name    = "ecs-ec2-container"
+      Project = var.project_name
     }
   }
 }
@@ -49,6 +50,12 @@ resource "aws_autoscaling_group" "ecs-autoscaling-group" {
   tag {
     key                 = "Name"
     value               = "ecs-ec2-container"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "Project"
+    value               = var.project_name
     propagate_at_launch = true
   }
 }

@@ -3,4 +3,8 @@ resource "aws_route53_zone" "domain-zone" {
   name          = var.root_domain_name
   comment       = "Hosted zone for the domain"
   force_destroy = var.force_destroy # do not use this in a production environment
+
+  tags = {
+    Project = var.project_name
+  }
 }

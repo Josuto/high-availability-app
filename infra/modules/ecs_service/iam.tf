@@ -8,6 +8,10 @@
 resource "aws_iam_role" "ecs-service-role" {
   name               = "ecs-service-role"
   assume_role_policy = file("${path.module}/iam-policies/ecs-service-role-assumption.json")
+
+  tags = {
+    Project = var.project_name
+  }
 }
 
 # Attach the AmazonEC2ContainerServiceRole policy to the ECS service role
@@ -20,6 +24,10 @@ resource "aws_iam_role_policy_attachment" "ecs-service-policy-attachment" {
 resource "aws_iam_policy" "ecs-service-alb-policy" {
   name   = "ecs-service-alb-policy"
   policy = file("${path.module}/iam-policies/ecs-service-alb-ops-role.json")
+
+  tags = {
+    Project = var.project_name
+  }
 }
 
 # Attach the policy to enable the ECS service interact with the ALB to the ECS service role

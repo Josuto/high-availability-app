@@ -4,6 +4,10 @@ resource "aws_security_group" "cluster" {
   name        = "${var.cluster_name}-sg"
   vpc_id      = var.vpc_id
   description = "ECS cluster security group"
+
+  tags = {
+    Project = var.project_name
+  }
 }
 
 # Rule that allows all outbound traffic from your ECS cluster's instances/tasks to anywhere on the internet. 

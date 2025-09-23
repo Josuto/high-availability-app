@@ -28,6 +28,7 @@ data "terraform_remote_state" "alb" {
 module "ecs_service" {
   source                 = "../../../modules/ecs_service"
   aws_region             = var.aws_region
+  project_name           = "high-availability-app"
   container_name         = "demo-app"
   ecr_app_image          = var.ecr_app_image
   ecs_task_desired_count = var.ecs_task_desired_count
