@@ -6,6 +6,7 @@ on:
 env:
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
   AWS_REGION: eu-west-1
+  PROJECT_NAME: high-availability-app
   ENVIRONMENT: dev
 
 jobs:
@@ -53,7 +54,7 @@ jobs:
         run: aws ecs wait services-stable --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }} --region ${{ env.AWS_REGION }}
 
       - name: Destroy Resources on the routing directory
-        run: terraform destroy -var="ecr_app_image=some_non_relevant_value" -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=some_non_relevant_value" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
 
   destroy-routing:
@@ -109,7 +110,7 @@ jobs:
         working-directory: infra/deployment/prod/alb
 
       - name: Destroy Resources on the ALB directory
-        run: terraform destroy -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/alb
 
   destroy-ecs-cluster:
@@ -137,7 +138,7 @@ jobs:
         working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Destroy Resources on the ECS directory
-        run: terraform destroy -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
         working-directory: infra/deployment/prod/ecs_cluster
 
   destroy-ssl:
@@ -165,7 +166,7 @@ jobs:
         working-directory: infra/deployment/ssl
 
       - name: Destroy Resources on the SSL directory
-        run: terraform destroy -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
         working-directory: infra/deployment/ssl
 
   destroy-ecr:
@@ -204,7 +205,7 @@ jobs:
           --region ${{ env.AWS_REGION }}
 
       - name: Destroy resources on the ECR directory
-        run: terraform destroy -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
         working-directory: infra/deployment/ecr
 
   destroy-vpc:
@@ -232,5 +233,5 @@ jobs:
         working-directory: infra/deployment/prod/vpc
 
       - name: Destroy Resources on the VPC directory
-        run: terraform destroy -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/vpc

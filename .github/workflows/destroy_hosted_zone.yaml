@@ -71,5 +71,5 @@ jobs:
         working-directory: infra/deployment/backend
 
       - name: Destroy the Terraform state bucket
-        run: terraform destroy -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
         working-directory: infra/deployment/backend
