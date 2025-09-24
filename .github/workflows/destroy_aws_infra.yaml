@@ -6,6 +6,7 @@ on:
 env:
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
   AWS_REGION: eu-west-1
+  ENVIRONMENT: dev
 
 jobs:
   destroy-ecs-service:
@@ -108,7 +109,7 @@ jobs:
         working-directory: infra/deployment/prod/alb
 
       - name: Destroy Resources on the ALB directory
-        run: terraform destroy -var="environment=some_non_relevant_value" -auto-approve
+        run: terraform destroy -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/alb
 
   destroy-ecs-cluster:
@@ -231,5 +232,5 @@ jobs:
         working-directory: infra/deployment/prod/vpc
 
       - name: Destroy Resources on the VPC directory
-        run: terraform destroy -var="environment=some_non_relevant_value" -auto-approve
+        run: terraform destroy -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/vpc
