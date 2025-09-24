@@ -13,7 +13,7 @@ module "vpc" {
 
   tags = {
     Terraform   = "true"
+    Project     = var.project_name
     Environment = var.environment
-    Project     = "high-availability-app"
   }
 }

@@ -3,6 +3,11 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
+variable "project_name" {
+  description = "The name of the project this module belongs to"
+  type        = string
+}
+
 variable "single_nat_gateway" {
   description = "Values for the single_nat_gateway variable based on the running environment"
   default = {

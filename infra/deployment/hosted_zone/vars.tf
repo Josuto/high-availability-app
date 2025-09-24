@@ -1,3 +1,8 @@
+variable "project_name" {
+  description = "The name of the project this module belongs to"
+  type        = string
+}
+
 variable "environment" {
   description = "The environment to deploy to (dev or prod)."
   type        = string

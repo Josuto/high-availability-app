@@ -8,6 +8,7 @@ on:
 env:
   AWS_REGION: eu-west-1
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
+  PROJECT_NAME: high-availability-app
   ENVIRONMENT: dev
 
 jobs:
@@ -56,11 +57,11 @@ jobs:
         working-directory: infra/deployment/ecr
 
       - name: Validate IaC changes on ECR directory
-        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}"
         working-directory: infra/deployment/ecr
 
       - name: Create ECR repository if it does not yet exist
-        run: terraform apply -auto-approve tfplan.binary
+        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
         working-directory: infra/deployment/ecr
 
       - name: Fetch ECR repository name from Terraform output
@@ -105,11 +106,11 @@ jobs:
         working-directory: infra/deployment/ssl
 
       - name: Validate IaC changes on SSL directory
-        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}"
         working-directory: infra/deployment/ssl
 
       - name: Retrieve SSL certificate
-        run: terraform apply -auto-approve tfplan.binary
+        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
         working-directory: infra/deployment/ssl
 
   build-and-push-app-docker-image-to-ecr:
@@ -182,11 +183,11 @@ jobs:
         working-directory: infra/deployment/prod/vpc
 
       - name: Validate IaC changes on the VPC directory
-        run: terraform plan -var="environment=${{ env.ENVIRONMENT }}"
+        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}"
         working-directory: infra/deployment/prod/vpc
 
       - name: Deploy the VPC
-        run: terraform apply -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/vpc
 
   deploy-ecs-cluster:
@@ -221,11 +222,11 @@ jobs:
         working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Validate IaC changes on ECS cluster directory
-        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}"
         working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Deploy the ECS cluster
-        run: terraform apply -auto-approve tfplan.binary
+        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
         working-directory: infra/deployment/prod/ecs_cluster
 
   deploy-alb:
@@ -260,11 +261,11 @@ jobs:
         working-directory: infra/deployment/prod/alb
 
       - name: Validate IaC changes on the ALB directory
-        run: terraform plan -var="environment=${{ env.ENVIRONMENT }}"
+        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}"
         working-directory: infra/deployment/prod/alb
 
       - name: Deploy the ALB
-        run: terraform apply -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/alb
 
   deploy-ecs-service:
@@ -304,11 +305,11 @@ jobs:
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Validate IaC changes on the ECS service directory
-        run: terraform plan -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}"
+        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}"
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Deploy the ECS service
-        run: terraform apply -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -auto-approve
+        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
 
   deploy-routing:

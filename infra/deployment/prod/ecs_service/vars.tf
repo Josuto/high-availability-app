@@ -3,6 +3,11 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
+variable "project_name" {
+  description = "The name of the project this module belongs to"
+  type        = string
+}
+
 variable "ecr_app_image" {
   description = "App ECR image"
   type        = string

@@ -6,6 +6,7 @@ on:
 env:
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
   AWS_REGION: eu-west-1
+  PROJECT_NAME: high-availability-app
   ENVIRONMENT: dev
 
 jobs:
@@ -33,7 +34,7 @@ jobs:
         working-directory: infra/deployment/hosted_zone
 
       - name: Destroy resources on the hosted zone directory
-        run: terraform destroy -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/hosted_zone
 
   destroy-terraform-state-bucket:
