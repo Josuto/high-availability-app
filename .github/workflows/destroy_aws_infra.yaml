@@ -231,5 +231,5 @@ jobs:
         working-directory: infra/deployment/prod/vpc
 
       - name: Destroy Resources on the VPC directory
-        run: terraform destroy -auto-approve
+        run: terraform destroy -var="environment=some_non_relevant_value" -auto-approve
         working-directory: infra/deployment/prod/vpc

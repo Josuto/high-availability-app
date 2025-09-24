@@ -8,6 +8,7 @@ on:
 env:
   AWS_REGION: eu-west-1
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
+  ENVIRONMENT: "dev"
 
 jobs:
   deploy-terraform-state-bucket:
@@ -181,11 +182,11 @@ jobs:
         working-directory: infra/deployment/prod/vpc
 
       - name: Validate IaC changes on the VPC directory
-        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        run: terraform plan -var="environment=${{ env.ENVIRONMENT }}" -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
         working-directory: infra/deployment/prod/vpc
 
       - name: Deploy the VPC
-        run: terraform apply -auto-approve tfplan.binary
+        run: terraform apply -var="environment=${{ env.ENVIRONMENT }}" -auto-approve tfplan.binary
         working-directory: infra/deployment/prod/vpc
 
   deploy-ecs-cluster:
@@ -303,11 +304,11 @@ jobs:
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Validate IaC changes on the ECS service directory
-        run: terraform plan -var="ecr_app_image=${{env.ECR_APP_IMAGE}}"
+        run: terraform plan -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}"
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Deploy the ECS service
-        run: terraform apply -var="ecr_app_image=${{env.ECR_APP_IMAGE}}" -auto-approve
+        run: terraform apply -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
 
   deploy-routing:

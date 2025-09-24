@@ -8,12 +8,12 @@ module "vpc" {
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
   enable_nat_gateway = true # Required to enable private EC2 instance to register into an ECS cluster as well as to access other AWS services (e.g., SSM) and the Internet for updates/patches
-  single_nat_gateway = true # Creates one NAT GW for all AZs (cheaper option in test envs not requiring high-availability); set to false in PROD environments
+  single_nat_gateway = lookup(var.single_nat_gateway, var.environment) # Creates one NAT GW for all AZs (cheaper option in test envs not requiring high-availability); set to false in PROD environments
   enable_vpn_gateway = false
 
   tags = {
     Terraform   = "true"
-    Environment = "dev"
+    Environment = var.environment
     Project     = "high-availability-app"
   }
 }
