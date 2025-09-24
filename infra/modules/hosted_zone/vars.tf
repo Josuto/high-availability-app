@@ -10,5 +10,17 @@ variable "root_domain_name" {
 
 variable "force_destroy" {
   description = "Enable the destruction of the hosted zone"
-  default     = false
+  default = {
+    "dev"  = true
+    "prod" = false
+  }
+}
+
+variable "environment" {
+  description = "The environment to deploy to (dev or prod)."
+  default     = "dev"
+  validation {
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "The environment must be either 'dev' or 'prod'."
+  }
 }

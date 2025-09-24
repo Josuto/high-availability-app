@@ -32,7 +32,7 @@ jobs:
         working-directory: infra/deployment/hosted_zone
 
       - name: Destroy resources on the hosted zone directory
-        run: terraform destroy -auto-approve
+        run: terraform destroy -var="environment=some_non_relevant_value" -auto-approve
         working-directory: infra/deployment/hosted_zone
 
   destroy-terraform-state-bucket:

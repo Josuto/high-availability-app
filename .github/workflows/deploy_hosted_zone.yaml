@@ -6,6 +6,7 @@ on:
 env:
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
   AWS_REGION: eu-west-1
+  ENVIRONMENT: "dev"
 
 jobs:
   deploy-terraform-state-bucket:
@@ -42,9 +43,9 @@ jobs:
         working-directory: infra/deployment/hosted_zone
 
       - name: Validate IaC changes
-        run: terraform plan
+        run: terraform plan -var="environment=${{ env.ENVIRONMENT }}"
         working-directory: infra/deployment/hosted_zone
 
       - name: Create AWS Route53 Hosted Zone
-        run: terraform apply -auto-approve
+        run: terraform apply -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/hosted_zone
