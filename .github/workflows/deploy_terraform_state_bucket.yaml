@@ -18,6 +18,8 @@ on:
 env:
   AWS_REGION: eu-west-1
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
+  PROJECT_NAME: high-availability-app
+  BUCKET_NAME: josumartinez-terraform-state-bucket
 
 jobs:
   deploy-terraform-state-bucket:
@@ -53,7 +55,7 @@ jobs:
           else
             echo "The Terraform state bucket does yet exist. Creating it now."
             terraform init
-            terraform plan -out=tfplan.binary
-            terraform apply -auto-approve tfplan.binary
+            terraform plan -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}"
+            terraform apply -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
           fi
         working-directory: infra/deployment/backend
