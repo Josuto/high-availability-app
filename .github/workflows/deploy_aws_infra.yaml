@@ -8,7 +8,7 @@ on:
 env:
   AWS_REGION: eu-west-1
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
-  ENVIRONMENT: "dev"
+  ENVIRONMENT: dev
 
 jobs:
   deploy-terraform-state-bucket:
