@@ -47,3 +47,20 @@ variable "acm_certificate_validation_arn" {
   description = "The ARN of the ACM certificate attached to the ALB"
   type        = string
 }
+
+variable "enable_deletion_protection" {
+  description = "Values for the ALB's enable_deletion_protection variable based on the running environment"
+  default = {
+    "dev"  = false
+    "prod" = true
+  }
+}
+
+variable "environment" {
+  description = "The environment to deploy to (dev or prod)."
+  default     = "dev"
+  validation {
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "The environment must be either 'dev' or 'prod'."
+  }
+}

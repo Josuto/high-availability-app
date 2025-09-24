@@ -260,11 +260,11 @@ jobs:
         working-directory: infra/deployment/prod/alb
 
       - name: Validate IaC changes on the ALB directory
-        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        run: terraform plan -var="environment=${{ env.ENVIRONMENT }}"
         working-directory: infra/deployment/prod/alb
 
       - name: Deploy the ALB
-        run: terraform apply -auto-approve tfplan.binary
+        run: terraform apply -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/alb
 
   deploy-ecs-service:

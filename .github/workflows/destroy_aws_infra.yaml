@@ -108,7 +108,7 @@ jobs:
         working-directory: infra/deployment/prod/alb
 
       - name: Destroy Resources on the ALB directory
-        run: terraform destroy -auto-approve
+        run: terraform destroy -var="environment=some_non_relevant_value" -auto-approve
         working-directory: infra/deployment/prod/alb
 
   destroy-ecs-cluster:

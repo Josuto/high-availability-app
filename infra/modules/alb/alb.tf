@@ -5,7 +5,7 @@ resource "aws_alb" "alb" {
   security_groups = [aws_security_group.alb.id] # The security groups that are associated with the ALB
   subnets         = var.vpc_public_subnets # The ALB must be deployed into at least two Availability Zones for high availability
 
-  enable_deletion_protection = false # Set to true in PROD environments to prevent the accidental deletion of the ALB
+  enable_deletion_protection = lookup(var.enable_deletion_protection, var.environment) # Set to true in PROD environments to prevent the accidental deletion of the ALB
 
   tags = {
     Project = var.project_name

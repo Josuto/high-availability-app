@@ -29,6 +29,7 @@ module "alb" {
   source                         = "../../../modules/alb"
   project_name                   = "high-availability-app"
   alb_name                       = "demo-alb" 
+  environment                    = var.environment 
   vpc_id                         = data.terraform_remote_state.vpc.outputs.vpc_id
   vpc_public_subnets             = data.terraform_remote_state.vpc.outputs.public_subnets
   ecs_security_group_id          = data.terraform_remote_state.ecs_cluster.outputs.ecs_security_group_id
