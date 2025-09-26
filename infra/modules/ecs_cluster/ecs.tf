@@ -35,12 +35,15 @@ resource "aws_launch_template" "ecs-launch-template" {
   }
 }
 
-# Auto Scaling Group that manages the EC2 instances
+# Auto Scaling Group that manages the EC2 instances registered at the ECS cluster
 resource "aws_autoscaling_group" "ecs-autoscaling-group" {
-  name                 = "${var.cluster_name}-ag"
-  vpc_zone_identifier  = var.vpc_private_subnets # Instructs the ASG to launch all its instances into the private subnets you defined with the VPC module
-  min_size             = 1
-  max_size             = 2
+  name                      = "${var.cluster_name}-ag"
+  vpc_zone_identifier       = var.vpc_private_subnets # Instructs the ASG to launch all its instances into the private subnets you defined with the VPC module
+  min_size                  = var.instance_min_size
+  max_size                  = var.instance_max_size
+  health_check_grace_period = 300 # 5 minutes
+  health_check_type         = "EC2" # ASG relies on the EC2 instance status checks
+  force_delete              = false # Protect against accidental EC2 instance termination (default value)
 
   launch_template {
     id      = aws_launch_template.ecs-launch-template.id
