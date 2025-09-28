@@ -13,3 +13,11 @@ output "alb_dns_name" {
 output "alb_hosted_zone_id" {
   value = module.alb.alb_hosted_zone_id
 }
+
+output "alb_arn_suffix" {
+  value = module.alb.alb_arn_suffix
+}
+
+output "alb_target_group_arn_suffix" {
+  value = module.alb.alb_target_group_arn_suffix
+}
