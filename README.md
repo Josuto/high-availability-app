@@ -32,8 +32,10 @@ AWS ECS is a fully managed container orchestration service that allows to run, s
 ---
 
 ## TODO
-- Configure EC2 instance auto-scaling
-- How to enable EC2 instances and containers hand-by-hand auto-scaling?
++ Configure EC2 instance auto-scaling
++ How to enable EC2 instances and containers hand-by-hand auto-scaling?
+  ~> EC2 instances/containers are scaled out/in based on some ECS capacity planner and some task auto-scaling policy
+  - Add a section in this README on this topic
 - Use `host-header` instead at the ALB rule definition
 + Disallow HTTP access
   ~> any HTTP request is now redirected to a HTTPS request
@@ -41,5 +43,5 @@ AWS ECS is a fully managed container orchestration service that allows to run, s
 + Distinguish prod/dev environments
   ~> decided not to do since it adds an extra layer of complexity when explaining this project
   - Add a section in this README on this topic, explaining how to proceed to prepare the code to create 
-- Add tags to every resource to easily find them at the AWS console
++ Add tags to every resource to easily find them at the AWS console
 - Change name of LogGroup (CloudWatch)
