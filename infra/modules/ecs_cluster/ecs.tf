@@ -61,4 +61,10 @@ resource "aws_autoscaling_group" "ecs-autoscaling-group" {
     value               = var.project_name
     propagate_at_launch = true
   }
+
+  tag { # Required for ECS Capacity Provider Managed Scaling to work
+    key                 = "AmazonECSManaged"
+    value               = "true"
+    propagate_at_launch = true
+  }
 }
