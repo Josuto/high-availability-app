@@ -17,3 +17,8 @@ variable "cpu_alarm_notification_email" {
   description = "The email to notify to when a CPU utilisation alarm goes off"
   default     = "josu.martinez@gmail.com"
 }
+
+variable "ecs_max_utilisation" {
+  description = "Max utilisation of the ECS cluster percentage-wise. The ECS calculates its current utilisation by masuring the total CPU/memory capacity reserved by the running tasks against the total available capacity of all EC2 instances of the cluster"
+  default     = 10
+}

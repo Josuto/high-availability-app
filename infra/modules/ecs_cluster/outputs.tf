@@ -13,3 +13,7 @@ output "ecs_cluster_name" {
 output "autoscaling_group_name" {
   value = aws_autoscaling_group.ecs-autoscaling-group.name
 }
+
+output "autoscaling_group_arn" {
+  value = aws_autoscaling_group.ecs-autoscaling-group.arn
+}

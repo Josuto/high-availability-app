@@ -53,6 +53,11 @@ variable "alb_target_group_id" {
   type        = string
 }
 
+variable "ecs_capacity_provider_name" {
+  description = "The name of the ECS Capacity Provider that enables app auto-scaling"
+  type        = string
+}
+
 variable "log_group" {
   description = "AWS Cloudwatch log group"
   default     = "my-app-lg"

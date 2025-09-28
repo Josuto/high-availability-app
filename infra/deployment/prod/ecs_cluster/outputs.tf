@@ -9,3 +9,7 @@ output "ecs_cluster_arn" {
 output "ecs_security_group_id" {
   value = module.ecs_cluster.ecs_security_group_id
 }
+
+output "ecs_capacity_provider_name" {
+  value = aws_ecs_capacity_provider.ecs_capacity_provider.name
+}

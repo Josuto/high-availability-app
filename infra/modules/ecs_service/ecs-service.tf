@@ -37,7 +37,14 @@ resource "aws_ecs_service" "ecs-service" {
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent # Lower limit of healthy tasks that must be running during deployment so that the service remains available
   deployment_maximum_percent         = var.deployment_maximum_percent # Upper limit of health tasks that must be running during deployment. This helps control the rollout speed and resource consumption during updates
 
-  load_balancer { # Integrates the ECS service with an ALB
+  # Link to the Capacity Provider for EC2 placement
+  capacity_provider_strategy {
+    capacity_provider = var.ecs_capacity_provider_name
+    weight            = 1
+  }
+
+  # Link to the ALB
+  load_balancer { 
     target_group_arn = var.alb_target_group_id # Links this service to a target group defined elsewhere
     container_name   = var.container_name # The name of the container within your task definition that exposes the port to the load balancer. Important: The name property inside your `ecs-service.json.tpl` container definition must match this name
     container_port   = var.container_port # The port on the specified container that the load balancer should forward traffic to. Important: This port must be exposed in your `ecs-service.json.tpl` container definition's portMappings
