@@ -49,6 +49,10 @@ resource "aws_autoscaling_group" "ecs-autoscaling-group" {
     id      = aws_launch_template.ecs-launch-template.id
     version = "$Latest"
   }
+
+  # Prerequisite for the ECS Capacity Provider's managed protection: Flags all newly launched EC2 instances in that ASG to prevent them 
+  # from being terminated during a scale-in event
+  protect_from_scale_in = true
   
   tag {
     key                 = "Name"
@@ -66,5 +70,10 @@ resource "aws_autoscaling_group" "ecs-autoscaling-group" {
     key                 = "AmazonECSManaged"
     value               = "true"
     propagate_at_launch = true
+  }
+
+  # Allow the ECS Capacity Provider to maintain dynamic control over the number of EC2 instances (the cluster size)
+  lifecycle {
+    ignore_changes = [desired_capacity]
   }
 }
