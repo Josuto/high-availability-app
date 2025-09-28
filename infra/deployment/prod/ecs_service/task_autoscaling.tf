@@ -5,7 +5,7 @@ resource "aws_appautoscaling_target" "ecs_target" {
   
   # Resource ID is the specific ECS Service ARN
   # resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.image_processor.name}"
-  resource_id        = "service/${data.terraform_remote_state.ecs_cluster.outputs.autoscaling_group_name}/${module.ecs_service.ecs_service_name}"
+  resource_id        = "service/${data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster_name}/${module.ecs_service.ecs_service_name}"
   
   # Set the Task Boundaries
   min_capacity       = var.ecs_task_min_capacity # Minimum tasks running (Low-traffic baseline)
