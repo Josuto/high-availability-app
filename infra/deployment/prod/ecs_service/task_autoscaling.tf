@@ -10,6 +10,10 @@ resource "aws_appautoscaling_target" "ecs_target" {
   # Set the Task Boundaries
   min_capacity       = var.ecs_task_min_capacity # Minimum tasks running (Low-traffic baseline)
   max_capacity       = var.ecs_task_max_capacity # Maximum tasks allowed (High-traffic safety limit)
+
+  tags = {
+    Project = var.project_name
+  }
 }
 
 # 2. Define the Target Tracking Scaling Policy (The CORE of Service Scaling)
