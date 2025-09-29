@@ -30,5 +30,5 @@ variable "ecs_task_max_capacity" {
 
 variable "target_performance_goal" {
   description = "Amount of requests per minute that a container can handle without seeing performance degradation"
-  default     = 20
+  default     = 100
 }
