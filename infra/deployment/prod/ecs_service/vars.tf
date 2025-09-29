@@ -15,20 +15,20 @@ variable "ecr_app_image" {
 
 variable "ecs_task_desired_count" {
   description = "The number of tasks that you want to run for this service"
-  default     = 2
+  default     = 4
 }
 
 variable "ecs_task_min_capacity" {
   description = "The min number of tasks running at the ECS cluster"
-  default     = 1
+  default     = 2
 }
 
 variable "ecs_task_max_capacity" {
   description = "The max number of tasks running at the ECS cluster"
-  default     = 2
+  default     = 8
 }
 
 variable "target_performance_goal" {
   description = "Amount of requests per minute that a container can handle without seeing performance degradation"
-  default     = 100
+  default     = 20
 }
