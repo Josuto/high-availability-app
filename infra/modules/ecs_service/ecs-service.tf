@@ -8,9 +8,15 @@ resource "aws_ecs_task_definition" "ecs-service-taskdef" {
     ecr_app_image       = var.ecr_app_image,
     container_name      = var.container_name,
     container_port      = var.container_port,
+    cpu_limit           = var.cpu_limit
+    memory_limit        = var.memory_limit
     log_group           = var.log_group,
     aws_region          = var.aws_region
   })
+
+  cpu                   = var.cpu_limit # Limit CPU usage at task level
+  memory                = var.memory_limit # Limit memory usage at task level
+
   task_role_arn         = var.task_role_arn # Specifies the ARN of an IAM role that the ECS tasks will assume. This role grants permissions to the containers (e.g., to write logs to CloudWatch, access S3 buckets, etc.)
 
   tags = {

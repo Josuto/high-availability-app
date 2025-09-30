@@ -3,8 +3,8 @@
     "name": "${container_name}",
     "image": "${ecr_app_image}",
     "essential": true,
-    "memory": 256,
-    "cpu": 256,
+    "memory": ${memory_limit},
+    "cpu": ${cpu_limit},
     "portMappings": [
         {
             "containerPort": ${container_port},

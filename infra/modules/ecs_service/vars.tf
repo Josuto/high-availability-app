@@ -18,6 +18,16 @@ variable "container_port" {
   default     = 3000 
 }
 
+variable "cpu_limit" {
+  description = "The limit of usage of CPU on a task/container"
+  default     = 256
+}
+
+variable "memory_limit" {
+  description = "The limit of usage of memory on a task/container"
+  default     = 256
+}
+
 variable "ecr_app_image" {
   description = "App ECR Image. Specified at the infra creation/destruction pipelines"
   type        = string
