@@ -25,7 +25,7 @@ variable "cpu_limit" {
 
 variable "memory_limit" {
   description = "The limit of usage of memory on a task/container"
-  default     = 256
+  default     = 128
 }
 
 variable "ecr_app_image" {
