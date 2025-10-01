@@ -4,7 +4,7 @@ resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
   name = "app_ecs_capacity_provider"
 
   auto_scaling_group_provider {
-    auto_scaling_group_arn         = module.ecs_cluster.autoscaling_group_arn # aws_autoscaling_group.ecs_asg.arn
+    auto_scaling_group_arn         = module.ecs_cluster.autoscaling_group_arn
     managed_termination_protection = "ENABLED" # Prevent terminating instances with running tasks
 
     managed_scaling {
@@ -19,7 +19,7 @@ resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
 }
 
 resource "aws_ecs_cluster_capacity_providers" "main" {
-  cluster_name       = module.ecs_cluster.ecs_cluster_name # aws_ecs_cluster.main.name
+  cluster_name       = module.ecs_cluster.ecs_cluster_name
   capacity_providers = [aws_ecs_capacity_provider.ecs_capacity_provider.name]
   
   # Default strategy: use the EC2 Capacity Provider

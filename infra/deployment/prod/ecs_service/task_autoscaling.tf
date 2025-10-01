@@ -4,7 +4,6 @@ resource "aws_appautoscaling_target" "ecs_target" {
   scalable_dimension = "ecs:service:DesiredCount"
   
   # Resource ID is the specific ECS Service ARN
-  # resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.image_processor.name}"
   resource_id        = "service/${data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster_name}/${module.ecs_service.ecs_service_name}"
   
   # Set the Task Boundaries
@@ -36,7 +35,6 @@ resource "aws_appautoscaling_policy" "alb_request_scaling_policy" {
       predefined_metric_type = "ALBRequestCountPerTarget" # Scale out/in strategy
       
       # Link to the specific ALB Target Group
-      # resource_label = "${aws_lb.main.arn_suffix}/${aws_lb_target_group.main.arn_suffix}"
       resource_label         = "${data.terraform_remote_state.alb.outputs.alb_arn_suffix}/${data.terraform_remote_state.alb.outputs.alb_target_group_arn_suffix}"
     }
   }
