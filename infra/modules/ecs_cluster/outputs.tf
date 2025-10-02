@@ -10,10 +10,6 @@ output "ecs_security_group_id" {
   value = aws_security_group.cluster.id
 }
 
-# output "autoscaling_group_name" {
-#   value = aws_autoscaling_group.ecs-autoscaling-group.name
-# }
-
 output "autoscaling_group_arn" {
   value = aws_autoscaling_group.ecs-autoscaling-group.arn
 }
