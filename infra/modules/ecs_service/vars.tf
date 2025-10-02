@@ -72,3 +72,28 @@ variable "log_group" {
   description = "AWS Cloudwatch log group"
   default     = "my-app-lg"
 }
+
+variable "ordered_placement_strategy_type" {
+  description = "Strategy that defines how to place tasks on the ECS cluster EC2 instances"
+  default = {
+    "dev"  = "binpack" # pack tasks onto as few instances as possible (saves cost)
+    "prod" = "spread" # spread by AZ, instance, or any attribute
+  }
+}
+
+variable "ordered_placement_strategy_field" {
+  description = "Strategy that defines how to place tasks on the ECS cluster EC2 instances"
+  default = {
+    "dev"  = "cpu" # place new tasks on the instance with the least available CPU that can still run the task
+    "prod" = "attribute:ecs.availability-zone" # spread by AZ
+  }
+}
+
+variable "environment" {
+  description = "The environment to deploy to (dev or prod)."
+  default     = "dev"
+  validation {
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "The environment must be either 'dev' or 'prod'."
+  }
+}

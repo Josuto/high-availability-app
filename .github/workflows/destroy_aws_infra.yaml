@@ -54,7 +54,7 @@ jobs:
         run: aws ecs wait services-stable --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }} --region ${{ env.AWS_REGION }}
 
       - name: Destroy Resources on the routing directory
-        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=some_non_relevant_value" -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=some_non_relevant_value" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
 
   destroy-routing:
@@ -138,7 +138,7 @@ jobs:
         working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Destroy Resources on the ECS directory
-        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/ecs_cluster
 
   destroy-ssl:

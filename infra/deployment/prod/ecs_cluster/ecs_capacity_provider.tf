@@ -9,7 +9,7 @@ resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
 
     managed_scaling {
       status          = "ENABLED"
-      target_capacity = var.ecs_max_utilisation # ECS aims to keep cluster utilization at the given percentage
+      target_capacity = lookup(var.ecs_max_utilisation, var.environment) # ECS aims to keep cluster utilization at the given percentage
     }
   }
 

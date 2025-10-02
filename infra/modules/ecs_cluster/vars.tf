@@ -32,3 +32,20 @@ variable "instance_max_size" {
   description = "The maximum number of EC2 instances the ASG is allowed to launch"
   default     = 2
 }
+
+variable "protect_from_scale_in" {
+  description = "It true, the ASG will not terminate any scale-in protected EC2 instance"
+  default = {
+    "dev"  = false
+    "prod" = true
+  }
+}
+
+variable "environment" {
+  description = "The environment to deploy to (dev or prod)."
+  default     = "dev"
+  validation {
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "The environment must be either 'dev' or 'prod'."
+  }
+}

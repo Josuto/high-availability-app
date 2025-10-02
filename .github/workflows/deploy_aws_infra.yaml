@@ -222,11 +222,11 @@ jobs:
         working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Validate IaC changes on ECS cluster directory
-        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}"
+        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}"
         working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Deploy the ECS cluster
-        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
+        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/ecs_cluster
 
   deploy-alb:
@@ -305,11 +305,11 @@ jobs:
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Validate IaC changes on the ECS service directory
-        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}"
+        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -var="environment=${{ env.ENVIRONMENT }}"
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Deploy the ECS service
-        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -auto-approve
+        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
 
   deploy-routing:

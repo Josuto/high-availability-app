@@ -32,3 +32,12 @@ variable "target_performance_goal" {
   description = "Amount of requests per minute that a container can handle without seeing performance degradation"
   default     = 100
 }
+
+variable "environment" {
+  description = "The environment to deploy to (dev or prod)."
+  type        = string
+  validation {
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "The environment must be either 'dev' or 'prod'."
+  }
+}
