@@ -6,7 +6,7 @@ variable "project_name" {
 variable "ecs_max_utilisation" {
   description = "Max utilisation of the ECS cluster percentage-wise. The ECS calculates its current utilisation by masuring the total CPU/memory capacity reserved by the running tasks against the total available capacity of all EC2 instances of the cluster"
   default = {
-    "dev"  = 100
+    "dev"  = 50
     "prod" = 75
   }
 }

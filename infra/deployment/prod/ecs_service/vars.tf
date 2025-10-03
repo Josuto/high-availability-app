@@ -25,12 +25,12 @@ variable "ecs_task_min_capacity" {
 
 variable "ecs_task_max_capacity" {
   description = "The max number of tasks running at the ECS cluster"
-  default     = 8
+  default     = 12
 }
 
 variable "target_performance_goal" {
   description = "Amount of requests per minute that a container can handle without seeing performance degradation"
-  default     = 25
+  default     = 15
 }
 
 variable "environment" {
