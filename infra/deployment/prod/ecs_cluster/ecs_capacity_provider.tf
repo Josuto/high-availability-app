@@ -5,7 +5,7 @@ resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
 
   auto_scaling_group_provider {
     auto_scaling_group_arn         = module.ecs_cluster.autoscaling_group_arn
-    managed_termination_protection = "ENABLED" # Prevent terminating instances with running tasks
+    managed_termination_protection = lookup(var.managed_termination_protection_setting, var.environment)
 
     managed_scaling {
       status          = "ENABLED"

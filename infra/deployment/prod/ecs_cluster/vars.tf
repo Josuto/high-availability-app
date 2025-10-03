@@ -11,6 +11,14 @@ variable "ecs_max_utilisation" {
   }
 }
 
+variable "managed_termination_protection_setting" {
+  description = "When enabled, prevents the ASG from terminating an instance that is currently running one or more tasks"
+  default = {
+    "dev"  = "DISABLED" # Must be DISABLED when ASG protect_from_scale_in is false
+    "prod" = "ENABLED"  # Can be ENABLED when ASG protect_from_scale_in is true
+  }
+}
+
 variable "environment" {
   description = "The environment to deploy to (dev or prod)."
   default     = "dev"
