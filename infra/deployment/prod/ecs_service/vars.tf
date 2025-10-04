@@ -25,12 +25,12 @@ variable "ecs_task_min_capacity" {
 
 variable "ecs_task_max_capacity" {
   description = "The max number of tasks running at the ECS cluster"
-  default     = 12
+  default     = 16 # 4 max EC2 instances (see AGS config) x 4 tasks per instance
 }
 
 variable "target_performance_goal" {
   description = "Amount of requests per minute that a container can handle without seeing performance degradation"
-  default     = 15
+  default     = 100
 }
 
 variable "environment" {
