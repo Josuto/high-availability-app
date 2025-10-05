@@ -8,7 +8,7 @@
     "portMappings": [
         {
             "containerPort": ${container_port},
-            "hostPort": 0
+            "protocol": "tcp"
         }
     ],
     "logConfiguration": {

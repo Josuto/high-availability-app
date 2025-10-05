@@ -13,13 +13,14 @@ resource "aws_alb_target_group" "ecs-service" {
   port                 = var.container_port # Port on which the targets in this target group are listening for traffic forwarded by the ALB
   protocol             = "HTTP" # Communication protocol used between the ALB and the targets in this group
   vpc_id               = var.vpc_id # The targets registered with this target group must reside within this VPC
+  target_type          = "ip"   # Critical for 'awsvpc' aws_ecs_task_definition network mode
   deregistration_delay = var.deregistration_delay # This is the amount seconds for the ALB to wait before completing the deregistration of a target. During this time, the ALB stops sending new requests to the target, but it continues to allow existing in-flight requests to complete. This helps gracefully drain connections from targets that are being stopped or replaced
 
   health_check { # The health check parameters that the ALB uses to monitor the health of the registered targets. If a target fails the health checks, the ALB stops sending traffic to it until it becomes healthy again
     healthy_threshold   = 3 # The number of consecutive successful health checks required for a target to be considered healthy
     unhealthy_threshold = 3 # The number of consecutive successful health checks required for a target to be considered unhealthy
     protocol            = "HTTP" # The protocol to use for health checks
-    path                = "/health" # Path used by the ALB to make requests on each target
+    path                = var.health_check_path # Path used by the ALB to make requests on each target
     interval            = 300 # Seconds between health checks
     matcher             = var.healthcheck_matcher # The expected HTTP response code or codes for a successful health check e.g., 200
   }

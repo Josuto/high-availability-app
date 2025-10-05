@@ -1,6 +1,6 @@
 # ALB security group. It defines the ALB's "Front Door".
 resource "aws_security_group" "alb" {
-  name        = "my-alb-sg"
+  name        = "alb-sg"
   vpc_id      = var.vpc_id
   description = "The ALB security group."
 
@@ -28,15 +28,4 @@ resource "aws_security_group" "alb" {
   tags = {
     Project = var.project_name
   }
-}
-
-# Rule that defines what traffic can come into the ECS tasks/instances. It secures your backend ECS tasks by allowing incoming traffic only from 
-# your trusted ALB, ensuring your containers aren't directly exposed to the internet on their dynamic ports
-resource "aws_security_group_rule" "cluster-allow-alb" {
-  security_group_id        = var.ecs_security_group_id
-  type                     = "ingress"
-  from_port                = 32768 # Assign a dynamic port to each container running on an EC2 instance. Such ports are picked from 32768-61000
-  to_port                  = 61000
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.alb.id
 }

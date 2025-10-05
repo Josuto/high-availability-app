@@ -18,11 +18,6 @@ variable "vpc_public_subnets" {
   type        = list(string) 
 }
 
-variable "ecs_security_group_id" {
-  description = "The ID of the ECS security group"
-  type        = string
-}
-
 variable "container_name" {
   description = "Name of the app container to be deployed"
   default     = "my-app"
@@ -36,6 +31,11 @@ variable "container_port" {
 variable "deregistration_delay" {
   description = "The amount seconds for the ALB to wait before completing the deregistration of a target"
   default     = 30
+}
+
+variable "health_check_path" {
+  description = "The path to the app health check endpoint"
+  default     = "/health"
 }
 
 variable "healthcheck_matcher" {

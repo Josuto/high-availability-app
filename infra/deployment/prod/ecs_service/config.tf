@@ -25,6 +25,15 @@ data "terraform_remote_state" "alb" {
   }
 }
 
+data "terraform_remote_state" "vpc" {
+  backend = "s3"
+  config = {
+    bucket = "josumartinez-terraform-state-bucket"
+    key    = "deployment/prod/vpc/terraform.tfstate"
+    # region = "eu-west-1" # When omitted, that of the provider is taken
+  }
+}
+
 module "ecs_service" {
   source                     = "../../../modules/ecs_service"
   container_name             = "demo-app"
@@ -36,4 +45,7 @@ module "ecs_service" {
   ecs_cluster_arn            = data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster_arn
   ecs_capacity_provider_name = data.terraform_remote_state.ecs_cluster.outputs.ecs_capacity_provider_name
   alb_target_group_id        = data.terraform_remote_state.alb.outputs.alb_target_group_id
+  alb_security_group_id      = data.terraform_remote_state.alb.outputs.alb_security_group_id
+  vpc_id                     = data.terraform_remote_state.vpc.outputs.vpc_id
+  vpc_private_subnets        = data.terraform_remote_state.vpc.outputs.private_subnets
 }

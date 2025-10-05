@@ -63,9 +63,24 @@ variable "alb_target_group_id" {
   type        = string
 }
 
+variable "alb_security_group_id" {
+  description = "The ID of the ALB's security group"
+  type        = string
+}
+
 variable "ecs_capacity_provider_name" {
   description = "The name of the ECS Capacity Provider that enables app auto-scaling"
   type        = string
+}
+
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
+}
+
+variable "vpc_private_subnets" {
+  description = "The list of existing VPC private subnets"
+  type        = list(string) 
 }
 
 variable "log_group" {
