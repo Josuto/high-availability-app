@@ -41,7 +41,6 @@ resource "aws_ecs_service" "ecs-service" {
   task_definition                    = "${aws_ecs_task_definition.ecs-service-taskdef.family}:${max("${aws_ecs_task_definition.ecs-service-taskdef.revision}", "${data.aws_ecs_task_definition.ecs-service.revision}")}"
   iam_role                           = aws_iam_role.ecs-service-role.arn # IAM role that grants the ECS service permissions to call other AWS services on your behalf (e.g., registering tasks with the load balancer, interacting with CloudWatch logs)
   desired_count                      = var.ecs_task_desired_count # The number of tasks that you want to run for this service. ECS will automatically maintain this number
-  launch_type                        = "EC2"
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent # Lower limit of healthy tasks that must be running during deployment so that the service remains available
   deployment_maximum_percent         = var.deployment_maximum_percent # Upper limit of health tasks that must be running during deployment. This helps control the rollout speed and resource consumption during updates
 
