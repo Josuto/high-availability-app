@@ -8,7 +8,8 @@ resource "aws_ecs_task_definition" "ecs-service-taskdef" {
   requires_compatibilities = ["EC2"]
   cpu                      = var.cpu_limit # Limit CPU usage at task level
   memory                   = var.memory_limit # Limit memory usage at task level
-  task_role_arn            = var.task_role_arn # Specifies the ARN of an IAM role that the ECS tasks will assume. This role grants permissions to the containers (e.g., to write logs to CloudWatch, access S3 buckets, etc.)
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn # ECS agent IAM role so that ECS can run the task (pull image from ECR, write logs to CloudWatch)
+  task_role_arn            = var.task_role_arn # App IAM role if the app needs AWS access e.g., write logs to CloudWatch, access S3 buckets, etc.
 
   container_definitions = templatefile("${path.module}/ecs-service.json.tpl", { # It takes the dynamically generated JSON string from the given TPL and uses it to define the containers that will run as part of this task
     ecr_app_image       = var.ecr_app_image,
@@ -39,7 +40,6 @@ resource "aws_ecs_service" "ecs-service" {
   cluster                            = var.ecs_cluster_arn # Associates this service with a specific ECS cluster
   # This construct ensures that the ECS service always points to the most current active revision of the task definition within that family
   task_definition                    = "${aws_ecs_task_definition.ecs-service-taskdef.family}:${max("${aws_ecs_task_definition.ecs-service-taskdef.revision}", "${data.aws_ecs_task_definition.ecs-service.revision}")}"
-  iam_role                           = aws_iam_role.ecs-service-role.arn # IAM role that grants the ECS service permissions to call other AWS services on your behalf (e.g., registering tasks with the load balancer, interacting with CloudWatch logs)
   desired_count                      = var.ecs_task_desired_count # The number of tasks that you want to run for this service. ECS will automatically maintain this number
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent # Lower limit of healthy tasks that must be running during deployment so that the service remains available
   deployment_maximum_percent         = var.deployment_maximum_percent # Upper limit of health tasks that must be running during deployment. This helps control the rollout speed and resource consumption during updates

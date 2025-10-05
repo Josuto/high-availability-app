@@ -34,7 +34,7 @@ variable "ecr_app_image" {
 }
 
 variable "task_role_arn" {
-  description = "Specifies the ARN of an IAM role that the ECS tasks will assume"
+  description = "Specifies the ARN of an IAM role that the app will assume"
   default     = ""
 }
 
