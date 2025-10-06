@@ -11,8 +11,6 @@ resource "aws_security_group" "cluster" {
 }
 
 # Rule that allows all outbound traffic from your ECS cluster's instances/tasks to anywhere on the internet. 
-# FIXME: For highly secure environments, you might later restrict this to specific CIDR blocks or endpoints (e.g., VPC Endpoints for AWS services) 
-# to follow the principle of least privilege.
 resource "aws_security_group_rule" "cluster-egress" {
   security_group_id = aws_security_group.cluster.id
   type              = "egress"

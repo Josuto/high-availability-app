@@ -8,6 +8,10 @@ resource "aws_security_group" "ecs_tasks" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Project = var.project_name
+  }
 }
 
 # Rule to ensure that tasks only accept traffic from the ALB, not from the internet directly.
