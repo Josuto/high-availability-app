@@ -7,6 +7,12 @@ resource "aws_ecr_repository" "app-ecr-repository" {
   }
 }
 
+# Define a local variable for the tag prefix based on the environment being deployed
+# This enables the policy to look for tags relevant to the current environment, e.g., 'prod-' or 'dev-'
+locals {
+  env_tag_prefix = "${var.environment}-"
+}
+
 # ECR policy to retain only the most recent app image
 resource "aws_ecr_lifecycle_policy" "ecr_policy" {
   repository = aws_ecr_repository.app-ecr-repository.name
@@ -32,6 +38,7 @@ resource "aws_ecr_lifecycle_policy" "ecr_policy" {
         "description" : "Retain max tagged images based on the environment setting.",
         "selection" : {
           "tagStatus" : "tagged",
+          "tagPrefixList" : [locals.env_tag_prefix],
           "countType" : "imageCountMoreThan",
           "countNumber" : lookup(var.image_retention_max_count, var.environment)
         },

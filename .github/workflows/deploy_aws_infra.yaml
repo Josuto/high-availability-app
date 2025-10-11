@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ECR_APP_IMAGE: ${{ needs.deploy-ecr.outputs.ecr_repository_name }}:${{ github.sha }}
+      ECR_APP_IMAGE: ${{ needs.deploy-ecr.outputs.ecr_repository_name }}:${{ env.ENVIRONMENT }}-${{ github.sha }}
 
     steps:
       - name: Checkout code from the repository
