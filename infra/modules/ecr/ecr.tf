@@ -18,8 +18,8 @@ resource "aws_ecr_lifecycle_policy" "ecr_policy" {
         "description" : "Expire all untagged images, keeping the one newest untagged image.",
         "selection" : {
           "tagStatus" : "untagged",
-          "countType" : "sinceImagePushed",
-          "countNumber" : 1
+          "countType" : "imageCountMoreThan",
+          "countNumber" : 1 // Keep 1 untagged image, delete the rest
         },
         "action" : {
           "type" : "expire"
