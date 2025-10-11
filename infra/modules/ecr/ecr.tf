@@ -38,7 +38,7 @@ resource "aws_ecr_lifecycle_policy" "ecr_policy" {
         "description" : "Retain max tagged images based on the environment setting.",
         "selection" : {
           "tagStatus" : "tagged",
-          "tagPrefixList" : [locals.env_tag_prefix],
+          "tagPrefixList" : [local.env_tag_prefix],
           "countType" : "imageCountMoreThan",
           "countNumber" : lookup(var.image_retention_max_count, var.environment)
         },
