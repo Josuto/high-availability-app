@@ -91,16 +91,16 @@ variable "log_group" {
 variable "ordered_placement_strategy_type" {
   description = "Strategy that defines how to place tasks on the ECS cluster EC2 instances"
   default = {
-    "dev"  = "binpack" # pack tasks onto as few instances as possible (saves cost)
-    "prod" = "spread" # spread by AZ, instance, or any attribute
+    "dev"  = ["binpack"] # pack tasks onto as few instances as possible (saves cost)
+    "prod" = ["spread", "spread"] # first spread by AZ and then by EC2 instance
   }
 }
 
 variable "ordered_placement_strategy_field" {
   description = "Strategy that defines how to place tasks on the ECS cluster EC2 instances"
   default = {
-    "dev"  = "cpu" # place new tasks on the instance with the least available CPU that can still run the task
-    "prod" = "attribute:ecs.availability-zone" # spread by AZ
+    "dev"  = ["cpu"] # place new tasks on the instance with the least available CPU that can still run the task (single strategy)
+    "prod" = ["attribute:ecs.availability-zone", "attribute:instanceId"] # spread by AZ ad then by EC2 instance (two-layer strategy)
   }
 }
 
