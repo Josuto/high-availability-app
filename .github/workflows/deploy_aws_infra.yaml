@@ -119,9 +119,17 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ECR_APP_IMAGE: '${{ needs.deploy-ecr.outputs.ecr_repository_name }}:${{ env.ENVIRONMENT }}-${{ github.sha }}'
+      ECR_APP_IMAGE: ''
 
     steps:
+      - name: Set Full ECR Image Tag
+        id: set-tag
+        run: |
+          # Required as workaround for impossibility to extract value of env.ENVIRONMENT at definition of env.ECR_APP_IMAGE
+          REPO_URL="${{ needs.deploy-ecr.outputs.ecr_repository_name }}"
+          FULL_IMAGE="${REPO_URL}:${{ env.ENVIRONMENT }}-${{ github.sha }}"
+          echo "ECR_APP_IMAGE=$FULL_IMAGE" >> $GITHUB_ENV
+
       - name: Checkout code from the repository
         uses: actions/checkout@v4
 
