@@ -68,7 +68,6 @@ jobs:
         id: get-ecr-output # make the output available to other jobs
         run: |
           ecr_repo_url=$(terraform output -raw ${{ env.ECR_REPO_URL }})
-          echo "Debug: ECR repo URL is: $ecr_repo_url"
           echo "ecr_repository_name=$ecr_repo_url" >> $GITHUB_OUTPUT
         working-directory: infra/deployment/ecr
         env:
