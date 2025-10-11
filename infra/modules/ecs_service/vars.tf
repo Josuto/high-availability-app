@@ -88,19 +88,29 @@ variable "log_group" {
   default     = "my-app-lg"
 }
 
-variable "ordered_placement_strategy_type" {
-  description = "Strategy that defines how to place tasks on the ECS cluster EC2 instances"
+variable "ordered_placement_strategies" {
+  description = "A map of placement strategies (type and field) to apply, keyed by environment (dev/prod)."
+  type = map(list(object({
+    type  = string
+    field = string
+  })))
   default = {
-    "dev"  = ["binpack"] # pack tasks onto as few instances as possible (saves cost)
-    "prod" = ["spread", "spread"] # first spread by AZ and then by EC2 instance
-  }
-}
-
-variable "ordered_placement_strategy_field" {
-  description = "Strategy that defines how to place tasks on the ECS cluster EC2 instances"
-  default = {
-    "dev"  = ["cpu"] # place new tasks on the instance with the least available CPU that can still run the task (single strategy)
-    "prod" = ["attribute:ecs.availability-zone", "attribute:instanceId"] # spread by AZ ad then by EC2 instance (two-layer strategy)
+    "dev" = [
+      {
+        type  = "binpack" # Pack tasks onto as few instances as possible (saves cost)
+        field = "cpu" # Spread by least available CPU (Cost Optimization)
+      }
+    ],
+    "prod" = [
+      {
+        type  = "spread"
+        field = "attribute:ecs.availability-zone" # 1st Layer: Spread by AZ (Fault Tolerance)
+      },
+      {
+        type  = "spread"
+        field = "attribute:instanceId" # 2nd Layer: Spread by EC2 Instance ID (Single-Instance Failure Protection)
+      }
+    ]
   }
 }
 

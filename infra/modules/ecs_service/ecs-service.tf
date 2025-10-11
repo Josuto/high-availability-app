@@ -44,10 +44,15 @@ resource "aws_ecs_service" "ecs-service" {
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent # Lower limit of healthy tasks that must be running during deployment so that the service remains available
   deployment_maximum_percent         = var.deployment_maximum_percent # Upper limit of health tasks that must be running during deployment. This helps control the rollout speed and resource consumption during updates
 
-  # List of rules ECS applies in order when deciding task placement in the EC2 instances
-  ordered_placement_strategy {
-    type  = lookup(var.ordered_placement_strategy_type, var.environment)
-    field = lookup(var.ordered_placement_strategy_field, var.environment)
+  # List of rules ECS applies in order when deciding task placement in the EC2 instances based on environment
+  dynamic "ordered_placement_strategy" {
+    # Select the list of strategies for the current environment ("dev" or "prod")
+    for_each = var.ordered_placement_strategies[var.environment]
+    
+    content {
+      type  = ordered_placement_strategy.value.type
+      field = ordered_placement_strategy.value.field
+    }
   }
 
   # Link to the Capacity Provider for EC2 placement
