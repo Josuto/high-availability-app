@@ -57,11 +57,11 @@ jobs:
         working-directory: infra/deployment/ecr
 
       - name: Validate IaC changes on ECR directory
-        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}"
+        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}"
         working-directory: infra/deployment/ecr
 
       - name: Create ECR repository if it does not yet exist
-        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
+        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/ecr
 
       - name: Fetch ECR repository name from Terraform output

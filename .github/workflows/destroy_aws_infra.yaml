@@ -205,7 +205,7 @@ jobs:
           --region ${{ env.AWS_REGION }}
 
       - name: Destroy resources on the ECR directory
-        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
+        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
         working-directory: infra/deployment/ecr
 
   destroy-vpc:

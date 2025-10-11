@@ -14,15 +14,29 @@ resource "aws_ecr_lifecycle_policy" "ecr_policy" {
   policy = jsonencode({
     rules = [
       {
-        rulePriority = 1
-        description  = "Retain only the most recent app image"
-        selection = {
-          tagStatus    = "any"
-          countType    = "imageCountMoreThan"
-          countNumber  = 1
+        "rulePriority" : 1,
+        "description" : "Expire all untagged images, keeping the one newest untagged image.",
+        "selection" : {
+          "tagStatus" : "untagged",
+          "countType" : "sinceImagePushed",
+          "countNumber" : 1
+        },
+        "action" : {
+          "type" : "expire"
         }
-        action = {
-          type = "expire"
+      },
+      # Note: This rule targets ALL tagged images and enforces the count.
+      # You could add more explicit rules here for 'dev-' and 'prod-' prefixes if needed.
+      {
+        "rulePriority" : 2,
+        "description" : "Retain max tagged images based on the environment setting.",
+        "selection" : {
+          "tagStatus" : "tagged",
+          "countType" : "imageCountMoreThan",
+          "countNumber" : lookup(var.image_retention_max_count, var.environment)
+        },
+        "action" : {
+          "type" : "expire"
         }
       }
     ]
