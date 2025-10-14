@@ -58,26 +58,26 @@ The infrastructure uses a robust, layered security model based on IAM roles (for
 #### IAM Roles (Service-to-Service Authorization)
 
 * **ECS EC2 Instance Role (`ecs_instance_role`):** This role is assumed by the EC2 container instances. Its permissions allow the instance to:
-    * **Join the Cluster:** Register itself as a Container Instance with the ECS Control Plane (`ecs:RegisterContainerInstance`)[cite: 212, 216].
-    * **Pull Images:** Get authorization tokens from ECR to pull Docker images (`ecr:GetAuthorizationToken`, `ecr:BatchGetImage`, etc.)[cite: 212, 214].
-    * **Logging:** Write operational logs to AWS CloudWatch Logs[cite: 212, 213, 214].
-    * **SSM Access:** Includes the managed policy `AmazonSSMManagedInstanceCore` to enable secure remote access to the EC2 instances via AWS Session Manager (SSM)[cite: 214, 215, 216].
+    * **Join the Cluster:** Register itself as a Container Instance with the ECS Control Plane (`ecs:RegisterContainerInstance`).
+    * **Pull Images:** Get authorization tokens from ECR to pull Docker images (`ecr:GetAuthorizationToken`, `ecr:BatchGetImage`, etc.).
+    * **Logging:** Write operational logs to AWS CloudWatch Logs.
+    * **SSM Access:** Includes the managed policy `AmazonSSMManagedInstanceCore` to enable secure remote access to the EC2 instances via AWS Session Manager (SSM).
 * **ECS Task Execution Role (`ecs_task_execution_role`):** This role is assumed by the ECS service itself. It provides the permissions needed for the ECS agent to perform actions on behalf of your tasks, specifically:
-    * **Image Pull:** Pull the required Docker image from ECR[cite: 246].
-    * **Log Management:** Write container application logs to the designated CloudWatch Log Group (`my-app-lg`)[cite: 223].
+    * **Image Pull:** Pull the required Docker image from ECR.
+    * **Log Management:** Write container application logs to the designated CloudWatch Log Group (`my-app-lg`).
 
 #### Security Groups (Network Traffic Filtering)
 
 The network model is secured by isolating the application tier within the private subnets and restricting access based on the least-privilege principle.
 
 * **Application Load Balancer SG (`alb-sg`):**
-    * **Ingress:** Allows inbound traffic from `0.0.0.0/0` (the entire internet) on **Port 80 (HTTP)** and **Port 443 (HTTPS)**[cite: 153]. This is the public entry point.
-    * **Egress:** Allows all outbound traffic (`0.0.0.0/0` on all ports/protocols)[cite: 154]. This is critical as it enables the ALB to initiate the connection to the backend ECS tasks[cite: 155].
+    * **Ingress:** Allows inbound traffic from `0.0.0.0/0` (the entire internet) on **Port 80 (HTTP)** and **Port 443 (HTTPS)**. This is the public entry point.
+    * **Egress:** Allows all outbound traffic (`0.0.0.0/0` on all ports/protocols). This is critical as it enables the ALB to initiate the connection to the backend ECS tasks.
 * **ECS Tasks SG (`ecs-tasks-sg`):**
-    * **Ingress:** **Highly Restricted.** Allows incoming traffic *only* on the application's container port (`3000`) and only when the source is the **`alb-sg`**[cite: 243, 244]. This prevents direct internet access to the containers.
-    * **Egress:** Allows all outbound traffic (`0.0.0.0/0`), enabling tasks to pull dependencies and access other necessary AWS services like the NAT Gateway[cite: 243].
+    * **Ingress:** **Highly Restricted.** Allows incoming traffic *only* on the application's container port (`3000`) and only when the source is the **`alb-sg`**. This prevents direct internet access to the containers.
+    * **Egress:** Allows all outbound traffic (`0.0.0.0/0`), enabling tasks to pull dependencies and access other necessary AWS services like the NAT Gateway.
 * **ECS Cluster SG (`cluster-sg`):** This is associated with the underlying EC2 instances. It ensures the instances themselves can communicate and perform necessary management functions.
-    * **Egress:** Allows all outbound traffic (`0.0.0.0/0`) for tasks like instance patching, running the ECS Agent, and pulling images[cite: 203].
+    * **Egress:** Allows all outbound traffic (`0.0.0.0/0`) for tasks like instance patching, running the ECS Agent, and pulling images.
 
 ### e. Deployment and EC2 Modernization
 
