@@ -1,47 +1,147 @@
-# AWS Elastic Container Service (ECS)
+# AWS Elastic Container Service (ECS) Project
 
-AWS ECS is a fully managed container orchestration service that allows to run, stop, and manage containers on a ECS Cluster. It is an abstraction of the underlying infrastructure, allowing developers to focus on application development. The key benefits of ECS are:
+## 1. Motivation & Goals
 
-- Automatic provisioning and scaling of resources (together with autoscaling-groups)
-- Traffic load balancing (together with ELB)
-- Resource optimisation
-  - specially useful on high-low system services demand transition
-  - doable thanks to the integration with other AWS services such as ELB
-- Portability e.g., avoid configuration drift between dev/prod environments
-- Cost-effectiveness
+This project was built as a practical, hands-on learning experience to master **Terraform** and **AWS** for cloud infrastructure deployment. The primary goals are:
 
-## Key Concepts
-
-- **ECS Task Definition**: configuration and deployment blueprint for _containers_ (i.e., _tasks_). It includes container image definition, CPU and memory limits, networking settings such as container linking to other containers (e.g., DB container), and environment variables (e.g., DB access credentials). An ECS task can be run in a standalone way (e.g., as a batch job or a short-lived container) or as part of an _ECS Service_. ECS tasks are defined by developers.
-
-- **ECS Service**: defines how many copies of a container definition should run on a given _ECS Cluster_. Hence, the _ECS Control Plane_ knows how to scale containers. Furthermore, an ECS service can be associated with an _AWS Elastic Load Balancer (ELB)_ for even distribution of traffic among running containers. ECS services are defined by developers.
-
-- **ECS Agent**: ensures that the containers hosted on an _EC2 Instance_ run correctly and efficiently. It reports all containers' health to _ECS Control Plane_ and executes the commands ordered by the latter e.g., start or stop a container. There must be an EC2 agent running in each _EC2 Instance_. ECS agents can be customised by developers, but AWS offers some [ECS-optimised AMIs](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html) that include a standard ECS agent.
-
-- **ECS Control Plane**: central container coordination component on an _EC2 Cluster_. It ensures the wellbeing of the cluster, taking decisions such as running containers on available EC2 instances or scaling up/down containers based on the health status provided by the _ECS Agents_ included at the cluster. When _Auto Scaling Groups_ and/or _ECS Capacity Providers_ are provided, the ECS control plane can also scale _EC2 Instances_. ECS Control Plane is the backbone of ECS and implemented by AWS.
-
-- **ECS Cluster**: composes a collection of related _EC2 Instances_ (i.e., the computing resources) registered with the _ECS Control Plane_. An EC2 cluster is managed at the infrastructure level, often using _Auto Scaling Groups_ and/or _ECS Capacity Providers_. Moreover, an EC2 cluster can provide some logical separation based on a particular purpose such as dev/prod environments, thus preventing issues during system execution. ECS clusters are defined by developers.
-
-> [!NOTE]
-> The sources of the contents of this section are:
->
-> - [The Ultimate Beginner's Guide to AWS ECS](https://blog.awsfundamentals.com/aws-ecs-beginner-guide)
-> - Section 8: Docker on AWS using ECS and ECR - AWS Infrastructure as Code With Terraform Course by Edward Viaene
-> - ChatGPT
+* To learn **Infrastructure as Code (IaC)** by defining all cloud resources using **Terraform** (version 1.5.7).
+* To create reusable Terraform modules to quickly spin up **simple yet production-ready AWS infrastructure** that ensures **high availability**.
+* To deploy a sample monolithic application (a "Hello World" NestJS API) on **AWS Elastic Container Service (ECS)**, configured with auto-scaling and a **secure HTTPS endpoint**.
 
 ---
 
-## TODO
-+ Configure EC2 instance auto-scaling
-+ How to enable EC2 instances and containers hand-by-hand auto-scaling?
-  ~> EC2 instances/containers are scaled out/in based on some ECS capacity planner and some task auto-scaling policy
-  - Add a section in this README on this topic
-- Use `host-header` instead at the ALB rule definition
-+ Disallow HTTP access
-  ~> any HTTP request is now redirected to a HTTPS request
-+ Enable EC2 instance access via AWS SSM 
-+ Distinguish prod/dev environments
-  ~> decided not to do since it adds an extra layer of complexity when explaining this project
-  - Add a section in this README on this topic, explaining how to proceed to prepare the code to create 
-+ Add tags to every resource to easily find them at the AWS console
-- Change name of LogGroup (CloudWatch)
+## 2. Application Overview
+
+The application deployed to ECS is a minimal **NestJS API**.
+
+| Endpoint | Description |
+| :--- | :--- |
+| `/` (GET) | The primary endpoint, which returns `"Hello World!"`.
+| `/health` (GET) | The health check endpoint, which returns `true`. It logs a unique instance ID for diagnostics and is used by the ALB's Target Group to monitor container health.
+
+The application's **Dockerfile** uses the official Node.js Alpine image (`node:23.1.0-alpine`), installs `pnpm` globally, and runs the compiled application via `pnpm start:prod` on port **3000**.
+
+---
+
+## 3. AWS Infrastructure Architecture
+
+The deployment creates a highly available architecture using interconnected AWS services. All resources are consistently tagged with **`Project = high-availability-app`** for easy location and management via AWS Resource Explorer.
+
+### a. Project Structure: Modules and Reusability
+
+The project utilizes a clear separation between **Root Modules** (deployment stages) and **Child Modules** (reusable components) to enforce the Single Responsibility Principle (SRP) and maximize reusability.
+
+* **Child Modules (`infra/modules/*`):** These define single, reusable components of infrastructure (e.g., `ecr`, `alb`, `ecs_cluster`, `ssl`).
+    * **Goal:** High **reusability** and **Separation of Concerns (SoC)**. A team can easily reuse the `alb` module in another project without needing to copy VPC or ECS code.
+    * **Implementation:** They rely solely on input variables (like `var.vpc_id`) and return outputs (like `alb_dns_name`).
+* **Root Modules (`infra/deployment/*`):** These define the environment-specific deployment stages (e.g., `prod/vpc`, `prod/ecs_service`).
+    * **Goal:** **Orchestration** and **Configuration**. They stitch the child modules together, using `data "terraform_remote_state"` to read outputs from previous stages (like VPC ID) and pass environment-specific values (like `prod` scaling limits) to the child modules.
+
+### b. Core AWS Components
+
+| AWS Service | Role in the Architecture |
+| :--- | :--- |
+| **Virtual Private Cloud (VPC)** | Provides an isolated network, defining public and private subnets across multiple AZs for high availability. NAT Gateways enable private resources to access the internet. |
+| **Elastic Container Registry (ECR)** | A private Docker registry storing application container images. **Improved Lifecycle Policy:** Uses priority rules (Rule 1: untagged, Rule 2: tagged) to aggressively expire **untagged** images while safely retaining a configurable count of environment-tagged (`dev-`, `prod-`) images. |
+| **ECS Cluster** | The compute capacity (EC2 instances) running within **private subnets**. It uses an Auto Scaling Group (ASG) and a Capacity Provider (`app_ecs_capacity_provider`). |
+| **Application Load Balancer (ALB)** | Distributes incoming traffic. It listens on Port 443 (HTTPS) and **redirects all Port 80 (HTTP) traffic to HTTPS (301 Permanent Redirect)**. |
+| **Route 53 & ACM** | The Route 53 Hosted Zone manages DNS records. AWS Certificate Manager (ACM) provides and validates the SSL certificate, which is attached to the ALB's HTTPS listener to enable secure communication. |
+
+### c. Infrastructure Diagram
+
+![Alt text](aws_infrastructure.svg "AWS Infrastructure")
+
+### d. Security and Access Permissions
+
+The infrastructure uses a robust, layered security model based on IAM roles (for access control between AWS services) and Security Groups (for network traffic filtering).
+
+#### IAM Roles (Service-to-Service Authorization)
+
+* **ECS EC2 Instance Role (`ecs_instance_role`):** This role is assumed by the EC2 container instances. Its permissions allow the instance to:
+    * **Join the Cluster:** Register itself as a Container Instance with the ECS Control Plane (`ecs:RegisterContainerInstance`)[cite: 212, 216].
+    * **Pull Images:** Get authorization tokens from ECR to pull Docker images (`ecr:GetAuthorizationToken`, `ecr:BatchGetImage`, etc.)[cite: 212, 214].
+    * **Logging:** Write operational logs to AWS CloudWatch Logs[cite: 212, 213, 214].
+    * **SSM Access:** Includes the managed policy `AmazonSSMManagedInstanceCore` to enable secure remote access to the EC2 instances via AWS Session Manager (SSM)[cite: 214, 215, 216].
+* **ECS Task Execution Role (`ecs_task_execution_role`):** This role is assumed by the ECS service itself. It provides the permissions needed for the ECS agent to perform actions on behalf of your tasks, specifically:
+    * **Image Pull:** Pull the required Docker image from ECR[cite: 246].
+    * **Log Management:** Write container application logs to the designated CloudWatch Log Group (`my-app-lg`)[cite: 223].
+
+#### Security Groups (Network Traffic Filtering)
+
+The network model is secured by isolating the application tier within the private subnets and restricting access based on the least-privilege principle.
+
+* **Application Load Balancer SG (`alb-sg`):**
+    * **Ingress:** Allows inbound traffic from `0.0.0.0/0` (the entire internet) on **Port 80 (HTTP)** and **Port 443 (HTTPS)**[cite: 153]. This is the public entry point.
+    * **Egress:** Allows all outbound traffic (`0.0.0.0/0` on all ports/protocols)[cite: 154]. This is critical as it enables the ALB to initiate the connection to the backend ECS tasks[cite: 155].
+* **ECS Tasks SG (`ecs-tasks-sg`):**
+    * **Ingress:** **Highly Restricted.** Allows incoming traffic *only* on the application's container port (`3000`) and only when the source is the **`alb-sg`**[cite: 243, 244]. This prevents direct internet access to the containers.
+    * **Egress:** Allows all outbound traffic (`0.0.0.0/0`), enabling tasks to pull dependencies and access other necessary AWS services like the NAT Gateway[cite: 243].
+* **ECS Cluster SG (`cluster-sg`):** This is associated with the underlying EC2 instances. It ensures the instances themselves can communicate and perform necessary management functions.
+    * **Egress:** Allows all outbound traffic (`0.0.0.0/0`) for tasks like instance patching, running the ECS Agent, and pulling images[cite: 203].
+
+### e. Deployment and EC2 Modernization
+
+* **Placement Strategy (Improved):** The ECS Service uses a `dynamic` block for its placement rules.
+    * **`dev`**: Uses **`binpack`** on `cpu` for **cost optimization** by placing tasks on the fewest possible instances.
+    * **`prod`**: Uses a robust **two-layer spreading**—first by `attribute:ecs.availability-zone` and then by `attribute:instanceId`—to maximize **resilience** against single-instance failures.
+* **ECS Cluster Functionality:** The **ECS Control Plane** is the central component that coordinates containers and ensures cluster wellbeing. The **ECS Agent** runs on each EC2 instance and reports container health to the Control Plane.
+* **EC2 Instance Bootstrapping (Modernized):** The EC2 Launch Template's `user_data` script (`ec2-instance-init.tpl`) was updated to use **`systemctl enable --now ecs`**. This is compliant with modern Amazon Linux AMIs, ensuring the ECS agent starts reliably.
+* **Task Networking:** ECS Tasks run in the **VPC private subnets**.
+
+---
+
+## 4. Environment Configuration Differences
+
+The Terraform code supports configuration differences between `dev` and `prod` environments, driven by environment-specific variable lookups.
+
+| Setting | `dev` Value | `prod` Value | Motivation |
+| :--- | :--- | :--- | :--- |
+| **VPC NAT Gateway** | `true` (Single) | `false` (Multiple) | Cost-saving in dev; multiple NAT GWs in prod ensure **high-availability**. |
+| **Min/Max EC2 Instances (ASG)** | 1 / 2 | 2 / 4 | Smaller, cheaper cluster in dev; larger cluster in prod for baseline capacity and scaling safety. |
+| **ECS Cluster Max Utilisation** | 100 | 75 | Allows dev EC2 hosts to run at full capacity; 75% in prod provides a **buffer** for immediate scaling and stability. |
+| **EC2 Scale-In Protection (ASG)** | `false` | `true` | Disabled in dev to allow quick teardown; **Enabled in prod** to prevent the ASG from terminating instances currently hosting tasks. |
+| **ECS Task Placement Strategy** | `binpack:cpu` | `spread:az`, then `spread:instanceId` | **Cost optimization** in dev; **Maximized fault tolerance** in prod. |
+| **ALB Deletion Protection** | `false` | `true` | Prevents accidental deletion of the load balancer in prod. |
+| **Route53 `force_destroy`** | `true` | `false` | Allows quick cleanup in dev; **Protects the production domain** from accidental deletion. |
+
+---
+
+## 5. CI/CD Workflows (GitHub Actions) 🚀
+
+All infrastructure changes are managed via GitHub Actions (GHA) workflows. The deployment is split into initial setup and main deployment due to dependencies (Route53/S3 must exist before ACM/Terraform state can use them).
+
+### a. Deployment Prerequisites and Initial Setup
+
+To deploy this project, **you must own a domain name** accessible through an SSL certificate (e.g., `https://josumartinez.com`) and perform manual DNS updates.
+
+1.  **Execute `deploy_hosted_zone.yaml` (Manual Trigger)**: This job calls a reusable workflow to deploy the remote **Terraform state S3 bucket** (`josumartinez-terraform-state-bucket`) and then creates the **Route53 Hosted Zone**.
+2.  **Manual Action**: After the job succeeds, go to your domain hosting provider and update the **DNS name servers** to the ones provided by the new Route 53 Hosted Zone.
+3.  **Wait**: Wait for DNS propagation to complete. The ACM certificate validation depends on this.
+
+### b. Full Infrastructure Deployment
+
+Once the DNS is propagated, run the main deployment workflow (triggered on `push` to `main`):
+
+* **`deploy_aws_infra.yaml`**: This workflow executes the deployment in a dependency-aware order:
+    1.  **`deploy-ecr`**: Creates the ECR repository.
+    2.  **`retrieve-ssl`**: Requests and validates the ACM certificate.
+    3.  **`build-and-push-app-docker-image-to-ecr`**: Builds the NestJS app and pushes the Docker image (tagged with `${{ env.ENVIRONMENT }}-${{ github.sha }}`) to ECR.
+    4.  **`deploy-vpc`**: Creates the VPC, subnets, and NAT Gateways.
+    5.  **`deploy-ecs-cluster`**: Creates the ECS Cluster, IAM roles, and the ASG Launch Template/Capacity Provider.
+    6.  **`deploy-alb`**: Creates the Application Load Balancer and its listeners (HTTPS + HTTP Redirect).
+    7.  **`deploy-ecs-service`**: Creates the ECS Task Definition and Service, linking to the ALB Target Group and configuring **Task Auto Scaling**.
+    8.  **`deploy-routing`**: Creates the Route 53 A records for the root and `www` domains, pointing to the ALB.
+
+### c. Infrastructure Teardown
+
+Cleanup is also performed in an ordered, two-step workflow (both manually triggered: `workflow_dispatch`):
+
+* **`destroy_aws_infra.yaml`**: This workflow destroys the application and its core services first:
+    1.  **`destroy-ecs-service`**: Scales the ECS service down to 0 tasks and waits for stability, then destroys the ECS service and its resources.
+    2.  **`destroy-routing`, `destroy-alb`, `destroy-ssl`, `destroy-ecs-cluster`**: Destroys resources in the reverse order of deployment.
+    3.  **`destroy-ecr`**: **Crucially**, it first runs an AWS CLI command to **delete all images** from the repository and then destroys the ECR repository resource.
+    4.  **`destroy-vpc`**: Destroys the VPC and networking components.
+
+* **`destroy_hosted_zone.yaml`**: This performs the final cleanup:
+    1.  **`destroy-hosted-zone`**: Destroys the Route 53 Hosted Zone.
+    2.  **`destroy-terraform-state-bucket`**: **Required**: It first deletes all objects (`aws s3 rm --recursive`) and then uses Terraform to destroy the empty S3 state bucket.
