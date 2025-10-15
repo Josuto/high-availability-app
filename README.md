@@ -1,4 +1,4 @@
-# AWS Elastic Container Service (ECS) Project
+# AWS High-Availability App with Terraform
 
 ## Table of Contents
 
