@@ -20,32 +20,44 @@ resource "aws_ecr_lifecycle_policy" "ecr_policy" {
   policy = jsonencode({
     rules = [
       {
-        "rulePriority" : 1,
-        "description" : "Expire all untagged images, keeping the one newest untagged image.",
-        "selection" : {
-          "tagStatus" : "untagged",
-          "countType" : "imageCountMoreThan",
-          "countNumber" : 1 // Keep 1 untagged image, delete the rest
-        },
-        "action" : {
-          "type" : "expire"
+        rulePriority = 1
+        description  = "Retain only the most recent app image"
+        selection = {
+          tagStatus    = "any"
+          countType    = "imageCountMoreThan"
+          countNumber  = 1
         }
-      },
-      # Note: This rule targets ALL tagged images and enforces the count.
-      # You could add more explicit rules here for 'dev-' and 'prod-' prefixes if needed.
-      {
-        "rulePriority" : 2,
-        "description" : "Retain max tagged images based on the environment setting.",
-        "selection" : {
-          "tagStatus" : "tagged",
-          "tagPrefixList" : [local.env_tag_prefix],
-          "countType" : "imageCountMoreThan",
-          "countNumber" : lookup(var.image_retention_max_count, var.environment)
-        },
-        "action" : {
-          "type" : "expire"
+        action = {
+          type = "expire"
         }
       }
+      # {
+      #   "rulePriority" : 1,
+      #   "description" : "Expire all untagged images, keeping the one newest untagged image.",
+      #   "selection" : {
+      #     "tagStatus" : "untagged",
+      #     "countType" : "imageCountMoreThan",
+      #     "countNumber" : 1 // Keep 1 untagged image, delete the rest
+      #   },
+      #   "action" : {
+      #     "type" : "expire"
+      #   }
+      # },
+      # # Note: This rule targets ALL tagged images and enforces the count.
+      # # You could add more explicit rules here for 'dev-' and 'prod-' prefixes if needed.
+      # {
+      #   "rulePriority" : 2,
+      #   "description" : "Retain max tagged images based on the environment setting.",
+      #   "selection" : {
+      #     "tagStatus" : "tagged",
+      #     "tagPrefixList" : [local.env_tag_prefix],
+      #     "countType" : "imageCountMoreThan",
+      #     "countNumber" : lookup(var.image_retention_max_count, var.environment)
+      #   },
+      #   "action" : {
+      #     "type" : "expire"
+      #   }
+      # }
     ]
   })
 }
