@@ -283,7 +283,7 @@ jobs:
     env: # required by some steps
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      ECR_APP_IMAGE: ${{ needs.deploy-ecr.outputs.ecr_repository_name }}:${{ github.sha }}
+      ECR_APP_IMAGE: ${{ needs.deploy-ecr.outputs.ecr_repository_name }}:${{ env.ENVIRONMENT }}-${{ github.sha }}
 
     steps:
       # Checkout the repository to enable the runner clone the project repo into its filesystem from the last repo
