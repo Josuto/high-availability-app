@@ -5,15 +5,15 @@
 1. [Motivation & Goals](#1-motivation--goals)
 2. [Application Overview](#2-application-overview)
 3. [AWS Infrastructure Architecture](#3-aws-infrastructure-architecture)
-    * [3.1. Project Structure: Modules and Reusability](#3-a-project-structure-modules-and-reusability)
-    * [3.2. Core AWS Components](#3-b-core-aws-components)
-    * [3.3. Infrastructure Diagram](#3-c-infrastructure-diagram)
-    * [3.4. Security and Access Permissions](#3-d-security-and-access-permissions)
+    * [3.1. Project Structure: Modules and Reusability](#3-3-1-project-structure-modules-and-reusability)
+    * [3.2. Core AWS Components](#3-3-2-core-aws-components)
+    * [3.3. Infrastructure Diagrams](#3-3-3-infrastructure-diagrams)
+    * [3.4. Security and Access Permissions](#3-3-4-security-and-access-permissions)
 4. [Environment Configuration Differences](#4-environment-configuration-differences)
 5. [CI/CD Workflows (GitHub Actions)](#5-cicd-workflows-github-actions-)
-    * [5.1. Deployment Prerequisites and Initial Setup](#5-a-deployment-prerequisites-and-initial-setup)
-    * [5.2. Full Infrastructure Deployment](#5-b-full-infrastructure-deployment)
-    * [5.3. Infrastructure Teardown](#5-c-infrastructure-teardown)
+    * [5.1. Deployment Prerequisites and Initial Setup](#5-5-1-deployment-prerequisites-and-initial-setup)
+    * [5.2. Full Infrastructure Deployment](#5-5-2-full-infrastructure-deployment)
+    * [5.3. Infrastructure Teardown](#5-5-3-infrastructure-teardown)
 
 ## 1. Motivation & Goals
 
@@ -64,9 +64,15 @@ The project utilizes a clear separation between **Root Modules** (deployment sta
 | **Application Load Balancer (ALB)** | Distributes incoming traffic. It listens on Port 443 (HTTPS) and redirects all Port 80 (HTTP) traffic to HTTPS (301 Permanent Redirect). The ALB forwards traffic to an ALB Target Group, which acts as the dynamic list of healthy ECS Tasks. |
 | **Route 53 & ACM** | The Route 53 Hosted Zone manages DNS records. AWS Certificate Manager (ACM) provides and validates the SSL certificate, which is attached to the ALB's HTTPS listener to enable secure communication. |
 
-### 3.3. Infrastructure Diagram
+### 3.3. Infrastructure Diagrams
 
-![Alt text](aws_infrastructure.svg "AWS Infrastructure")
+#### Focus on traffic routing from app service requests to containers
+
+![Alt text](aws_infrastructure-incomming_traffic.svg "AWS Infrastructure - Incomming Traffic")
+
+#### Focus on traffic routing from containers to the other AWS services or the Internet
+
+![Alt text](aws_infrastructure-outgoing_traffic.svg "AWS Infrastructure - Outgoing Traffic")
 
 ### 3.4. Security and Access Permissions
 
