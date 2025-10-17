@@ -68,11 +68,11 @@ The project utilizes a clear separation between **Root Modules** (deployment sta
 
 #### Focus on traffic routing from app service requests to containers
 
-![Alt text](aws_infrastructure-incoming_traffic.svg "AWS Infrastructure - Incomming Traffic")
+![Alt text](diagrams/aws_infrastructure-incoming_traffic.svg "AWS Infrastructure - Incomming Traffic")
 
 #### Focus on traffic routing from containers to the other AWS services or the Internet
 
-![Alt text](aws_infrastructure-outgoing_traffic.svg "AWS Infrastructure - Outgoing Traffic")
+![Alt text](diagrams/aws_infrastructure-outgoing_traffic.svg "AWS Infrastructure - Outgoing Traffic")
 
 ### 3.4. Security and Access Permissions
 
