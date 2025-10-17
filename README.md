@@ -1,4 +1,4 @@
-# AWS High-Availability App with Terraform
+# High-Availability App with AWS and Terraform
 
 ## Table of Contents
 
