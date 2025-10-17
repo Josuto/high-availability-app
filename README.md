@@ -5,15 +5,15 @@
 1. [Motivation & Goals](#1-motivation--goals)
 2. [Application Overview](#2-application-overview)
 3. [AWS Infrastructure Architecture](#3-aws-infrastructure-architecture)
-    * [3.1. Project Structure: Modules and Reusability](#3-3-1-project-structure-modules-and-reusability)
-    * [3.2. Core AWS Components](#3-3-2-core-aws-components)
-    * [3.3. Infrastructure Diagrams](#3-3-3-infrastructure-diagrams)
-    * [3.4. Security and Access Permissions](#3-3-4-security-and-access-permissions)
+    * [3.1. Project Structure: Modules and Reusability](#3-1-project-structure-modules-and-reusability)
+    * [3.2. Core AWS Components](#3-2-core-aws-components)
+    * [3.3. Infrastructure Diagrams](#3-3-infrastructure-diagrams)
+    * [3.4. Security and Access Permissions](#3-4-security-and-access-permissions)
 4. [Environment Configuration Differences](#4-environment-configuration-differences)
 5. [CI/CD Workflows (GitHub Actions)](#5-cicd-workflows-github-actions-)
-    * [5.1. Deployment Prerequisites and Initial Setup](#5-5-1-deployment-prerequisites-and-initial-setup)
-    * [5.2. Full Infrastructure Deployment](#5-5-2-full-infrastructure-deployment)
-    * [5.3. Infrastructure Teardown](#5-5-3-infrastructure-teardown)
+    * [5.1. Deployment Prerequisites and Initial Setup](#5-1-deployment-prerequisites-and-initial-setup)
+    * [5.2. Full Infrastructure Deployment](#5-2-full-infrastructure-deployment)
+    * [5.3. Infrastructure Teardown](#5-3-infrastructure-teardown)
 
 ## 1. Motivation & Goals
 
@@ -68,7 +68,7 @@ The project utilizes a clear separation between **Root Modules** (deployment sta
 
 #### Focus on traffic routing from app service requests to containers
 
-![Alt text](aws_infrastructure-incomming_traffic.svg "AWS Infrastructure - Incomming Traffic")
+![Alt text](aws_infrastructure-incoming_traffic.svg "AWS Infrastructure - Incomming Traffic")
 
 #### Focus on traffic routing from containers to the other AWS services or the Internet
 
