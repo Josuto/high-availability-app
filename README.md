@@ -5,15 +5,15 @@
 1. [Motivation & Goals](#1-motivation--goals)
 2. [Application Overview](#2-application-overview)
 3. [AWS Infrastructure Architecture](#3-aws-infrastructure-architecture)
-    * [3.1. Project Structure: Modules and Reusability](#3-1-project-structure-modules-and-reusability)
-    * [3.2. Core AWS Components](#3-2-core-aws-components)
-    * [3.3. Infrastructure Diagrams](#3-3-infrastructure-diagrams)
-    * [3.4. Security and Access Permissions](#3-4-security-and-access-permissions)
+    * [3.1. Project Structure: Modules and Reusability](#31-project-structure-modules-and-reusability)
+    * [3.2. Core AWS Components](#32-core-aws-components)
+    * [3.3. Infrastructure Diagrams](#33-infrastructure-diagrams)
+    * [3.4. Security and Access Permissions](#34-security-and-access-permissions)
 4. [Environment Configuration Differences](#4-environment-configuration-differences)
 5. [CI/CD Workflows (GitHub Actions)](#5-cicd-workflows-github-actions-)
-    * [5.1. Deployment Prerequisites and Initial Setup](#5-1-deployment-prerequisites-and-initial-setup)
-    * [5.2. Full Infrastructure Deployment](#5-2-full-infrastructure-deployment)
-    * [5.3. Infrastructure Teardown](#5-3-infrastructure-teardown)
+    * [5.1. Deployment Prerequisites and Initial Setup](#51-deployment-prerequisites-and-initial-setup)
+    * [5.2. Full Infrastructure Deployment](#52-full-infrastructure-deployment)
+    * [5.3. Infrastructure Teardown](#53-infrastructure-teardown)
 
 ## 1. Motivation & Goals
 
