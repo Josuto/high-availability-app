@@ -21,7 +21,6 @@ This project was built as a practical, hands-on learning experience to master **
 
 * To learn **Infrastructure as Code (IaC)** by defining all cloud resources using **Terraform**.
 * To create reusable Terraform modules to quickly spin up **simple yet production-ready AWS infrastructure** that ensures **high availability**.
-* To deploy a sample monolithic application (a "Hello World" NestJS API) on **AWS Elastic Container Service (ECS)**, configured with auto-scaling and a **secure HTTPS endpoint**.
 
 ---
 
@@ -40,7 +39,9 @@ The application's **Dockerfile** uses the official Node.js Alpine image, install
 
 ## 3. AWS Infrastructure Architecture
 
-The deployment creates a highly available architecture using interconnected AWS services. All resources are consistently tagged with **`Project = high-availability-app`** for easy location and management via AWS Resource Explorer.
+The deployment creates a highly available architecture using interconnected AWS services. A key AWS service is **AWS Elastic Container Service (ECS)**, configured with auto-scaling and a **secure HTTPS endpoint**.
+
+All resources are consistently tagged with **`Project = high-availability-app`** for easy location and management via AWS Resource Explorer.
 
 ### 3.1. Project Structure: Modules and Reusability
 
