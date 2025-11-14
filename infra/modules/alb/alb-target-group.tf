@@ -17,11 +17,12 @@ resource "aws_alb_target_group" "ecs-service" {
   deregistration_delay = var.deregistration_delay # This is the amount seconds for the ALB to wait before completing the deregistration of a target. During this time, the ALB stops sending new requests to the target, but it continues to allow existing in-flight requests to complete. This helps gracefully drain connections from targets that are being stopped or replaced
 
   health_check { # The health check parameters that the ALB uses to monitor the health of the registered targets. If a target fails the health checks, the ALB stops sending traffic to it until it becomes healthy again
-    healthy_threshold   = 3 # The number of consecutive successful health checks required for a target to be considered healthy
-    unhealthy_threshold = 3 # The number of consecutive successful health checks required for a target to be considered unhealthy
+    healthy_threshold   = 2 # The number of consecutive successful health checks required for a target to be considered healthy
+    unhealthy_threshold = 2 # The number of consecutive successful health checks required for a target to be considered unhealthy
     protocol            = "HTTP" # The protocol to use for health checks
     path                = var.health_check_path # Path used by the ALB to make requests on each target
-    interval            = 300 # Seconds between health checks
+    interval            = 30 # Seconds between health checks
+    timeout             = 5 # Maximum time in seconds to wait for a health check response
     matcher             = var.healthcheck_matcher # The expected HTTP response code or codes for a successful health check e.g., 200
   }
 
