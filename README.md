@@ -14,6 +14,7 @@
     * [5.1. Deployment Prerequisites and Initial Setup](#51-deployment-prerequisites-and-initial-setup)
     * [5.2. Full Infrastructure Deployment](#52-full-infrastructure-deployment)
     * [5.3. Infrastructure Teardown](#53-infrastructure-teardown)
+6. [Known Limitations](#6-known-limitations)
 
 ## 1. Motivation & Goals
 
@@ -161,3 +162,25 @@ Cleanup is also performed in an ordered, two-step workflow (both manually trigge
 * **`destroy_hosted_zone.yaml`**: This performs the final cleanup:
     1. **`destroy-hosted-zone`**: Destroys the Route 53 Hosted Zone.
     2. **`destroy-terraform-state-bucket`**: It first deletes all objects (`aws s3 rm --recursive`) and then uses Terraform to destroy the empty S3 state bucket.
+
+---
+
+## 6. Known Limitations
+
+### Terraform State Locking
+
+**Important**: This project does not currently implement **DynamoDB state locking** for the Terraform remote state backend. The state locking mechanism prevents concurrent operations from corrupting the state file when multiple users or CI/CD pipelines attempt to modify infrastructure simultaneously.
+
+**Why this matters:**
+- **Single Developer**: If you're working alone on this infrastructure, state locking is not critical. Terraform will safely read and write state without conflicts.
+- **Team Collaboration**: When multiple developers or automated pipelines start collaborating on infrastructure changes, the absence of state locking becomes a significant issue. Concurrent `terraform apply` operations can lead to:
+  - **State File Corruption**: Two operations writing to the same state file simultaneously can corrupt it, potentially losing track of your infrastructure.
+  - **Race Conditions**: Changes from one operation may overwrite or conflict with another, resulting in unpredictable infrastructure state.
+  - **Lost Updates**: One developer's changes might be unknowingly overwritten by another's concurrent execution.
+
+**Implementation Note**: All `backend.tf` files in this project have the `dynamodb_table` parameter commented out. To enable state locking for team environments, you would need to:
+1. Create a DynamoDB table with `LockID` as the primary key (hash key).
+2. Uncomment the `dynamodb_table` line in each `backend.tf` file and reference your table name.
+3. Ensure all team members and CI/CD runners have appropriate DynamoDB permissions (`dynamodb:PutItem`, `dynamodb:GetItem`, `dynamodb:DeleteItem`).
+
+**Recommendation**: For production team environments, always enable state locking. For learning purposes or solo development, it can be safely omitted to reduce complexity and cost.
