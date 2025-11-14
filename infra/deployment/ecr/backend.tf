@@ -10,7 +10,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"  # Allow minor and patch updates within major version 5
+      version = ">= 5.0"  # Allow version 5.0 and above
     }
   }
 
