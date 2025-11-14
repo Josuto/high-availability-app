@@ -20,6 +20,7 @@ env:
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
   PROJECT_NAME: high-availability-app
   BUCKET_NAME: josumartinez-terraform-state-bucket
+  ENVIRONMENT: dev
 
 jobs:
   deploy-terraform-state-bucket:
@@ -53,9 +54,9 @@ jobs:
           if aws s3api head-bucket --bucket ${{ env.BUCKET_NAME }} 2>/dev/null; then
             echo "The Terraform state bucket already exists. Skipping creation."
           else
-            echo "The Terraform state bucket does yet exist. Creating it now."
+            echo "The Terraform state bucket does not exist yet. Creating it now."
             terraform init
-            terraform plan -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}"
-            terraform apply -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
+            terraform plan -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}
+            terraform apply -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }} -auto-approve
           fi
         working-directory: infra/deployment/backend
