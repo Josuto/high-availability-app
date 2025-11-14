@@ -56,7 +56,7 @@ jobs:
           else
             echo "The Terraform state bucket does not exist yet. Creating it now."
             terraform init
-            terraform plan -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}
-            terraform apply -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }} -auto-approve
+            terraform plan -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}"
+            terraform apply -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
           fi
         working-directory: infra/deployment/backend
