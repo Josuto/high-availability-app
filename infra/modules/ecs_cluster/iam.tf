@@ -14,12 +14,7 @@ resource "aws_iam_role" "ecs_instance_role" {
   }
 }
 
-# IAM role policy to grant the necessary permissions for ECS EC2 instances to interact with ECS, ECR, and CloudWatch Logs.
-# The policy follows the principle of least privilege by scoping permissions to specific resource types:
-#   - ECS actions are limited to cluster and task-definition resources
-#   - ECR image operations are scoped to repository resources (ecr:GetAuthorizationToken requires wildcard as it's global)
-#   - CloudWatch Logs actions are restricted to log groups under the /ecs/ prefix
-# This approach reduces the attack surface compared to using wildcard (*) resources for all actions.
+# IAM role policy to grant the necessary permissions for ECS EC2 instances to interact with ECS, ECR, and CloudWatch Logs
 resource "aws_iam_policy" "ecs_ec2_policy" {
   name   = "ecs-ec2-policy"
   policy = file("${path.module}/iam-policies/ecs-ec2-role-policy.json")
