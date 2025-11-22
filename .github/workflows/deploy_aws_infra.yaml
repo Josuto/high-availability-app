@@ -8,8 +8,6 @@ on:
 env:
   AWS_REGION: eu-west-1
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
-  PROJECT_NAME: high-availability-app
-  ENVIRONMENT: dev
 
 jobs:
   deploy-terraform-state-bucket:
@@ -53,15 +51,15 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Initialise Terraform on ECR directory
-        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init -backend-config="../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: infra/deployment/ecr
 
       - name: Validate IaC changes on ECR directory
-        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}"
+        run: terraform plan -var-file="../terraform.tfvars"
         working-directory: infra/deployment/ecr
 
       - name: Create ECR repository if it does not yet exist
-        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform apply -var-file="../terraform.tfvars" -auto-approve
         working-directory: infra/deployment/ecr
 
       - name: Fetch ECR repository name from Terraform output
@@ -101,15 +99,15 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Initialise Terraform on SSL directory
-        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init -backend-config="../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: infra/deployment/ssl
 
       - name: Validate IaC changes on SSL directory
-        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}"
+        run: terraform plan -var-file="../terraform.tfvars"
         working-directory: infra/deployment/ssl
 
       - name: Retrieve SSL certificate
-        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
+        run: terraform apply -var-file="../terraform.tfvars" -auto-approve
         working-directory: infra/deployment/ssl
 
   build-and-push-app-docker-image-to-ecr:
@@ -121,16 +119,17 @@ jobs:
       ECR_APP_IMAGE: ''
 
     steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
       - name: Set Full ECR Image Tag
         id: set-tag
         run: |
-          # Required as workaround for impossibility to extract value of env.ENVIRONMENT at definition of env.ECR_APP_IMAGE
+          # Extract environment from terraform.tfvars and construct ECR image tag
           REPO_URL="${{ needs.deploy-ecr.outputs.ecr_repository_name }}"
-          FULL_IMAGE="${REPO_URL}:${{ env.ENVIRONMENT }}-${{ github.sha }}"
+          ENVIRONMENT=$(grep "^environment" infra/deployment/terraform.tfvars | cut -d'"' -f2)
+          FULL_IMAGE="${REPO_URL}:${ENVIRONMENT}-${{ github.sha }}"
           echo "ECR_APP_IMAGE=$FULL_IMAGE" >> $GITHUB_ENV
-
-      - name: Checkout code from the repository
-        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -186,15 +185,15 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Initialise Terraform on the VPC directory
-        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: infra/deployment/prod/vpc
 
       - name: Validate IaC changes on the VPC directory
-        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}"
+        run: terraform plan -var-file="../../terraform.tfvars"
         working-directory: infra/deployment/prod/vpc
 
       - name: Deploy the VPC
-        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform apply -var-file="../../terraform.tfvars" -auto-approve
         working-directory: infra/deployment/prod/vpc
 
   deploy-ecs-cluster:
@@ -225,15 +224,15 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Initialise Terraform on ECS cluster directory
-        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Validate IaC changes on ECS cluster directory
-        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}"
+        run: terraform plan -var-file="../../terraform.tfvars"
         working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Deploy the ECS cluster
-        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform apply -var-file="../../terraform.tfvars" -auto-approve
         working-directory: infra/deployment/prod/ecs_cluster
 
   deploy-alb:
@@ -264,15 +263,15 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Initialise Terraform on the ALB directory
-        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: infra/deployment/prod/alb
 
       - name: Validate IaC changes on the ALB directory
-        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}"
+        run: terraform plan -var-file="../../terraform.tfvars"
         working-directory: infra/deployment/prod/alb
 
       - name: Deploy the ALB
-        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform apply -var-file="../../terraform.tfvars" -auto-approve
         working-directory: infra/deployment/prod/alb
 
   deploy-ecs-service:
@@ -286,18 +285,19 @@ jobs:
       ECR_APP_IMAGE: ''
 
     steps:
-      - name: Set Full ECR Image Tag
-        id: set-tag
-        run: |
-          # Required as workaround for impossibility to extract value of env.ENVIRONMENT at definition of env.ECR_APP_IMAGE
-          REPO_URL="${{ needs.deploy-ecr.outputs.ecr_repository_name }}"
-          FULL_IMAGE="${REPO_URL}:${{ env.ENVIRONMENT }}-${{ github.sha }}"
-          echo "ECR_APP_IMAGE=$FULL_IMAGE" >> $GITHUB_ENV
-
       # Checkout the repository to enable the runner clone the project repo into its filesystem from the last repo
       # commit, and make the files available to other steps of the workflow
       - name: Checkout code from the repository
         uses: actions/checkout@v4
+
+      - name: Set Full ECR Image Tag
+        id: set-tag
+        run: |
+          # Extract environment from terraform.tfvars and construct ECR image tag
+          REPO_URL="${{ needs.deploy-ecr.outputs.ecr_repository_name }}"
+          ENVIRONMENT=$(grep "^environment" infra/deployment/terraform.tfvars | cut -d'"' -f2)
+          FULL_IMAGE="${REPO_URL}:${ENVIRONMENT}-${{ github.sha }}"
+          echo "ECR_APP_IMAGE=$FULL_IMAGE" >> $GITHUB_ENV
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -316,15 +316,15 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Initialise Terraform on the ECS service directory
-        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Validate IaC changes on the ECS service directory
-        run: terraform plan -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -var="environment=${{ env.ENVIRONMENT }}"
+        run: terraform plan -var-file="../../terraform.tfvars" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}"
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Deploy the ECS service
-        run: terraform apply -var="project_name=${{ env.PROJECT_NAME }}" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform apply -var-file="../../terraform.tfvars" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
 
   deploy-routing:
@@ -355,11 +355,11 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Initialise Terraform on the routing directory
-        run: terraform init -backend-config="region=${{ env.AWS_REGION }}"
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: infra/deployment/prod/routing
 
       - name: Validate IaC changes on the routing directory
-        run: terraform plan -out=tfplan.binary # Save the plan as a binary file to ensure consistency between plan and apply
+        run: terraform plan -var-file="../../terraform.tfvars" -out=tfplan.binary
         working-directory: infra/deployment/prod/routing
 
       - name: Deploy the Route53

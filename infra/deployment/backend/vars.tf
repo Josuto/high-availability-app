@@ -3,8 +3,8 @@ variable "project_name" {
   type        = string
 }
 
-variable "bucket_name" {
-  description = "The S3 bucket name"
+variable "state_bucket_name" {
+  description = "The name of the S3 bucket specifiying the Terraform state"
   type        = string
 }
 

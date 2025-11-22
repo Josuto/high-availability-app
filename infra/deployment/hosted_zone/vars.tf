@@ -11,3 +11,8 @@ variable "environment" {
     error_message = "The environment must be either 'dev' or 'prod'."
   }
 }
+
+variable "root_domain" {
+  description = "The root domain name (e.g., example.com)"
+  type        = string
+}

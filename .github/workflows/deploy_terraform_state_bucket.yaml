@@ -18,9 +18,6 @@ on:
 env:
   AWS_REGION: eu-west-1
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
-  PROJECT_NAME: high-availability-app
-  BUCKET_NAME: josumartinez-terraform-state-bucket
-  ENVIRONMENT: dev
 
 jobs:
   deploy-terraform-state-bucket:
@@ -29,9 +26,6 @@ jobs:
 
     # Skip this job if the commit message starts with 'ci:' or 'docs:'
     if: ${{ !startsWith(inputs.github_head_commit_message, 'ci:') && !startsWith(inputs.github_head_commit_message, 'docs:') }}
-
-    env:
-      BUCKET_NAME: josumartinez-terraform-state-bucket
 
     steps:
       - name: Checkout code from the repository
@@ -51,12 +45,13 @@ jobs:
 
       - name: Create S3 bucket if it does not yet exist
         run: |
-          if aws s3api head-bucket --bucket ${{ env.BUCKET_NAME }} 2>/dev/null; then
+          STATE_BUCKET_NAME=$(grep "^state_bucket_name" ../terraform.tfvars | cut -d'"' -f2)
+          if aws s3api head-bucket --bucket ${STATE_BUCKET_NAME} 2>/dev/null; then
             echo "The Terraform state bucket already exists. Skipping creation."
           else
             echo "The Terraform state bucket does not exist yet. Creating it now."
             terraform init
-            terraform plan -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}"
-            terraform apply -var="bucket_name=${{ env.BUCKET_NAME }}" -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+            terraform plan -var-file="../terraform.tfvars"
+            terraform apply -var-file="../terraform.tfvars" -auto-approve
           fi
         working-directory: infra/deployment/backend

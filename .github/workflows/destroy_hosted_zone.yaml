@@ -6,8 +6,6 @@ on:
 env:
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
   AWS_REGION: eu-west-1
-  PROJECT_NAME: high-availability-app
-  ENVIRONMENT: dev
 
 jobs:
   destroy-hosted-zone:
@@ -30,19 +28,17 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Initialize Terraform on the hosted zone directory
-        run: terraform init
+        run: terraform init -backend-config="../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
         working-directory: infra/deployment/hosted_zone
 
       - name: Destroy resources on the hosted zone directory
-        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -var="environment=${{ env.ENVIRONMENT }}" -auto-approve
+        run: terraform destroy -var-file="../terraform.tfvars" -auto-approve
         working-directory: infra/deployment/hosted_zone
 
   destroy-terraform-state-bucket:
     name: Destroy Terraform state bucket
     runs-on: ubuntu-latest
     needs: [destroy-hosted-zone]
-    env:
-      BUCKET_NAME: josumartinez-terraform-state-bucket
     steps:
       - name: Checkout code from the repository
         uses: actions/checkout@v4
@@ -60,16 +56,20 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Delete the Terraform state files from the S3 bucket
-        run: aws s3 rm s3://${{ env.BUCKET_NAME }} --recursive
+        run: |
+          STATE_BUCKET_NAME=$(grep "^state_bucket_name" infra/deployment/terraform.tfvars | cut -d'"' -f2)
+          aws s3 rm s3://${STATE_BUCKET_NAME} --recursive
 
       - name: Initialize Terraform
         run: terraform init
         working-directory: infra/deployment/backend
 
       - name: Import the Terraform state bucket state
-        run: terraform import aws_s3_bucket.josumartinez-terraform-state-bucket ${{ env.BUCKET_NAME }}
+        run: |
+          STATE_BUCKET_NAME=$(grep "^state_bucket_name" ../terraform.tfvars | cut -d'"' -f2)
+          terraform import aws_s3_bucket.josumartinez-terraform-state-bucket ${STATE_BUCKET_NAME}
         working-directory: infra/deployment/backend
 
       - name: Destroy the Terraform state bucket
-        run: terraform destroy -var="project_name=${{ env.PROJECT_NAME }}" -auto-approve
+        run: terraform destroy -var-file="../terraform.tfvars" -auto-approve
         working-directory: infra/deployment/backend
