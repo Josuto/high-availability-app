@@ -32,7 +32,7 @@ jobs:
         working-directory: infra/deployment/hosted_zone
 
       - name: Destroy resources on the hosted zone directory
-        run: terraform destroy -var-file="../terraform.tfvars" -auto-approve
+        run: terraform destroy -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars" -auto-approve
         working-directory: infra/deployment/hosted_zone
 
   destroy-terraform-state-bucket:
@@ -57,7 +57,7 @@ jobs:
 
       - name: Delete the Terraform state files from the S3 bucket
         run: |
-          STATE_BUCKET_NAME=$(grep "^state_bucket_name" infra/deployment/terraform.tfvars | cut -d'"' -f2)
+          STATE_BUCKET_NAME=$(grep "^state_bucket_name" infra/deployment/backend.tfvars | cut -d'"' -f2)
           aws s3 rm s3://${STATE_BUCKET_NAME} --recursive
 
       - name: Initialize Terraform
@@ -66,10 +66,10 @@ jobs:
 
       - name: Import the Terraform state bucket state
         run: |
-          STATE_BUCKET_NAME=$(grep "^state_bucket_name" ../terraform.tfvars | cut -d'"' -f2)
+          STATE_BUCKET_NAME=$(grep "^state_bucket_name" ../backend.tfvars | cut -d'"' -f2)
           terraform import aws_s3_bucket.josumartinez-terraform-state-bucket ${STATE_BUCKET_NAME}
         working-directory: infra/deployment/backend
 
       - name: Destroy the Terraform state bucket
-        run: terraform destroy -var-file="../terraform.tfvars" -auto-approve
+        run: terraform destroy -var-file="../common.tfvars" -var-file="../backend.tfvars" -auto-approve
         working-directory: infra/deployment/backend

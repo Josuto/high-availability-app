@@ -10,20 +10,33 @@ Contains the S3 backend configuration for Terraform state management. This file 
 
 **IMPORTANT**: Update the `bucket` value with your own S3 bucket name.
 
-### terraform.tfvars
+### Variable Files
 
-Contains common variables used across all deployment configurations. These values must be customized for your deployment.
+Variables are organized into three separate files based on their scope and usage:
+
+#### common.tfvars
+Contains variables used across **all modules** for resource naming and tagging:
+- `project_name` - Project identifier used for resource tagging and naming
+- `environment` - Environment identifier (dev, prod)
+
+#### backend.tfvars
+Contains variables used by **modules that reference remote Terraform state**:
+- `state_bucket_name` - S3 bucket name for Terraform state storage (must be globally unique)
+
+#### domain.tfvars
+Contains variables used by **SSL and DNS-related modules**:
+- `root_domain` - Your registered root domain name (must match your Route53 hosted zone)
 
 ## Required Variables
 
-Before deploying, you must configure the following variables in `terraform.tfvars`:
+Before deploying, you must configure the following variables in their respective files:
 
-| Variable | Description | Example Value |
-|----------|-------------|---------------|
-| `state_bucket_name` | S3 bucket name for Terraform state storage. Must be globally unique. | `your-company-terraform-state-bucket` |
-| `root_domain` | Your registered root domain name. Must match your Route53 hosted zone. | `example.com` |
-| `project_name` | Project identifier used for resource tagging and naming. | `high-availability-app` |
-| `environment` | Environment identifier (dev, prod). | `dev` |
+| Variable | File | Description | Example Value |
+|----------|------|-------------|---------------|
+| `project_name` | `common.tfvars` | Project identifier used for resource tagging and naming. | `high-availability-app` |
+| `environment` | `common.tfvars` | Environment identifier (dev, prod). | `dev` |
+| `state_bucket_name` | `backend.tfvars` | S3 bucket name for Terraform state storage. Must be globally unique. | `your-company-terraform-state-bucket` |
+| `root_domain` | `domain.tfvars` | Your registered root domain name. Must match your Route53 hosted zone. | `example.com` |
 
 ## Usage
 
@@ -41,42 +54,69 @@ terraform init -backend-config="../backend-config.hcl"
 
 ### Planning and Applying Changes
 
-When running `terraform plan` or `terraform apply`, you must provide the required variables. You can either:
+When running `terraform plan` or `terraform apply`, you must provide the required variable files. Each module requires different combinations of tfvars files depending on its dependencies:
 
-1. **Use the tfvars file** (recommended):
+#### Variable File Usage by Module
+
+| Module | Required tfvars Files |
+|--------|----------------------|
+| **backend** | `common.tfvars` + `backend.tfvars` |
+| **hosted_zone** | `common.tfvars` + `domain.tfvars` + `backend.tfvars` |
+| **ecr** | `common.tfvars` |
+| **ssl** | `common.tfvars` + `domain.tfvars` + `backend.tfvars` |
+| **prod/vpc** | `common.tfvars` + `backend.tfvars` |
+| **prod/ecs_cluster** | `common.tfvars` + `backend.tfvars` |
+| **prod/alb** | `common.tfvars` + `backend.tfvars` |
+| **prod/ecs_service** | `common.tfvars` + `backend.tfvars` |
+| **prod/routing** | `common.tfvars` + `domain.tfvars` + `backend.tfvars` |
+
+#### Examples
+
+1. **ECR (simple - only common variables)**:
    ```bash
-   # From a deployment subdirectory (e.g., infra/deployment/prod/vpc/)
-   terraform plan -var-file="../../terraform.tfvars"
-   terraform apply -var-file="../../terraform.tfvars"
-
-   # From a deployment directory (e.g., infra/deployment/ssl/)
-   terraform plan -var-file="../terraform.tfvars"
-   terraform apply -var-file="../terraform.tfvars"
+   # From infra/deployment/ecr/
+   terraform plan -var-file="../common.tfvars"
+   terraform apply -var-file="../common.tfvars" -auto-approve
    ```
 
-   **Why we recommend this approach:**
-   - **Single source of truth**: All configuration values are defined in one central file
-   - **Consistency**: Ensures the same values are used across all deployments
-   - **Easier maintenance**: Update values in one place instead of multiple workflow files
-   - **Less error-prone**: Reduces the risk of typos or inconsistent values across commands
-   - **Better for CI/CD**: GitHub Actions workflows automatically read from this file
-
-2. **Pass variables individually**:
+2. **VPC (common + backend for state references)**:
    ```bash
-   terraform plan \
-     -var="state_bucket_name=your-bucket-name" \
-     -var="root_domain=example.com" \
-     -var="project_name=your-project"
+   # From infra/deployment/prod/vpc/
+   terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
+   terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
    ```
 
-   This approach is useful for overriding specific values temporarily or for dynamic values that change per execution.
+3. **SSL (common + domain + backend)**:
+   ```bash
+   # From infra/deployment/ssl/
+   terraform plan -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars"
+   terraform apply -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars" -auto-approve
+   ```
+
+#### Alternative: Pass Variables Individually
+
+You can also pass variables individually (useful for overrides or CI/CD with dynamic values):
+```bash
+terraform plan \
+  -var="project_name=your-project" \
+  -var="environment=dev" \
+  -var="state_bucket_name=your-bucket-name"
+```
+
+**Why we use separate tfvars files:**
+- **No undeclared variable warnings**: Each module only receives the variables it actually uses
+- **Clear separation of concerns**: Common, backend, and domain variables are logically separated
+- **Better maintainability**: Easy to see which modules need which variables
+- **Improved documentation**: Each tfvars file has clear comments explaining its purpose
 
 ## Directory Structure
 
 ```
 deployment/
 ├── backend-config.hcl          # Backend configuration (bucket name)
-├── terraform.tfvars            # Common variable values
+├── common.tfvars               # Common variables (project_name, environment)
+├── backend.tfvars              # Backend variables (state_bucket_name)
+├── domain.tfvars               # Domain variables (root_domain)
 ├── README.md                   # This file
 ├── backend/                    # Terraform state S3 bucket
 ├── hosted_zone/                # Route53 hosted zone
@@ -109,22 +149,38 @@ The infrastructure must be deployed in the following order:
 For new users deploying this infrastructure:
 
 1. Update `backend-config.hcl` with your S3 bucket name
-2. Update `terraform.tfvars` with your domain and project name
-3. Deploy the backend: `cd backend && terraform init && terraform apply`
-4. Deploy the hosted zone: `cd hosted_zone && terraform init -backend-config="../backend-config.hcl" && terraform apply -var-file="../terraform.tfvars"`
+2. Update the variable files with your values:
+   - `common.tfvars`: Set your `project_name` and `environment`
+   - `backend.tfvars`: Set your `state_bucket_name`
+   - `domain.tfvars`: Set your `root_domain`
+3. Deploy the backend:
+   ```bash
+   cd backend
+   terraform init
+   terraform apply -var-file="../common.tfvars" -var-file="../backend.tfvars"
+   ```
+4. Deploy the hosted zone:
+   ```bash
+   cd ../hosted_zone
+   terraform init -backend-config="../backend-config.hcl"
+   terraform apply -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars"
+   ```
 5. Update your domain's nameservers to point to the Route53 hosted zone
 6. Wait for DNS propagation (can take up to 48 hours)
 7. Continue with the remaining infrastructure deployments
 
 ## GitHub Actions
 
-The `.github/workflows/` directory contains CI/CD workflows that automatically handle the deployment order and variable passing. The workflows read configuration values from the `terraform.tfvars` file in this directory.
+The `.github/workflows/` directory contains CI/CD workflows that automatically handle the deployment order and variable passing. The workflows read configuration values from the variable files in this directory.
 
 To use the workflows in your forked repository:
 
-1. Update the `terraform.tfvars` file with your own values (bucket name, domain, project name)
+1. Update the variable files with your own values:
+   - `common.tfvars`: Your `project_name` and `environment`
+   - `backend.tfvars`: Your `state_bucket_name`
+   - `domain.tfvars`: Your `root_domain`
 2. Add your AWS credentials as GitHub secrets:
    - `AWS_ACCESS_KEY_ID`
    - `AWS_SECRET_ACCESS_KEY`
 
-The workflows will automatically use the values from `terraform.tfvars` when running Terraform commands.
+The workflows will automatically use the appropriate combination of tfvars files for each module, ensuring no undeclared variable warnings occur.

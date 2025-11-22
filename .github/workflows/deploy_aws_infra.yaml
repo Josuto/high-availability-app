@@ -55,11 +55,11 @@ jobs:
         working-directory: infra/deployment/ecr
 
       - name: Validate IaC changes on ECR directory
-        run: terraform plan -var-file="../terraform.tfvars"
+        run: terraform plan -var-file="../common.tfvars"
         working-directory: infra/deployment/ecr
 
       - name: Create ECR repository if it does not yet exist
-        run: terraform apply -var-file="../terraform.tfvars" -auto-approve
+        run: terraform apply -var-file="../common.tfvars" -auto-approve
         working-directory: infra/deployment/ecr
 
       - name: Fetch ECR repository name from Terraform output
@@ -103,11 +103,11 @@ jobs:
         working-directory: infra/deployment/ssl
 
       - name: Validate IaC changes on SSL directory
-        run: terraform plan -var-file="../terraform.tfvars"
+        run: terraform plan -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars"
         working-directory: infra/deployment/ssl
 
       - name: Retrieve SSL certificate
-        run: terraform apply -var-file="../terraform.tfvars" -auto-approve
+        run: terraform apply -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars" -auto-approve
         working-directory: infra/deployment/ssl
 
   build-and-push-app-docker-image-to-ecr:
@@ -125,9 +125,9 @@ jobs:
       - name: Set Full ECR Image Tag
         id: set-tag
         run: |
-          # Extract environment from terraform.tfvars and construct ECR image tag
+          # Extract environment from common.tfvars and construct ECR image tag
           REPO_URL="${{ needs.deploy-ecr.outputs.ecr_repository_name }}"
-          ENVIRONMENT=$(grep "^environment" infra/deployment/terraform.tfvars | cut -d'"' -f2)
+          ENVIRONMENT=$(grep "^environment" infra/deployment/common.tfvars | cut -d'"' -f2)
           FULL_IMAGE="${REPO_URL}:${ENVIRONMENT}-${{ github.sha }}"
           echo "ECR_APP_IMAGE=$FULL_IMAGE" >> $GITHUB_ENV
 
@@ -189,11 +189,11 @@ jobs:
         working-directory: infra/deployment/prod/vpc
 
       - name: Validate IaC changes on the VPC directory
-        run: terraform plan -var-file="../../terraform.tfvars"
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
         working-directory: infra/deployment/prod/vpc
 
       - name: Deploy the VPC
-        run: terraform apply -var-file="../../terraform.tfvars" -auto-approve
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
         working-directory: infra/deployment/prod/vpc
 
   deploy-ecs-cluster:
@@ -228,11 +228,11 @@ jobs:
         working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Validate IaC changes on ECS cluster directory
-        run: terraform plan -var-file="../../terraform.tfvars"
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
         working-directory: infra/deployment/prod/ecs_cluster
 
       - name: Deploy the ECS cluster
-        run: terraform apply -var-file="../../terraform.tfvars" -auto-approve
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
         working-directory: infra/deployment/prod/ecs_cluster
 
   deploy-alb:
@@ -267,11 +267,11 @@ jobs:
         working-directory: infra/deployment/prod/alb
 
       - name: Validate IaC changes on the ALB directory
-        run: terraform plan -var-file="../../terraform.tfvars"
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
         working-directory: infra/deployment/prod/alb
 
       - name: Deploy the ALB
-        run: terraform apply -var-file="../../terraform.tfvars" -auto-approve
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
         working-directory: infra/deployment/prod/alb
 
   deploy-ecs-service:
@@ -293,9 +293,9 @@ jobs:
       - name: Set Full ECR Image Tag
         id: set-tag
         run: |
-          # Extract environment from terraform.tfvars and construct ECR image tag
+          # Extract environment from common.tfvars and construct ECR image tag
           REPO_URL="${{ needs.deploy-ecr.outputs.ecr_repository_name }}"
-          ENVIRONMENT=$(grep "^environment" infra/deployment/terraform.tfvars | cut -d'"' -f2)
+          ENVIRONMENT=$(grep "^environment" infra/deployment/common.tfvars | cut -d'"' -f2)
           FULL_IMAGE="${REPO_URL}:${ENVIRONMENT}-${{ github.sha }}"
           echo "ECR_APP_IMAGE=$FULL_IMAGE" >> $GITHUB_ENV
 
@@ -320,11 +320,11 @@ jobs:
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Validate IaC changes on the ECS service directory
-        run: terraform plan -var-file="../../terraform.tfvars" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}"
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}"
         working-directory: infra/deployment/prod/ecs_service
 
       - name: Deploy the ECS service
-        run: terraform apply -var-file="../../terraform.tfvars" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -auto-approve
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -auto-approve
         working-directory: infra/deployment/prod/ecs_service
 
   deploy-routing:
@@ -359,7 +359,7 @@ jobs:
         working-directory: infra/deployment/prod/routing
 
       - name: Validate IaC changes on the routing directory
-        run: terraform plan -var-file="../../terraform.tfvars" -out=tfplan.binary
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -out=tfplan.binary
         working-directory: infra/deployment/prod/routing
 
       - name: Deploy the Route53
