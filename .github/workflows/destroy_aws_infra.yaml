@@ -80,7 +80,7 @@ jobs:
         working-directory: infra/deployment/prod/routing
 
       - name: Destroy Resources on the routing directory
-        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -auto-approve
+        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
         working-directory: infra/deployment/prod/routing
 
   # destroy-alb:
