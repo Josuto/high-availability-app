@@ -10,7 +10,7 @@ variable "project_name" {
 
 variable "container_name" {
   description = "Name of the app container to be deployed"
-  default     = "my-app"
+  type        = string
 }
 
 variable "container_port" {
@@ -85,7 +85,7 @@ variable "vpc_private_subnets" {
 
 variable "log_group" {
   description = "AWS Cloudwatch log group"
-  default     = "my-app-lg"
+  type        = string
 }
 
 variable "ordered_placement_strategies" {

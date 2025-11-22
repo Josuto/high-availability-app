@@ -8,7 +8,8 @@ resource "aws_alb" "alb" {
   enable_deletion_protection = lookup(var.enable_deletion_protection, var.environment) # Set to true in PROD environments to prevent the accidental deletion of the ALB
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }
 
@@ -28,7 +29,8 @@ resource "aws_alb_listener" "alb-https" {
   }
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }
 
@@ -50,6 +52,7 @@ resource "aws_alb_listener" "alb-http" {
   }
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }

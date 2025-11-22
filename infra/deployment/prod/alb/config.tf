@@ -18,9 +18,10 @@ data "terraform_remote_state" "ssl" {
 
 module "alb" {
   source                         = "../../../modules/alb"
-  alb_name                       = "demo-alb" 
+  alb_name                       = "${var.environment}-${var.project_name}-alb"
   project_name                   = var.project_name
   environment                    = var.environment 
+  container_name                 = "${var.environment}-${var.project_name}"
   vpc_id                         = data.terraform_remote_state.vpc.outputs.vpc_id
   vpc_public_subnets             = data.terraform_remote_state.vpc.outputs.public_subnets
   acm_certificate_validation_arn = data.terraform_remote_state.ssl.outputs.acm_certificate_validation_arn

@@ -5,7 +5,7 @@ variable "project_name" {
 
 variable "cluster_name" {
   description = "Name of the ECS cluster"
-  default     = "my-ecs"
+  type        = string
 }
 
 variable "ecs_instance_type" {

@@ -5,7 +5,7 @@ variable "project_name" {
 
 variable "ecr_repository_name" {
   description = "Name of the ECR repository that hosts the app image"
-  default     = "my-ecr-repository"
+  type        = string
 }
 
 variable "image_retention_max_count" {

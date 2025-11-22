@@ -1,6 +1,6 @@
 # ALB security group. It defines the ALB's "Front Door".
 resource "aws_security_group" "alb" {
-  name        = "alb-sg"
+  name        = "${var.environment}-${var.project_name}-alb-sg"
   vpc_id      = var.vpc_id
   description = "The ALB security group."
 
@@ -26,6 +26,7 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }

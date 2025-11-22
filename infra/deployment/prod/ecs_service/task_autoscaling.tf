@@ -17,7 +17,7 @@ resource "aws_appautoscaling_target" "ecs_target" {
 
 # 2. Define the Target Tracking Scaling Policy (The CORE of Service Scaling)
 resource "aws_appautoscaling_policy" "alb_request_scaling_policy" {
-  name                   = "ALB-Requests-Per-Target-Policy"
+  name                   = "${var.environment}-${var.project_name}-alb-requests-per-target-policy"
   service_namespace      = aws_appautoscaling_target.ecs_target.service_namespace
   resource_id            = aws_appautoscaling_target.ecs_target.resource_id
   scalable_dimension     = aws_appautoscaling_target.ecs_target.scalable_dimension

@@ -3,7 +3,8 @@ resource "aws_ecr_repository" "app-ecr-repository" {
   name = var.ecr_repository_name
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }
 

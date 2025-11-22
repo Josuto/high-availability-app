@@ -27,6 +27,7 @@ resource "aws_alb_target_group" "ecs-service" {
   }
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }

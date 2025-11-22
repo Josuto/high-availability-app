@@ -9,9 +9,10 @@ resource "aws_acm_certificate" "certificate" {
   lifecycle {
     create_before_destroy = true
   }
-  
+
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }
 

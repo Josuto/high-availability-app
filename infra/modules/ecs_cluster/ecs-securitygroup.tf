@@ -1,12 +1,13 @@
-# ECS cluster security group that acts as a firewall for your ECS cluster's compute resources. It controls all network traffic 
+# ECS cluster security group that acts as a firewall for your ECS cluster's compute resources. It controls all network traffic
 # to and from these compute resources.
 resource "aws_security_group" "cluster" {
-  name        = "${var.cluster_name}-sg"
+  name        = "${var.environment}-${var.project_name}-ecs-cluster-sg"
   vpc_id      = var.vpc_id
   description = "ECS cluster security group"
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }
 

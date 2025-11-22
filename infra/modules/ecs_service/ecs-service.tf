@@ -22,7 +22,8 @@ resource "aws_ecs_task_definition" "ecs-service-taskdef" {
   })
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }
 
@@ -36,7 +37,7 @@ data "aws_ecs_task_definition" "ecs-service" {
 
 # This resource manages the desired number of running tasks of a specific task definition within an ECS cluster.
 resource "aws_ecs_service" "ecs-service" {
-  name                               = "${var.container_name}-ecs-service" # Name of the ECS service
+  name                               = "${var.environment}-${var.project_name}-ecs-service" # Name of the ECS service
   cluster                            = var.ecs_cluster_arn # Associates this service with a specific ECS cluster
   # This construct ensures that the ECS service always points to the most current active revision of the task definition within that family
   task_definition                    = "${aws_ecs_task_definition.ecs-service-taskdef.family}:${max("${aws_ecs_task_definition.ecs-service-taskdef.revision}", "${data.aws_ecs_task_definition.ecs-service.revision}")}"
@@ -75,6 +76,7 @@ resource "aws_ecs_service" "ecs-service" {
   }
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }

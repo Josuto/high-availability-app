@@ -6,21 +6,23 @@
 
 # IAM role to assume by each EC2 instance running in the ECS cluster
 resource "aws_iam_role" "ecs_instance_role" {
-  name               = "ecs_instance_role"
+  name               = "${var.environment}-${var.project_name}-ecs-instance-role"
   assume_role_policy = file("${path.module}/iam-policies/ecs-ec2-role-assumption.json")
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }
 
 # IAM role policy to grant the necessary permissions for ECS EC2 instances to interact with ECS, ECR, and CloudWatch Logs
 resource "aws_iam_policy" "ecs_ec2_policy" {
-  name   = "ecs-ec2-policy"
+  name   = "${var.environment}-${var.project_name}-ecs-ec2-policy"
   policy = file("${path.module}/iam-policies/ecs-ec2-role-policy.json")
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }
 
@@ -38,10 +40,11 @@ resource "aws_iam_role_policy_attachment" "ssm_policy_attachment" {
 
 # IAM instance profile to allow EC2 instances to access AWS services with all the granted permissions
 resource "aws_iam_instance_profile" "ecs_instance_profile" {
-  name = "ecs-instance-profile"
+  name = "${var.environment}-${var.project_name}-ecs-instance-profile"
   role = aws_iam_role.ecs_instance_role.name
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }

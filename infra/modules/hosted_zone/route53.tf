@@ -5,6 +5,7 @@ resource "aws_route53_zone" "domain-zone" {
   force_destroy = lookup(var.force_destroy, var.environment) # Set to false in PROD environment
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }

@@ -1,5 +1,5 @@
 resource "aws_security_group" "ecs_tasks" {
-  name   = "ecs-tasks-sg"
+  name   = "${var.environment}-${var.project_name}-ecs-tasks-sg"
   vpc_id = var.vpc_id
 
   egress {
@@ -10,7 +10,8 @@ resource "aws_security_group" "ecs_tasks" {
   }
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }
 

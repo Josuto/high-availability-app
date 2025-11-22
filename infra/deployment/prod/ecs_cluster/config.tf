@@ -9,7 +9,7 @@ data "terraform_remote_state" "vpc" {
 
 module "ecs_cluster" {
   source              = "../../../modules/ecs_cluster"
-  cluster_name        = "demo-ecs-cluster"
+  cluster_name        = "${var.environment}-${var.project_name}-ecs-cluster"
   instance_min_size   = 2
   instance_max_size   = 4
   project_name        = var.project_name

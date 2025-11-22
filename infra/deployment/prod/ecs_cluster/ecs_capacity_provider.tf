@@ -2,7 +2,7 @@
 # It ensures there is always enough room for your containers to run, following the "Application-First" scaling mindset. 
 # NOTE: The name of the capacity provider cannot be prefixed with "aws" or "ecs".
 resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
-  name = "the_ecs_capacity_provider"
+  name = "${var.environment}-${var.project_name}-ecs-capacity-provider"
 
   auto_scaling_group_provider {
     auto_scaling_group_arn         = module.ecs_cluster.autoscaling_group_arn
@@ -15,7 +15,8 @@ resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
   }
 
   tags = {
-    Project = var.project_name
+    Project     = var.project_name
+    Environment = var.environment
   }
 }
 

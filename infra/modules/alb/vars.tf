@@ -5,7 +5,7 @@ variable "project_name" {
 
 variable "alb_name" {
   description = "Name of the ALB"
-  default     = "my-alb" 
+  type        = string
 }
 
 variable "vpc_id" {
@@ -20,7 +20,7 @@ variable "vpc_public_subnets" {
 
 variable "container_name" {
   description = "Name of the app container to be deployed"
-  default     = "my-app"
+  type        = string
 }
 
 variable "container_port" {
