@@ -17,3 +17,12 @@ variable "hosted_zone_id" {
   description = "The hosted zone ID"
   type        = string
 }
+
+variable "environment" {
+  description = "The deployment environment (dev or prod)"
+  type        = string
+  validation {
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "The environment must be either 'dev' or 'prod'."
+  }
+}
