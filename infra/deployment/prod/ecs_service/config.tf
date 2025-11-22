@@ -40,7 +40,7 @@ module "ecs_service" {
   project_name               = var.project_name
   environment                = var.environment
   container_name             = "${var.environment}-${var.project_name}"
-  log_group                  = "${var.environment}-${var.project_name}-lg"
+  log_group                  = "${var.environment}-${var.project_name}-ecs-lg"
   ecr_app_image              = var.ecr_app_image
   ecs_task_desired_count     = var.ecs_task_desired_count
   ecs_cluster_arn            = data.terraform_remote_state.ecs_cluster.outputs.ecs_cluster_arn

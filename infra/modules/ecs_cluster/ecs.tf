@@ -1,19 +1,23 @@
+locals {
+  cluster_name = "${var.environment}-${var.project_name}-ecs-cluster"
+}
+
 # ECS Cluster definition
 resource "aws_ecs_cluster" "ecs-cluster" {
-  name = var.cluster_name
+  name = local.cluster_name
 }
 
 # EC2 instance bootstrapping process
 locals {
   template = templatefile("${path.module}/templates/ec2-instance-init.tpl", {
-    ecs_cluster_name   = var.cluster_name
+    ecs_cluster_name   = local.cluster_name
   })
 }
 
 # Launch template used by the Auto Scaling Group to create EC2 instances
 # Note: Launch templates do not replace existing EC2 instances; Auto Scaling Groups do
 resource "aws_launch_template" "ecs-launch-template" {
-  name_prefix   = "${var.cluster_name}-lt"
+  name_prefix   = "${local.cluster_name}-lt"
   image_id      = data.aws_ami.ecs-ami-linux-2023.id # Use the latest ECS-optimized AMI for Amazon Linux 2023
   instance_type = var.ecs_instance_type
   user_data     = base64encode(local.template) # Base64-encoded EC2 instance bootstrapping process
@@ -38,7 +42,7 @@ resource "aws_launch_template" "ecs-launch-template" {
 
 # Auto Scaling Group that manages the EC2 instances registered at the ECS cluster
 resource "aws_autoscaling_group" "ecs-autoscaling-group" {
-  name                      = "${var.cluster_name}-ag"
+  name                      = "${local.cluster_name}-ag"
   vpc_zone_identifier       = var.vpc_private_subnets # Instructs the ASG to launch all its instances into the private subnets you defined with the VPC module
   min_size                  = var.instance_min_size
   max_size                  = var.instance_max_size

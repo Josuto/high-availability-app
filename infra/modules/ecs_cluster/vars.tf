@@ -3,11 +3,6 @@ variable "project_name" {
   type        = string
 }
 
-variable "cluster_name" {
-  description = "Name of the ECS cluster"
-  type        = string
-}
-
 variable "ecs_instance_type" {
   description = "Type of the AWS EC2 instances to be deployed at ECS"
   default     = "t2.micro" 

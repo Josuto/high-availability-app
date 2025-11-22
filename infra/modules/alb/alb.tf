@@ -1,6 +1,6 @@
 # This ECS ALB is the core component that distributes incoming application traffic across multiple targets, such as ECS tasks (i.e., containers).
 resource "aws_alb" "alb" {
-  name            = var.alb_name
+  name            = "${var.environment}-${var.project_name}-alb"
   internal        = false # Determines if the ALB is internal (accessible from within the VPC via a private IP) or Internet-facing (accessible from the Internet via a public IP)
   security_groups = [aws_security_group.alb.id] # The security groups that are associated with the ALB
   subnets         = var.vpc_public_subnets # The ALB must be deployed into at least two Availability Zones for high availability

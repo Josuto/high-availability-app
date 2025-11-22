@@ -3,11 +3,6 @@ variable "project_name" {
   type        = string
 }
 
-variable "ecr_repository_name" {
-  description = "Name of the ECR repository that hosts the app image"
-  type        = string
-}
-
 variable "image_retention_max_count" {
   description = "Maximum number of tagged images to retain per environment."
   type        = map(number)

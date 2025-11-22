@@ -18,7 +18,6 @@ data "terraform_remote_state" "ssl" {
 
 module "alb" {
   source                         = "../../../modules/alb"
-  alb_name                       = "${var.environment}-${var.project_name}-alb"
   project_name                   = var.project_name
   environment                    = var.environment 
   container_name                 = "${var.environment}-${var.project_name}"

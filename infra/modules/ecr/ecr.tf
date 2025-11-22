@@ -1,6 +1,6 @@
 # Create the app ECR repository
 resource "aws_ecr_repository" "app-ecr-repository" {
-  name = var.ecr_repository_name
+  name = "${var.environment}-${var.project_name}-ecr-repository"
 
   tags = {
     Project     = var.project_name
