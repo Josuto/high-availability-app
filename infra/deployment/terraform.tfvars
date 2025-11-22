@@ -9,7 +9,8 @@ root_domain = "josumartinez.com"
 state_bucket_name = "josumartinez-terraform-state-bucket"
 
 # Project identifier (used for resource tagging and naming)
-project_name = "high-availability-app"
+# hademo = High Availability Demo
+project_name = "hademo"
 
 # Environment identifier (dev, prod)
 environment = "dev"
