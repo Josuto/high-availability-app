@@ -57,7 +57,7 @@ jobs:
 
   destroy-routing:
     name: Destroy routing-related resources
-    needs: destroy-ecs-service
+    # needs: destroy-ecs-service
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from the repository
