@@ -1,5 +1,5 @@
-# The Capacity Provider (CP) manages the cluster's underlying EC2 infrastructure by telling the ECS how to manage the ASG scaling. 
-# It ensures there is always enough room for your containers to run, following the "Application-First" scaling mindset. 
+# The Capacity Provider (CP) manages the cluster's underlying EC2 infrastructure by telling the ECS how to manage the ASG scaling.
+# It ensures there is always enough room for your containers to run, following the "Application-First" scaling mindset.
 # NOTE: The name of the capacity provider cannot be prefixed with "aws" or "ecs".
 resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
   name = "${var.environment}-${var.project_name}-ecs-capacity-provider"
@@ -23,7 +23,7 @@ resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
 resource "aws_ecs_cluster_capacity_providers" "main" {
   cluster_name       = module.ecs_cluster.ecs_cluster_name
   capacity_providers = [aws_ecs_capacity_provider.ecs_capacity_provider.name]
-  
+
   # Default strategy: use the EC2 Capacity Provider
   default_capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.ecs_capacity_provider.name

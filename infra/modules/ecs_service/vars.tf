@@ -1,6 +1,6 @@
 variable "aws_region" {
   description = "AWS region"
-  default     = "eu-west-1" 
+  default     = "eu-west-1"
 }
 
 variable "project_name" {
@@ -15,7 +15,7 @@ variable "container_name" {
 
 variable "container_port" {
   description = "Port the app container is available from"
-  default     = 3000 
+  default     = 3000
 }
 
 variable "cpu_limit" {
@@ -40,7 +40,7 @@ variable "task_role_arn" {
 
 variable "ecs_cluster_arn" {
   description = "ECS cluster ARN"
-  type        = string 
+  type        = string
 }
 
 variable "ecs_task_desired_count" {
@@ -80,7 +80,7 @@ variable "vpc_id" {
 
 variable "vpc_private_subnets" {
   description = "The list of existing VPC private subnets"
-  type        = list(string) 
+  type        = list(string)
 }
 
 variable "log_group" {
@@ -98,7 +98,7 @@ variable "ordered_placement_strategies" {
     "dev" = [
       {
         type  = "binpack" # Pack tasks onto as few instances as possible (saves cost)
-        field = "cpu" # Spread by least available CPU (Cost Optimization)
+        field = "cpu"     # Spread by least available CPU (Cost Optimization)
       }
     ],
     "prod" = [

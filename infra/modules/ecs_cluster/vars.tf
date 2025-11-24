@@ -5,7 +5,7 @@ variable "project_name" {
 
 variable "ecs_instance_type" {
   description = "Type of the AWS EC2 instances to be deployed at ECS"
-  default     = "t2.micro" 
+  default     = "t2.micro"
 }
 
 variable "vpc_id" {
@@ -15,7 +15,7 @@ variable "vpc_id" {
 
 variable "vpc_private_subnets" {
   description = "The list of existing VPC private subnets"
-  type        = list(string) 
+  type        = list(string)
 }
 
 variable "instance_min_size" {

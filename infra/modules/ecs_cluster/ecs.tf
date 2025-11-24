@@ -10,7 +10,7 @@ resource "aws_ecs_cluster" "ecs-cluster" {
 # EC2 instance bootstrapping process
 locals {
   template = templatefile("${path.module}/templates/ec2-instance-init.tpl", {
-    ecs_cluster_name   = local.cluster_name
+    ecs_cluster_name = local.cluster_name
   })
 }
 
@@ -46,7 +46,7 @@ resource "aws_autoscaling_group" "ecs-autoscaling-group" {
   vpc_zone_identifier       = var.vpc_private_subnets # Instructs the ASG to launch all its instances into the private subnets you defined with the VPC module
   min_size                  = var.instance_min_size
   max_size                  = var.instance_max_size
-  health_check_grace_period = 300 # 5 minutes
+  health_check_grace_period = 300   # 5 minutes
   health_check_type         = "EC2" # ASG relies on the EC2 instance status checks
   force_delete              = false # Protect against accidental EC2 instance termination (default value)
 
@@ -55,10 +55,10 @@ resource "aws_autoscaling_group" "ecs-autoscaling-group" {
     version = "$Latest"
   }
 
-  # Prerequisite for the ECS Capacity Provider's managed protection: Flags all newly launched EC2 instances in that ASG to prevent them 
+  # Prerequisite for the ECS Capacity Provider's managed protection: Flags all newly launched EC2 instances in that ASG to prevent them
   # from being terminated during a scale-in event
   protect_from_scale_in = lookup(var.protect_from_scale_in, var.environment)
-  
+
   tag {
     key                 = "Name"
     value               = "ecs-ec2-container"

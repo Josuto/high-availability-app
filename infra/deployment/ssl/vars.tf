@@ -21,4 +21,3 @@ variable "environment" {
     error_message = "The environment must be either 'dev' or 'prod'."
   }
 }
-

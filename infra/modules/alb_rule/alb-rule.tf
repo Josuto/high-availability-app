@@ -1,5 +1,5 @@
-# An AWS Load Balancer Listener Rule determines how the load balancer routes incoming requests to different target groups based on 
-# various conditions. This allows for more sophisticated routing logic than just the listener's default action. Actually, such a rule 
+# An AWS Load Balancer Listener Rule determines how the load balancer routes incoming requests to different target groups based on
+# various conditions. This allows for more sophisticated routing logic than just the listener's default action. Actually, such a rule
 # will override the listener's default action if its priority is lower (e.g., 10 vs the default 50000 if no priority is specified).
 #
 # Examples of complex routing logic with ALBs:

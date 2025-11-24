@@ -31,9 +31,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "state_encryption"
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"  # Use AWS-managed keys (SSE-S3) for automatic encryption
+      sse_algorithm = "AES256" # Use AWS-managed keys (SSE-S3) for automatic encryption
     }
-    bucket_key_enabled = true  # Reduces encryption costs by minimizing KMS requests
+    bucket_key_enabled = true # Reduces encryption costs by minimizing KMS requests
   }
 }
 
@@ -44,10 +44,10 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "state_encryption"
 resource "aws_s3_bucket_public_access_block" "state_bucket_pab" {
   bucket = aws_s3_bucket.josumartinez-terraform-state-bucket.id
 
-  block_public_acls       = true  # Reject PUT requests that specify a public ACL
-  block_public_policy     = true  # Reject PUT requests that would make the bucket public via policy
-  ignore_public_acls      = true  # Ignore any existing public ACLs on the bucket
-  restrict_public_buckets = true  # Block public access granted through bucket or access point policies
+  block_public_acls       = true # Reject PUT requests that specify a public ACL
+  block_public_policy     = true # Reject PUT requests that would make the bucket public via policy
+  ignore_public_acls      = true # Ignore any existing public ACLs on the bucket
+  restrict_public_buckets = true # Block public access granted through bucket or access point policies
 }
 
 # Lifecycle policy to automatically delete old state file versions after a retention period.

@@ -1,6 +1,6 @@
 # ECS EC2 Instance Role:
-# This section is composed of the Terraform resources required to create a role for EC2 instances and a policy to 
-# enable EC2 registry with an ECS cluster, fetch container images from ECR, and log application data to CloudWatch. 
+# This section is composed of the Terraform resources required to create a role for EC2 instances and a policy to
+# enable EC2 registry with an ECS cluster, fetch container images from ECR, and log application data to CloudWatch.
 # Furthermore, the section also includes a policy to enable access to the EC2 instances via SSM from the AWS console.
 # Finally, it creates an instance profile to associate the role with the EC2 instances.
 

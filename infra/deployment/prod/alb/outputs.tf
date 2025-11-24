@@ -1,5 +1,5 @@
-# Required the outputs from a child module (that defined under the 'modules' folder) are not automatically promoted to the state file of 
-# the root module (i.e., the module where this file is included). Otherwise, the variables included in any GH Actions pipeline or Terraform 
+# Required the outputs from a child module (that defined under the 'modules' folder) are not automatically promoted to the state file of
+# the root module (i.e., the module where this file is included). Otherwise, the variables included in any GH Actions pipeline or Terraform
 # variables will appear to be empty.
 
 output "alb_target_group_id" {

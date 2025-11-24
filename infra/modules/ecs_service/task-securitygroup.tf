@@ -21,6 +21,6 @@ resource "aws_security_group_rule" "alb_to_tasks" {
   from_port                = var.container_port
   to_port                  = var.container_port
   protocol                 = "tcp"
-  source_security_group_id = var.alb_security_group_id # Only traffic coming from the ALB’s security group can get in
+  source_security_group_id = var.alb_security_group_id       # Only traffic coming from the ALB’s security group can get in
   security_group_id        = aws_security_group.ecs_tasks.id # Attaches the rule to the ECS tasks’ security group
 }

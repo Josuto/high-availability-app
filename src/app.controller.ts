@@ -5,7 +5,7 @@ import { APP_INSTANCE_ID_TOKEN } from './constants';
 @Controller()
 export class AppController {
   constructor(
-    private readonly appService: AppService, 
+    private readonly appService: AppService,
     @Inject(APP_INSTANCE_ID_TOKEN) private readonly appInstanceId: string) {}
 
   @Get()

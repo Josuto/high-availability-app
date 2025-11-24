@@ -3,7 +3,7 @@ name: Deploy Terraform State Bucket
 on:
   workflow_call:
     inputs:
-      github_head_commit_message: 
+      github_head_commit_message:
         required: true
         type: string
         description: "Message of the last commit sent to the GitHub account"

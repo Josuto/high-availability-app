@@ -22,4 +22,3 @@ variable "hosted_zone_id" {
   description = "Hosted zone ID"
   type        = string
 }
-

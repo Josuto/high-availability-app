@@ -10,7 +10,7 @@ variable "vpc_id" {
 
 variable "vpc_public_subnets" {
   description = "The list of existing VPC public subnets"
-  type        = list(string) 
+  type        = list(string)
 }
 
 variable "container_name" {
@@ -20,7 +20,7 @@ variable "container_name" {
 
 variable "container_port" {
   description = "Port the app container is available from"
-  default     = 3000 
+  default     = 3000
 }
 
 variable "deregistration_delay" {
