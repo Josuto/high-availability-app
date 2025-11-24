@@ -3,6 +3,7 @@
 ## Table of Contents
 
 1. [Motivation & Goals](#1-motivation--goals)
+    * [1.1. Developer Setup: Pre-commit Hooks](#11-developer-setup-pre-commit-hooks)
 2. [Application Overview](#2-application-overview)
 3. [AWS Infrastructure Architecture](#3-aws-infrastructure-architecture)
     * [3.1. Project Structure: Modules and Reusability](#31-project-structure-modules-and-reusability)
@@ -22,6 +23,96 @@ This project was built as a practical, hands-on learning experience to master **
 
 * To learn **Infrastructure as Code (IaC)** by defining all cloud resources using **Terraform**.
 * To create reusable Terraform modules to quickly spin up **simple yet production-ready AWS infrastructure** that ensures **high availability**.
+
+---
+
+## 1.1. Developer Setup: Pre-commit Hooks
+
+This project uses pre-commit hooks to catch common errors before they're committed. These hooks will automatically format Terraform files, validate syntax, check for security issues, and prevent secret commits.
+
+### Prerequisites
+
+* Python 3.7+ (for pre-commit framework)
+* Terraform 1.0+
+* Homebrew (macOS/Linux)
+
+### Installation
+
+1. **Install pre-commit**:
+   ```bash
+   brew install pre-commit
+   ```
+
+2. **Install TFLint**:
+   ```bash
+   brew install tflint
+   ```
+
+3. **Install TFLint AWS plugin**:
+   ```bash
+   tflint --init
+   ```
+
+4. **Install tfsec**:
+   ```bash
+   brew install tfsec
+   ```
+
+5. **Install detect-secrets**:
+   ```bash
+   brew install detect-secrets
+   ```
+
+6. **Install terraform-docs**:
+   ```bash
+   brew install terraform-docs
+   ```
+
+7. **Install the pre-commit hooks**:
+   ```bash
+   pre-commit install
+   ```
+
+8. **(Optional) Run hooks against all files to test**:
+   ```bash
+   pre-commit run --all-files
+   ```
+
+### Usage
+
+Once installed, the hooks will run automatically on `git commit`. If any hook fails:
+
+* **Formatting issues**: Files will be automatically reformatted. Review the changes, then stage them with `git add .` and commit again.
+* **Validation/security issues**: Fix the reported issues manually and commit again.
+
+**Recommended workflow** to avoid having commits rejected due to formatting:
+
+```bash
+# 1. Make your changes to Terraform files
+# 2. Format Terraform files before staging (optional but recommended)
+terraform fmt -recursive infra/
+
+# 3. Stage and commit (hooks should pass on first attempt)
+git add .
+git commit -m "Your commit message"
+```
+
+Alternatively, let pre-commit format for you:
+1. Stage and commit as usual
+2. If `terraform_fmt` modifies files, the commit will be rejected
+3. Review the formatting changes in your working directory
+4. Run `git add .` to stage the formatted files
+5. Commit again - hooks will now pass
+
+**To skip hooks** (not recommended):
+```bash
+git commit --no-verify
+```
+
+**To manually run hooks on specific files**:
+```bash
+pre-commit run --files path/to/file.tf
+```
 
 ---
 

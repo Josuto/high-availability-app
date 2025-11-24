@@ -1,0 +1,65 @@
+repos:
+  # Terraform formatting - will auto-format files
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.104.0
+    hooks:
+      - id: terraform_fmt
+        name: Terraform Format
+        description: Rewrites Terraform files to canonical format
+
+      - id: terraform_validate
+        name: Terraform Validate
+        description: Validates Terraform configuration files
+
+      - id: terraform_tflint
+        name: TFLint
+        description: Lints Terraform code for best practices
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+
+      - id: terraform_docs
+        name: Terraform Docs
+        description: Auto-generates documentation for Terraform modules
+        args:
+          - --hook-config=--path-to-file=README.md
+          - --hook-config=--add-to-existing-file=true
+          - --hook-config=--create-file-if-not-exist=true
+        files: ^infra/modules/
+
+  # Security scanning with tfsec
+  # - repo: https://github.com/aquasecurity/tfsec
+  #   rev: v1.28.14
+  #   hooks:
+  #     - id: tfsec
+  #       name: TFSec Security Scan
+  #       description: Static analysis security scanner for Terraform
+  #       args:
+  #         - --concise-output
+  #         - --config-file=.tfsec/config.yml
+  #       exclude: \.terraform/
+
+  # Secret detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        name: Detect Secrets
+        description: Prevents accidental secret commits
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package-lock.json
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim Trailing Whitespace
+      - id: end-of-file-fixer
+        name: Fix End of Files
+      - id: check-yaml
+        name: Check YAML Syntax
+      - id: check-added-large-files
+        name: Check for Large Files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+        name: Check for Merge Conflicts
