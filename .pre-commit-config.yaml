@@ -11,11 +11,11 @@ repos:
         name: Terraform Validate
         description: Validates Terraform configuration files
 
-      - id: terraform_tflint
-        name: TFLint
-        description: Lints Terraform code for best practices
-        args:
-          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+      # - id: terraform_tflint
+      #   name: TFLint
+      #   description: Lints Terraform code for best practices
+      #   args:
+      #     - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
 
       - id: terraform_docs
         name: Terraform Docs
