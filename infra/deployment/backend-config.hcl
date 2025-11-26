@@ -5,7 +5,7 @@
 # IMPORTANT: Update the 'bucket' value below with your own S3 bucket name before use.
 # This bucket must be created first using the infrastructure in ./backend/
 
-bucket = "josumartinez_terraform_state_bucket"
+bucket = "josumartinez-terraform-state-bucket"
 
 # Optional: Uncomment the following line if you have DynamoDB state locking enabled
 # dynamodb_table = "josumartinez_terraform_locks"
