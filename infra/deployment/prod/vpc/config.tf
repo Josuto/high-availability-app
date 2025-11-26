@@ -1,7 +1,8 @@
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
-  name   = "${var.environment}-${var.project_name}-vpc"
-  cidr   = "10.0.0.0/16"
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "6.5.1"
+  name    = "${var.environment}-${var.project_name}-vpc"
+  cidr    = "10.0.0.0/16"
 
   azs             = ["${var.aws_region}a", "${var.aws_region}b", "${var.aws_region}c"]
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
