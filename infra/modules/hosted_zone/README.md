@@ -29,7 +29,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_environment"></a> [environment](#input\_environment) | The environment to deploy to (dev or prod). | `string` | `"dev"` | no |
-| <a name="input_force_destroy"></a> [force\_destroy](#input\_force\_destroy) | Enable the destruction of the hosted zone | `map` | <pre>{<br/>  "dev": true,<br/>  "prod": false<br/>}</pre> | no |
+| <a name="input_force_destroy"></a> [force\_destroy](#input\_force\_destroy) | Enable the destruction of the hosted zone | `map(bool)` | <pre>{<br/>  "dev": true,<br/>  "prod": false<br/>}</pre> | no |
 | <a name="input_project_name"></a> [project\_name](#input\_project\_name) | The name of the project this module belongs to | `string` | n/a | yes |
 | <a name="input_root_domain_name"></a> [root\_domain\_name](#input\_root\_domain\_name) | The app root domain name | `string` | n/a | yes |
 

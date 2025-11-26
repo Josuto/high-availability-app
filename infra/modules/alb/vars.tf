@@ -20,21 +20,25 @@ variable "container_name" {
 
 variable "container_port" {
   description = "Port the app container is available from"
+  type        = number
   default     = 3000
 }
 
 variable "deregistration_delay" {
   description = "The amount seconds for the ALB to wait before completing the deregistration of a target"
+  type        = number
   default     = 30
 }
 
 variable "health_check_path" {
   description = "The path to the app health check endpoint"
+  type        = string
   default     = "/health"
 }
 
 variable "healthcheck_matcher" {
   description = "The expected HTTP response code or codes for a successful health check"
+  type        = string
   default     = "200"
 }
 
@@ -45,6 +49,7 @@ variable "acm_certificate_validation_arn" {
 
 variable "enable_deletion_protection" {
   description = "Values for the ALB's enable_deletion_protection variable based on the running environment"
+  type        = map(bool)
   default = {
     "dev"  = false
     "prod" = true
@@ -53,6 +58,7 @@ variable "enable_deletion_protection" {
 
 variable "environment" {
   description = "The environment to deploy to (dev or prod)."
+  type        = string
   default     = "dev"
   validation {
     condition     = contains(["dev", "prod"], var.environment)

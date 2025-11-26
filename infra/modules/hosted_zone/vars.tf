@@ -10,6 +10,7 @@ variable "root_domain_name" {
 
 variable "force_destroy" {
   description = "Enable the destruction of the hosted zone"
+  type        = map(bool)
   default = {
     "dev"  = true
     "prod" = false
@@ -18,6 +19,7 @@ variable "force_destroy" {
 
 variable "environment" {
   description = "The environment to deploy to (dev or prod)."
+  type        = string
   default     = "dev"
   validation {
     condition     = contains(["dev", "prod"], var.environment)

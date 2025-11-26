@@ -5,6 +5,7 @@ variable "project_name" {
 
 variable "ecs_instance_type" {
   description = "Type of the AWS EC2 instances to be deployed at ECS"
+  type        = string
   default     = "t2.micro"
 }
 
@@ -20,16 +21,19 @@ variable "vpc_private_subnets" {
 
 variable "instance_min_size" {
   description = "The minimum number of EC2 instances the ASG must maintain"
+  type        = number
   default     = 1
 }
 
 variable "instance_max_size" {
   description = "The maximum number of EC2 instances the ASG is allowed to launch"
+  type        = number
   default     = 2
 }
 
 variable "protect_from_scale_in" {
   description = "It true, the ASG will not terminate any scale-in protected EC2 instance"
+  type        = map(bool)
   default = {
     "dev"  = false
     "prod" = true
@@ -38,6 +42,7 @@ variable "protect_from_scale_in" {
 
 variable "environment" {
   description = "The environment to deploy to (dev or prod)."
+  type        = string
   default     = "dev"
   validation {
     condition     = contains(["dev", "prod"], var.environment)

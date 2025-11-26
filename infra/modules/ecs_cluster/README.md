@@ -44,7 +44,7 @@ No modules.
 | <a name="input_instance_max_size"></a> [instance\_max\_size](#input\_instance\_max\_size) | The maximum number of EC2 instances the ASG is allowed to launch | `number` | `2` | no |
 | <a name="input_instance_min_size"></a> [instance\_min\_size](#input\_instance\_min\_size) | The minimum number of EC2 instances the ASG must maintain | `number` | `1` | no |
 | <a name="input_project_name"></a> [project\_name](#input\_project\_name) | The name of the project this module belongs to | `string` | n/a | yes |
-| <a name="input_protect_from_scale_in"></a> [protect\_from\_scale\_in](#input\_protect\_from\_scale\_in) | It true, the ASG will not terminate any scale-in protected EC2 instance | `map` | <pre>{<br/>  "dev": false,<br/>  "prod": true<br/>}</pre> | no |
+| <a name="input_protect_from_scale_in"></a> [protect\_from\_scale\_in](#input\_protect\_from\_scale\_in) | It true, the ASG will not terminate any scale-in protected EC2 instance | `map(bool)` | <pre>{<br/>  "dev": false,<br/>  "prod": true<br/>}</pre> | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC ID | `string` | n/a | yes |
 | <a name="input_vpc_private_subnets"></a> [vpc\_private\_subnets](#input\_vpc\_private\_subnets) | The list of existing VPC private subnets | `list(string)` | n/a | yes |
 

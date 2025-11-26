@@ -36,7 +36,7 @@ No modules.
 | <a name="input_container_name"></a> [container\_name](#input\_container\_name) | Name of the app container to be deployed | `string` | n/a | yes |
 | <a name="input_container_port"></a> [container\_port](#input\_container\_port) | Port the app container is available from | `number` | `3000` | no |
 | <a name="input_deregistration_delay"></a> [deregistration\_delay](#input\_deregistration\_delay) | The amount seconds for the ALB to wait before completing the deregistration of a target | `number` | `30` | no |
-| <a name="input_enable_deletion_protection"></a> [enable\_deletion\_protection](#input\_enable\_deletion\_protection) | Values for the ALB's enable\_deletion\_protection variable based on the running environment | `map` | <pre>{<br/>  "dev": false,<br/>  "prod": true<br/>}</pre> | no |
+| <a name="input_enable_deletion_protection"></a> [enable\_deletion\_protection](#input\_enable\_deletion\_protection) | Values for the ALB's enable\_deletion\_protection variable based on the running environment | `map(bool)` | <pre>{<br/>  "dev": false,<br/>  "prod": true<br/>}</pre> | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | The environment to deploy to (dev or prod). | `string` | `"dev"` | no |
 | <a name="input_health_check_path"></a> [health\_check\_path](#input\_health\_check\_path) | The path to the app health check endpoint | `string` | `"/health"` | no |
 | <a name="input_healthcheck_matcher"></a> [healthcheck\_matcher](#input\_healthcheck\_matcher) | The expected HTTP response code or codes for a successful health check | `string` | `"200"` | no |

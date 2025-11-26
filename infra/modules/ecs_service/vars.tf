@@ -1,5 +1,6 @@
 variable "aws_region" {
   description = "AWS region"
+  type        = string
   default     = "eu-west-1"
 }
 
@@ -15,16 +16,19 @@ variable "container_name" {
 
 variable "container_port" {
   description = "Port the app container is available from"
+  type        = number
   default     = 3000
 }
 
 variable "cpu_limit" {
   description = "The limit of usage of CPU on a task/container"
+  type        = number
   default     = 256
 }
 
 variable "memory_limit" {
   description = "The limit of usage of memory on a task/container"
+  type        = number
   default     = 128
 }
 
@@ -35,6 +39,7 @@ variable "ecr_app_image" {
 
 variable "task_role_arn" {
   description = "Specifies the ARN of an IAM role that the app will assume"
+  type        = string
   default     = ""
 }
 
@@ -50,11 +55,13 @@ variable "ecs_task_desired_count" {
 
 variable "deployment_minimum_healthy_percent" {
   description = "Lower limit of healthy tasks that must be running during deployment so that the service remains available"
+  type        = number
   default     = 100
 }
 
 variable "deployment_maximum_percent" {
   description = "Upper limit of health tasks that must be running during deployment"
+  type        = number
   default     = 200
 }
 
@@ -116,6 +123,7 @@ variable "ordered_placement_strategies" {
 
 variable "environment" {
   description = "The environment to deploy to (dev or prod)."
+  type        = string
   default     = "dev"
   validation {
     condition     = contains(["dev", "prod"], var.environment)
