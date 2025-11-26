@@ -40,7 +40,7 @@ resource "aws_ecs_service" "ecs_service" {
   name    = "${var.environment}-${var.project_name}-ecs-service" # Name of the ECS service
   cluster = var.ecs_cluster_arn                                  # Associates this service with a specific ECS cluster
   # This construct ensures that the ECS service always points to the most current active revision of the task definition within that family
-  task_definition                    = "${aws_ecs_task_definition.ecs_service_taskdef.family}:${max("${aws_ecs_task_definition.ecs_service_taskdef.revision}", "${data.aws_ecs_task_definition.ecs_service.revision}")}"
+  task_definition                    = "${aws_ecs_task_definition.ecs_service_taskdef.family}:${max(aws_ecs_task_definition.ecs_service_taskdef.revision, data.aws_ecs_task_definition.ecs_service.revision)}"
   desired_count                      = var.ecs_task_desired_count             # The number of tasks that you want to run for this service. ECS will automatically maintain this number
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent # Lower limit of healthy tasks that must be running during deployment so that the service remains available
   deployment_maximum_percent         = var.deployment_maximum_percent         # Upper limit of health tasks that must be running during deployment. This helps control the rollout speed and resource consumption during updates
