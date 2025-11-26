@@ -60,5 +60,5 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_ecs_service_name"></a> [ecs\_service\_name](#output\_ecs\_service\_name) | n/a |
+| <a name="output_ecs_service_name"></a> [ecs\_service\_name](#output\_ecs\_service\_name) | The name of the ECS service |
 <!-- END_TF_DOCS -->

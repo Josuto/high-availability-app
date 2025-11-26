@@ -40,5 +40,5 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_acm_certificate_validation_arn"></a> [acm\_certificate\_validation\_arn](#output\_acm\_certificate\_validation\_arn) | n/a |
+| <a name="output_acm_certificate_validation_arn"></a> [acm\_certificate\_validation\_arn](#output\_acm\_certificate\_validation\_arn) | The ARN of the validated ACM certificate for HTTPS |
 <!-- END_TF_DOCS -->

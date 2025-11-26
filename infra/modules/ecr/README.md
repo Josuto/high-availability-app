@@ -37,6 +37,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_ecr_repository_name"></a> [ecr\_repository\_name](#output\_ecr\_repository\_name) | n/a |
-| <a name="output_ecr_repository_url"></a> [ecr\_repository\_url](#output\_ecr\_repository\_url) | Output the ECR repository URL to consume in the GitHub Actions pipeline |
+| <a name="output_ecr_repository_name"></a> [ecr\_repository\_name](#output\_ecr\_repository\_name) | The name of the ECR repository |
+| <a name="output_ecr_repository_url"></a> [ecr\_repository\_url](#output\_ecr\_repository\_url) | The URL of the ECR repository for pushing Docker images |
 <!-- END_TF_DOCS -->
