@@ -1,4 +1,4 @@
-resource "aws_s3_bucket" "josumartinez_terraform_state_bucket" {
+resource "aws_s3_bucket" "terraform_state_bucket" {
   bucket = var.state_bucket_name
 
   tags = {
@@ -12,7 +12,7 @@ resource "aws_s3_bucket" "josumartinez_terraform_state_bucket" {
 # This is critical for disaster recovery: if the state file is accidentally deleted or corrupted,
 # you can restore a previous version. Versioning also allows you to audit changes over time.
 resource "aws_s3_bucket_versioning" "state_versioning" {
-  bucket = aws_s3_bucket.josumartinez_terraform_state_bucket.id
+  bucket = aws_s3_bucket.terraform_state_bucket.id
 
   versioning_configuration {
     status = "Enabled"
@@ -27,7 +27,7 @@ resource "aws_s3_bucket_versioning" "state_versioning" {
 # encryption at rest within the bucket itself, preventing unencrypted uploads.
 resource "aws_s3_bucket_server_side_encryption_configuration" "state_encryption" {
   count  = var.environment == "prod" ? 1 : 0
-  bucket = aws_s3_bucket.josumartinez_terraform_state_bucket.id
+  bucket = aws_s3_bucket.terraform_state_bucket.id
 
   rule {
     apply_server_side_encryption_by_default {
@@ -42,7 +42,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "state_encryption"
 # and potentially secrets), so they must never be publicly accessible. This resource
 # applies multiple layers of protection against public access through ACLs or bucket policies.
 resource "aws_s3_bucket_public_access_block" "state_bucket_pab" {
-  bucket = aws_s3_bucket.josumartinez_terraform_state_bucket.id
+  bucket = aws_s3_bucket.terraform_state_bucket.id
 
   block_public_acls       = true # Reject PUT requests that specify a public ACL
   block_public_policy     = true # Reject PUT requests that would make the bucket public via policy
@@ -55,7 +55,7 @@ resource "aws_s3_bucket_public_access_block" "state_bucket_pab" {
 # a reasonable history for rollback and audit purposes. Dev uses a shorter retention (30 days)
 # for cost savings, while prod retains versions for 90 days to support longer audit trails.
 resource "aws_s3_bucket_lifecycle_configuration" "state_lifecycle" {
-  bucket = aws_s3_bucket.josumartinez_terraform_state_bucket.id
+  bucket = aws_s3_bucket.terraform_state_bucket.id
 
   rule {
     id     = "delete-old-versions"

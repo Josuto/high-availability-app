@@ -67,7 +67,7 @@ jobs:
       - name: Import the Terraform state bucket state
         run: |
           STATE_BUCKET_NAME=$(grep "^state_bucket_name" ../backend.tfvars | cut -d'"' -f2)
-          terraform import -var-file="../common.tfvars" -var-file="../backend.tfvars" aws_s3_bucket.josumartinez_terraform_state_bucket ${STATE_BUCKET_NAME}
+          terraform import -var-file="../common.tfvars" -var-file="../backend.tfvars" aws_s3_bucket.terraform_state_bucket ${STATE_BUCKET_NAME}
         working-directory: infra/deployment/backend
 
       - name: Destroy the Terraform state bucket
