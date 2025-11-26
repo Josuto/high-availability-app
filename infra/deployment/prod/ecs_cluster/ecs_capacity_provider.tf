@@ -6,11 +6,11 @@ resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
 
   auto_scaling_group_provider {
     auto_scaling_group_arn         = module.ecs_cluster.autoscaling_group_arn
-    managed_termination_protection = lookup(var.managed_termination_protection_setting, var.environment)
+    managed_termination_protection = var.managed_termination_protection_setting[var.environment]
 
     managed_scaling {
       status          = "ENABLED"
-      target_capacity = lookup(var.ecs_max_utilisation, var.environment) # ECS aims to keep cluster utilization at the given percentage
+      target_capacity = var.ecs_max_utilisation[var.environment] # ECS aims to keep cluster utilization at the given percentage
     }
   }
 

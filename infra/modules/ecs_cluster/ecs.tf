@@ -57,7 +57,7 @@ resource "aws_autoscaling_group" "ecs_autoscaling_group" {
 
   # Prerequisite for the ECS Capacity Provider's managed protection: Flags all newly launched EC2 instances in that ASG to prevent them
   # from being terminated during a scale-in event
-  protect_from_scale_in = lookup(var.protect_from_scale_in, var.environment)
+  protect_from_scale_in = var.protect_from_scale_in[var.environment]
 
   tag {
     key                 = "Name"

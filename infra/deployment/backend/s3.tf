@@ -62,7 +62,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "state_lifecycle" {
     status = "Enabled"
 
     noncurrent_version_expiration {
-      noncurrent_days = lookup({ dev = 30, prod = 90 }, var.environment, 90)
+      noncurrent_days = try({ dev = 30, prod = 90 }[var.environment], 90)
     }
   }
 }

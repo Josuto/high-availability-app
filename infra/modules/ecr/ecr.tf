@@ -41,7 +41,7 @@ resource "aws_ecr_lifecycle_policy" "ecr_policy" {
           "tagStatus" : "tagged",
           "tagPrefixList" : [local.env_tag_prefix],
           "countType" : "imageCountMoreThan",
-          "countNumber" : lookup(var.image_retention_max_count, var.environment)
+          "countNumber" : var.image_retention_max_count[var.environment]
         },
         "action" : {
           "type" : "expire"
