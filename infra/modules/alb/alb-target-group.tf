@@ -5,7 +5,7 @@
 # In the context of an ECS cluster, when you define an ECS service, you link it to an ALB target group. The ECS service automatically
 # registers and deregisters its tasks (containers) with this target group as they start, stop, or scale, ensuring that the ALB always has
 # a list of healthy, available application instances to send traffic to.
-resource "aws_alb_target_group" "ecs-service" {
+resource "aws_alb_target_group" "ecs_service" {
   # Name of the target group aimed to be unique within the AWS region and account they belong to. This value is obtained following a common
   # pattern. If any of these variables change, a new target group with a different name will be created. This can be beneficial for blue/green
   # deployments or when you need to ensure a new target group is deployed when certain application parameters change.

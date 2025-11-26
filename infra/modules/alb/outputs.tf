@@ -1,5 +1,5 @@
 output "alb_target_group_id" {
-  value = aws_alb_target_group.ecs-service.id
+  value = aws_alb_target_group.ecs_service.id
 }
 
 output "alb_dns_name" {
@@ -11,7 +11,7 @@ output "alb_arn_suffix" {
 }
 
 output "alb_target_group_arn_suffix" {
-  value = aws_alb_target_group.ecs-service.arn_suffix
+  value = aws_alb_target_group.ecs_service.arn_suffix
 }
 
 output "alb_security_group_id" {

@@ -16,7 +16,7 @@ resource "aws_alb" "alb" {
 # HTTPS listener
 # To accept incoming HTTPS connections, decrypt them using the specified certificate, and forward the unencrypted traffic to the configured
 # target group (your ECS services).
-resource "aws_alb_listener" "alb-https" {
+resource "aws_alb_listener" "alb_https" {
   load_balancer_arn = aws_alb.alb.arn # Link this listener to the ALB
   port              = "443"           # HTTPS standard port
   protocol          = "HTTPS"
@@ -24,7 +24,7 @@ resource "aws_alb_listener" "alb-https" {
   certificate_arn   = var.acm_certificate_validation_arn        # Attaches the retrieved ACM certificate to this listener, enabling SSL/TLS termination at the ALB i.e., all traffic encrypted with this certificate will be decrypted by the ALB
 
   default_action {                                          # Defines what the listener should do with incoming requests that don't match any specific rules (if you had more complex rules)
-    target_group_arn = aws_alb_target_group.ecs-service.arn # Specifies the ARN of the default target group (defines your ECS service's tasks) to which requests will be forwarded
+    target_group_arn = aws_alb_target_group.ecs_service.arn # Specifies the ARN of the default target group (defines your ECS service's tasks) to which requests will be forwarded
     type             = "forward"                            # Indicates that the action is to forward the request to the specified target group
   }
 
@@ -37,7 +37,7 @@ resource "aws_alb_listener" "alb-https" {
 # HTTP listener
 # Redirect all HTTP requests to HTTPS requests. To do so, the ALB is to issue a redirect response to the client so that it makes an HTTPS request
 # instead.
-resource "aws_alb_listener" "alb-http" {
+resource "aws_alb_listener" "alb_http" {
   load_balancer_arn = aws_alb.alb.arn # Link this listener to the ALB
   port              = "80"            # HTTP standard port
   protocol          = "HTTP"

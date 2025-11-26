@@ -2,7 +2,7 @@
 
 # Defines the application's container configuration for ECS i.e., the blueprint for your application containers, including
 # their images, ports, CPU/memory allocation, and logging configuration.
-resource "aws_ecs_task_definition" "ecs-service-taskdef" {
+resource "aws_ecs_task_definition" "ecs_service_taskdef" {
   family                   = var.container_name # A family groups together revisions of a task definition. When you make changes to a task definition, ECS creates a new revision within the same family
   network_mode             = "awsvpc"           # ALB reaches task directly (not EC2 instance)
   requires_compatibilities = ["EC2"]
@@ -30,17 +30,17 @@ resource "aws_ecs_task_definition" "ecs-service-taskdef" {
 # Data source used to retrieve the latest revision number of the task definition. This is particularly useful for ensuring that the
 # `aws_ecs_service` resource always points to the most up-to-date task definition, whether it's the one just created/updated by Terraform
 # or a previous revision that might still be active.
-data "aws_ecs_task_definition" "ecs-service" {
-  task_definition = aws_ecs_task_definition.ecs-service-taskdef.family # Look for the latest active revision of the task definition that matches that family name
-  depends_on      = [aws_ecs_task_definition.ecs-service-taskdef]      # Depends on the previously defined `ecs-service-taskdef`
+data "aws_ecs_task_definition" "ecs_service" {
+  task_definition = aws_ecs_task_definition.ecs_service_taskdef.family # Look for the latest active revision of the task definition that matches that family name
+  depends_on      = [aws_ecs_task_definition.ecs_service_taskdef]      # Depends on the previously defined `ecs_service_taskdef`
 }
 
 # This resource manages the desired number of running tasks of a specific task definition within an ECS cluster.
-resource "aws_ecs_service" "ecs-service" {
+resource "aws_ecs_service" "ecs_service" {
   name    = "${var.environment}-${var.project_name}-ecs-service" # Name of the ECS service
   cluster = var.ecs_cluster_arn                                  # Associates this service with a specific ECS cluster
   # This construct ensures that the ECS service always points to the most current active revision of the task definition within that family
-  task_definition                    = "${aws_ecs_task_definition.ecs-service-taskdef.family}:${max("${aws_ecs_task_definition.ecs-service-taskdef.revision}", "${data.aws_ecs_task_definition.ecs-service.revision}")}"
+  task_definition                    = "${aws_ecs_task_definition.ecs_service_taskdef.family}:${max("${aws_ecs_task_definition.ecs_service_taskdef.revision}", "${data.aws_ecs_task_definition.ecs_service.revision}")}"
   desired_count                      = var.ecs_task_desired_count             # The number of tasks that you want to run for this service. ECS will automatically maintain this number
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent # Lower limit of healthy tasks that must be running during deployment so that the service remains available
   deployment_maximum_percent         = var.deployment_maximum_percent         # Upper limit of health tasks that must be running during deployment. This helps control the rollout speed and resource consumption during updates

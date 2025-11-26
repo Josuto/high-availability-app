@@ -222,7 +222,7 @@ All infrastructure changes are managed via GitHub Actions (GHA) workflows. The d
 
 To deploy this project, **you must own a domain name** accessible through an SSL certificate (e.g., `https://example.com`) and perform manual DNS updates.
 
-1.  **Execute `deploy_hosted_zone.yaml` (Manual Trigger)**: This job calls a reusable workflow to deploy the remote **Terraform state S3 bucket** (`josumartinez-terraform-state-bucket`) and then creates the **Route53 Hosted Zone**.
+1.  **Execute `deploy_hosted_zone.yaml` (Manual Trigger)**: This job calls a reusable workflow to deploy the remote **Terraform state S3 bucket** and then creates the **Route53 Hosted Zone**.
 2.  **Manual Action**: After the job succeeds, go to your domain hosting provider and update the **DNS name servers** to the ones provided by the new Route 53 Hosted Zone.
 3.  **Wait**: Wait for DNS propagation to complete. The ACM certificate validation depends on this.
 

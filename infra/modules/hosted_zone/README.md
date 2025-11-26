@@ -19,7 +19,7 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_route53_zone.domain-zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone) | resource |
+| [aws_route53_zone.domain_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone) | resource |
 
 ## Inputs
 

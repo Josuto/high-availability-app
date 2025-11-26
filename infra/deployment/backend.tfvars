@@ -3,4 +3,4 @@
 # IMPORTANT: Update these values with your own before deploying
 
 # S3 bucket name for Terraform state storage
-state_bucket_name = "josumartinez-terraform-state-bucket"
+state_bucket_name = "josumartinez_terraform_state_bucket"

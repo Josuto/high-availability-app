@@ -12,7 +12,7 @@ resource "aws_security_group" "cluster" {
 }
 
 # Rule that allows all outbound traffic from your ECS cluster's instances/tasks to anywhere on the internet.
-resource "aws_security_group_rule" "cluster-egress" {
+resource "aws_security_group_rule" "cluster_egress" {
   security_group_id = aws_security_group.cluster.id
   type              = "egress"
   from_port         = 0

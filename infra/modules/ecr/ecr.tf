@@ -1,5 +1,5 @@
 # Create the app ECR repository
-resource "aws_ecr_repository" "app-ecr-repository" {
+resource "aws_ecr_repository" "app_ecr_repository" {
   name = "${var.environment}-${var.project_name}-ecr-repository"
 
   tags = {
@@ -16,7 +16,7 @@ locals {
 
 # ECR policy to retain only the most recent app image
 resource "aws_ecr_lifecycle_policy" "ecr_policy" {
-  repository = aws_ecr_repository.app-ecr-repository.name
+  repository = aws_ecr_repository.app_ecr_repository.name
 
   policy = jsonencode({
     rules = [

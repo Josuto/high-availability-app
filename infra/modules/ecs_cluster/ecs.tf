@@ -3,7 +3,7 @@ locals {
 }
 
 # ECS Cluster definition
-resource "aws_ecs_cluster" "ecs-cluster" {
+resource "aws_ecs_cluster" "ecs_cluster" {
   name = local.cluster_name
 }
 
@@ -16,9 +16,9 @@ locals {
 
 # Launch template used by the Auto Scaling Group to create EC2 instances
 # Note: Launch templates do not replace existing EC2 instances; Auto Scaling Groups do
-resource "aws_launch_template" "ecs-launch-template" {
+resource "aws_launch_template" "ecs_launch_template" {
   name_prefix   = "${local.cluster_name}-lt"
-  image_id      = data.aws_ami.ecs-ami-linux-2023.id # Use the latest ECS-optimized AMI for Amazon Linux 2023
+  image_id      = data.aws_ami.ecs_ami_linux_2023.id # Use the latest ECS-optimized AMI for Amazon Linux 2023
   instance_type = var.ecs_instance_type
   user_data     = base64encode(local.template) # Base64-encoded EC2 instance bootstrapping process
 
@@ -41,7 +41,7 @@ resource "aws_launch_template" "ecs-launch-template" {
 }
 
 # Auto Scaling Group that manages the EC2 instances registered at the ECS cluster
-resource "aws_autoscaling_group" "ecs-autoscaling-group" {
+resource "aws_autoscaling_group" "ecs_autoscaling_group" {
   name                      = "${local.cluster_name}-ag"
   vpc_zone_identifier       = var.vpc_private_subnets # Instructs the ASG to launch all its instances into the private subnets you defined with the VPC module
   min_size                  = var.instance_min_size
@@ -51,7 +51,7 @@ resource "aws_autoscaling_group" "ecs-autoscaling-group" {
   force_delete              = false # Protect against accidental EC2 instance termination (default value)
 
   launch_template {
-    id      = aws_launch_template.ecs-launch-template.id
+    id      = aws_launch_template.ecs_launch_template.id
     version = "$Latest"
   }
 
