@@ -1,12 +1,3 @@
-data "terraform_remote_state" "ecr" {
-  backend = "s3"
-  config = {
-    bucket = var.state_bucket_name
-    key    = "deployment/ecr/terraform.tfstate"
-    # region = "eu-west-1" # When omitted, that of the provider is taken
-  }
-}
-
 data "terraform_remote_state" "ecs_cluster" {
   backend = "s3"
   config = {
