@@ -27,8 +27,3 @@ variable "environment" {
     error_message = "The environment must be either 'dev' or 'prod'."
   }
 }
-
-variable "state_bucket_name" {
-  description = "The name of the S3 bucket specifiying the Terraform state"
-  type        = string
-}

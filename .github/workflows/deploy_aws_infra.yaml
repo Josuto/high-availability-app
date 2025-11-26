@@ -189,11 +189,11 @@ jobs:
         working-directory: infra/deployment/prod/vpc
 
       - name: Validate IaC changes on the VPC directory
-        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
+        run: terraform plan -var-file="../../common.tfvars"
         working-directory: infra/deployment/prod/vpc
 
       - name: Deploy the VPC
-        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        run: terraform apply -var-file="../../common.tfvars" -auto-approve
         working-directory: infra/deployment/prod/vpc
 
   deploy-ecs-cluster:

@@ -231,5 +231,5 @@ jobs:
         working-directory: infra/deployment/prod/vpc
 
       - name: Destroy Resources on the VPC directory
-        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        run: terraform destroy -var-file="../../common.tfvars" -auto-approve
         working-directory: infra/deployment/prod/vpc
