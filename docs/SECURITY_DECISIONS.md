@@ -29,11 +29,11 @@ The following findings were addressed with code changes:
 
 ## Suppression Configuration
 
-Accepted findings are suppressed in [`.trivyignore.yaml`](../.trivyignore.yaml) to prevent false positives in future scans. Each suppression includes:
+Accepted findings are suppressed in [`.trivyignore`](../.trivyignore) to prevent false positives in future scans. Each suppression includes:
 - Rule ID
-- Affected file paths
-- Rationale statement
-- Reference to ADR
+- Affected file paths (in comments)
+- Rationale statement (in comments)
+- Reference to ADR (in comments)
 
 ## For Compliance Auditors
 
@@ -98,7 +98,7 @@ Security is not static:
 
 ### Run Trivy with Suppressions
 ```bash
-trivy config --severity HIGH,CRITICAL --ignorefile .trivyignore.yaml .
+trivy config --severity HIGH,CRITICAL --ignorefile .trivyignore .
 ```
 
 ### Run TFLint
@@ -114,7 +114,7 @@ pre-commit run --all-files
 ### Update ADRs
 When updating an ADR:
 1. Update the ADR markdown file
-2. Update `.trivyignore.yaml` if needed
+2. Update `.trivyignore` if needed
 3. Update this summary document
 4. Commit all changes together
 

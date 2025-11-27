@@ -22,7 +22,7 @@ repos:
         description: Security scanning
         args:
           - --args=--severity=HIGH,CRITICAL
-          - --args=--ignorefile=__GIT_WORKING_DIR__/.trivyignore.yaml
+          - --args=--ignorefile=__GIT_WORKING_DIR__/.trivyignore
 
       - id: terraform_docs
         name: Terraform Docs

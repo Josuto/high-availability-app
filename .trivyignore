@@ -1,0 +1,39 @@
+# Trivy Ignore File
+# This file suppresses security findings that have been reviewed and accepted as intentional design decisions.
+# Each suppression references an ADR (Architectural Decision Record) that documents the rationale.
+#
+# Format: One vulnerability ID per line
+# Optional: Add expiration date with exp:YYYY-MM-DD
+# Review Schedule: Annual review required (Next: 2026-11-28)
+
+# ==============================================================================
+# ADR 001: Unrestricted Security Group Egress Rules
+# ==============================================================================
+# Decision: Allow 0.0.0.0/0 egress for operational requirements (ECR, CloudWatch, external APIs)
+# Reference: docs/adr/001-unrestricted-security-group-egress.md
+# Files affected:
+#   - infra/modules/alb/alb-securitygroup.tf
+#   - infra/modules/ecs_cluster/ecs-securitygroup.tf
+#   - infra/modules/ecs_service/task-securitygroup.tf
+
+AVD-AWS-0104
+
+# ==============================================================================
+# ADR 002: Internet-Facing Application Load Balancer
+# ==============================================================================
+# Decision: Deploy ALB as internet-facing for public web application access
+# Reference: docs/adr/002-internet-facing-alb.md
+# Files affected:
+#   - infra/modules/alb/alb.tf
+
+AVD-AWS-0053
+
+# ==============================================================================
+# ADR 003: S3 Bucket Encryption with AWS-Managed Keys
+# ==============================================================================
+# Decision: Use SSE-S3 (AWS-managed keys) instead of customer-managed KMS keys
+# Reference: docs/adr/003-s3-aws-managed-encryption.md
+# Files affected:
+#   - infra/deployment/backend/s3.tf
+
+AVD-AWS-0132
