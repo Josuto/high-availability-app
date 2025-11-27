@@ -25,6 +25,7 @@ The following findings were addressed with code changes:
 | Container runs as root | AVD-DS-0002 | ✅ Fixed | Non-root user added to Dockerfile |
 | ALB invalid headers | AVD-AWS-0052 | ✅ Fixed | `drop_invalid_header_fields = true` |
 | ECR image scanning | AVD-AWS-0030 | ✅ Fixed | `scan_on_push = true` |
+| ECR mutable tags | AVD-AWS-0031 | ✅ Fixed | `image_tag_mutability = "IMMUTABLE"` |
 | IMDS v2 not enforced | AVD-AWS-0130 | ✅ Fixed | `http_tokens = required` |
 
 ## Suppression Configuration

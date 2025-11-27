@@ -1,6 +1,11 @@
 # Create the app ECR repository
 resource "aws_ecr_repository" "app_ecr_repository" {
-  name = "${var.environment}-${var.project_name}-ecr-repository"
+  name                 = "${var.environment}-${var.project_name}-ecr-repository"
+  image_tag_mutability = "IMMUTABLE" # Prevent tag overwrites to ensure image integrity
+
+  image_scanning_configuration {
+    scan_on_push = true # Automatically scan images for vulnerabilities when pushed
+  }
 
   tags = {
     Project     = var.project_name

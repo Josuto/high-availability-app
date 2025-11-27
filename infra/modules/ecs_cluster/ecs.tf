@@ -30,6 +30,12 @@ resource "aws_launch_template" "ecs_launch_template" {
     security_groups = [aws_security_group.cluster.id]
   }
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required" # Require IMDSv2 tokens for enhanced security
+    http_put_response_hop_limit = 1
+  }
+
   tag_specifications {
     resource_type = "instance"
     tags = {

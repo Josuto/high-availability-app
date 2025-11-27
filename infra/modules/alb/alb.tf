@@ -6,6 +6,7 @@ resource "aws_alb" "alb" {
   subnets         = var.vpc_public_subnets      # The ALB must be deployed into at least two Availability Zones for high availability
 
   enable_deletion_protection = var.enable_deletion_protection[var.environment] # Set to true in PROD environments to prevent the accidental deletion of the ALB
+  drop_invalid_header_fields = true                                            # Drop HTTP headers with invalid fields to prevent potential security risks
 
   tags = {
     Project     = var.project_name
