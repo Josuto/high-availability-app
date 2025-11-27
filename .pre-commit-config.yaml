@@ -1,3 +1,6 @@
+# Exclude SVG files from all hooks
+exclude: '\.svg$'
+
 repos:
   # Terraform formatting - will auto-format files
   - repo: https://github.com/antonbabenko/pre-commit-terraform
