@@ -1,0 +1,68 @@
+# Trivy Ignore Configuration
+# This file suppresses security findings that have been reviewed and accepted as intentional design decisions.
+# Each suppression references an ADR (Architectural Decision Record) that documents the rationale.
+
+# ==============================================================================
+# ADR 001: Unrestricted Security Group Egress Rules
+# ==============================================================================
+# Decision: Allow 0.0.0.0/0 egress for operational requirements (ECR, CloudWatch, external APIs)
+# Reference: docs/adr/001-unrestricted-security-group-egress.md
+
+# ALB Security Group - Unrestricted Egress
+- id: AVD-AWS-0104
+  paths:
+    - "infra/modules/alb/alb-securitygroup.tf"
+  statement: "Intentional design decision - ALB requires egress for health checks and AWS service access"
+  expired: false
+
+# ECS Cluster Security Group - Unrestricted Egress
+- id: AVD-AWS-0104
+  paths:
+    - "infra/modules/ecs_cluster/ecs-securitygroup.tf"
+  statement: "Intentional design decision - EC2 instances require egress for ECR pulls, CloudWatch logs, and OS updates"
+  expired: false
+
+# ECS Task Security Group - Unrestricted Egress
+- id: AVD-AWS-0104
+  paths:
+    - "infra/modules/ecs_service/task-securitygroup.tf"
+  statement: "Intentional design decision - Application containers require egress for AWS services and external APIs"
+  expired: false
+
+# ==============================================================================
+# ADR 002: Internet-Facing Application Load Balancer
+# ==============================================================================
+# Decision: Deploy ALB as internet-facing for public web application access
+# Reference: docs/adr/002-internet-facing-alb.md
+
+# ALB Internet-Facing Configuration
+- id: AVD-AWS-0053
+  paths:
+    - "infra/modules/alb/alb.tf"
+  statement: "Intentional design decision - Public web application requires internet-facing ALB"
+  expired: false
+
+# ==============================================================================
+# ADR 003: S3 Bucket Encryption with AWS-Managed Keys
+# ==============================================================================
+# Decision: Use SSE-S3 (AWS-managed keys) instead of customer-managed KMS keys
+# Reference: docs/adr/003-s3-aws-managed-encryption.md
+
+# S3 State Bucket - AWS-Managed Encryption
+- id: AVD-AWS-0132
+  paths:
+    - "infra/deployment/backend/s3.tf"
+  statement: "Intentional design decision - AWS-managed keys provide sufficient security without KMS costs and complexity"
+  expired: false
+
+# ==============================================================================
+# Review Schedule
+# ==============================================================================
+# These suppressions should be reviewed:
+# - When compliance requirements change
+# - When new AWS services provide better alternatives
+# - Annually as part of security review
+# - Before major production deployments
+#
+# Last Review Date: 2025-11-28
+# Next Review Date: 2026-11-28
