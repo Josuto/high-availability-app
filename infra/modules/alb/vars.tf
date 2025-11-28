@@ -22,12 +22,22 @@ variable "container_port" {
   description = "Port the app container is available from"
   type        = number
   default     = 3000
+
+  validation {
+    condition     = var.container_port > 0 && var.container_port <= 65535
+    error_message = "Container port must be between 1 and 65535."
+  }
 }
 
 variable "deregistration_delay" {
   description = "The amount seconds for the ALB to wait before completing the deregistration of a target"
   type        = number
   default     = 30
+
+  validation {
+    condition     = var.deregistration_delay >= 0 && var.deregistration_delay <= 3600
+    error_message = "Deregistration delay must be between 0 and 3600 seconds."
+  }
 }
 
 variable "health_check_path" {

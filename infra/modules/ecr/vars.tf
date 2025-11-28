@@ -10,6 +10,13 @@ variable "image_retention_max_count" {
     "dev"  = 3
     "prod" = 10
   }
+
+  validation {
+    condition = alltrue([
+      for count in values(var.image_retention_max_count) : count > 0 && count <= 1000
+    ])
+    error_message = "Image retention max count must be between 1 and 1000 for each environment."
+  }
 }
 
 variable "environment" {

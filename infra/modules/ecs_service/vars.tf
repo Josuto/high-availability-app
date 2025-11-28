@@ -18,18 +18,33 @@ variable "container_port" {
   description = "Port the app container is available from"
   type        = number
   default     = 3000
+
+  validation {
+    condition     = var.container_port > 0 && var.container_port <= 65535
+    error_message = "Container port must be between 1 and 65535."
+  }
 }
 
 variable "cpu_limit" {
   description = "The limit of usage of CPU on a task/container"
   type        = number
   default     = 256
+
+  validation {
+    condition     = contains([256, 512, 1024, 2048, 4096, 8192, 16384], var.cpu_limit)
+    error_message = "CPU limit must be one of: 256, 512, 1024, 2048, 4096, 8192, 16384."
+  }
 }
 
 variable "memory_limit" {
   description = "The limit of usage of memory on a task/container"
   type        = number
   default     = 128
+
+  validation {
+    condition     = var.memory_limit >= 128 && var.memory_limit <= 122880
+    error_message = "Memory limit must be between 128 MB and 122880 MB (120 GB)."
+  }
 }
 
 variable "ecr_app_image" {
@@ -51,18 +66,33 @@ variable "ecs_cluster_arn" {
 variable "ecs_task_desired_count" {
   description = "The number of tasks that you want to run for this service"
   type        = number
+
+  validation {
+    condition     = var.ecs_task_desired_count >= 0
+    error_message = "ECS task desired count must be a non-negative integer."
+  }
 }
 
 variable "deployment_minimum_healthy_percent" {
   description = "Lower limit of healthy tasks that must be running during deployment so that the service remains available"
   type        = number
   default     = 100
+
+  validation {
+    condition     = var.deployment_minimum_healthy_percent >= 0 && var.deployment_minimum_healthy_percent <= 100
+    error_message = "Deployment minimum healthy percent must be between 0 and 100."
+  }
 }
 
 variable "deployment_maximum_percent" {
   description = "Upper limit of health tasks that must be running during deployment"
   type        = number
   default     = 200
+
+  validation {
+    condition     = var.deployment_maximum_percent >= 100 && var.deployment_maximum_percent <= 200
+    error_message = "Deployment maximum percent must be between 100 and 200."
+  }
 }
 
 variable "alb_target_group_id" {
