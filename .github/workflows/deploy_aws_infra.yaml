@@ -10,8 +10,28 @@ env:
   TERRAFORM_VERSION: 1.5.7 # Update to version when needed
 
 jobs:
+  test-terraform-modules:
+    name: Test Terraform Modules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Run Terraform module tests
+        run: |
+          cd infra
+          chmod +x run-tests.sh
+          ./run-tests.sh
+
   deploy-terraform-state-bucket:
     name: Deploy Terraform State Bucket
+    needs: test-terraform-modules
     uses: ./.github/workflows/deploy_terraform_state_bucket.yaml # reusable workflow
     with:
       github_head_commit_message: ${{ github.event.head_commit.message }}
@@ -21,7 +41,7 @@ jobs:
 
   deploy-ecr:
     name: Deploy ECR on AWS
-    needs: deploy-terraform-state-bucket
+    needs: [test-terraform-modules, deploy-terraform-state-bucket]
     runs-on: ubuntu-latest
 
     env: # required by some steps
@@ -73,7 +93,7 @@ jobs:
 
   retrieve-ssl:
     name: Retrieve SSL certificate
-    needs: deploy-terraform-state-bucket
+    needs: [test-terraform-modules, deploy-terraform-state-bucket]
     runs-on: ubuntu-latest
 
     env: # required by some steps
