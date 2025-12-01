@@ -240,6 +240,6 @@ Typical run time: 1-3 minutes for all modules.
 
 ## Version
 
-**Last Updated:** 2025-11-28
-**Terraform Version:** 1.5.7+
+**Last Updated:** 2025-12-01
+**Terraform Version:** 1.7.0+ (required for `override_data` support in tests)
 **Test Framework:** Terraform Native Testing (1.6+)
