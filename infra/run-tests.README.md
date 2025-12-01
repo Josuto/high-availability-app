@@ -166,6 +166,24 @@ git commit --no-verify
 chmod +x run-tests.sh
 ```
 
+### ECS Cluster Module Fails to Initialize
+
+If you see "Failed to initialize ecs_cluster for validation", you need mock AWS credentials:
+
+```bash
+# The ecs_cluster module has data sources that require AWS credentials
+export AWS_ACCESS_KEY_ID="mock-access-key"
+export AWS_SECRET_ACCESS_KEY="mock-secret-key" # pragma: allowlist secret
+export AWS_DEFAULT_REGION="eu-west-1"
+./run-tests.sh
+```
+
+**Why this is needed:**
+- The ecs_cluster module queries AWS SSM Parameter Store for ECS-optimized AMI IDs
+- Terraform requires credentials to initialize the AWS provider, even for validation
+- Mock credentials satisfy this requirement without making actual AWS API calls
+- CI/CD pipeline automatically provides these credentials
+
 ### Tests Take Too Long
 
 The script runs all tests sequentially. This is intentional to:
