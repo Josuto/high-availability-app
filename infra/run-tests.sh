@@ -56,7 +56,7 @@ PASSED_TESTS=0
 FAILED_TESTS=0
 FAILED_MODULES=()
 
-# Function to run tests for a single module
+# Function to run tests for a single module (in-place testing)
 run_module_tests() {
     local module_name=$1
     local test_file=$2
@@ -75,49 +75,52 @@ run_module_tests() {
         return 0
     fi
 
-    # Create temporary test directory
+    # Create temporary test directory for this module
     local test_dir="tests/.tmp/$module_name"
     mkdir -p "$test_dir"
 
-    # Copy module files
+    # Copy module files to temp directory
     cp -r "modules/$module_name/"* "$test_dir/" 2>/dev/null || {
         gh_error "Failed to copy module files for $module_name"
         return 1
     }
 
-    # Copy test file to tests subdirectory
-    mkdir -p "$test_dir/tests"
-    cp "$test_file" "$test_dir/tests/"
+    # Copy test file directly to the module directory (in-place testing)
+    # For in-place testing, the test file must be in the same directory as the module files
+    cp "$test_file" "$test_dir/$(basename $test_file)"
 
-    # Update module source paths in test file (compatible with both macOS and Linux)
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        sed -i '' 's|source = "../../modules/'$module_name'"|source = "./.."|g' "$test_dir/tests/$(basename $test_file)"
-    else
-        # Linux
-        sed -i 's|source = "../../modules/'$module_name'"|source = "./.."|g' "$test_dir/tests/$(basename $test_file)"
-    fi
-
-    # Initialize and run tests
+    # Change to test directory
     cd "$test_dir"
 
     # Initialize Terraform
-    if ! terraform init > /dev/null 2>&1; then
+    local init_output=$(terraform init 2>&1)
+    local init_exit_code=$?
+
+    if [ $init_exit_code -ne 0 ]; then
         cd - > /dev/null
         gh_error "Terraform init failed for $module_name module"
+
+        if [ "$IS_GITHUB_ACTIONS" = "true" ]; then
+            echo "::group::$module_name init failure details"
+            echo "$init_output"
+            echo "::endgroup::"
+        fi
+
         FAILED_MODULES+=("$module_name")
         return 1
     fi
 
     # Run tests
-    local test_output_file="test-output.txt"
-    if terraform test -no-color 2>&1 | tee "$test_output_file"; then
+    local test_output=$(terraform test -no-color 2>&1)
+    local test_exit_code=$?
+
+    if [ $test_exit_code -eq 0 ]; then
         # Count passed tests (look for lines ending with "pass")
-        local passed=$(grep -c "pass$" "$test_output_file" 2>/dev/null || echo "0")
+        local passed=$(echo "$test_output" | grep -c "pass$" 2>/dev/null || echo "0")
 
         if [ "$passed" -eq 0 ]; then
             # If no passes found, count Success! lines
-            passed=$(grep -c "Success!" "$test_output_file" 2>/dev/null || echo "1")
+            passed=$(echo "$test_output" | grep -c "Success!" 2>/dev/null || echo "1")
         fi
 
         PASSED_TESTS=$((PASSED_TESTS + passed))
@@ -128,7 +131,7 @@ run_module_tests() {
         return 0
     else
         # Count failed tests
-        local failed=$(grep -c "fail$" "$test_output_file" 2>/dev/null || echo "1")
+        local failed=$(echo "$test_output" | grep -c "fail$" 2>/dev/null || echo "1")
         FAILED_TESTS=$((FAILED_TESTS + failed))
         TOTAL_TESTS=$((TOTAL_TESTS + failed))
         FAILED_MODULES+=("$module_name")
@@ -139,7 +142,7 @@ run_module_tests() {
         # Show error details in GitHub Actions
         if [ "$IS_GITHUB_ACTIONS" = "true" ]; then
             echo "::group::$module_name test failure details"
-            cat "$test_dir/$test_output_file" 2>/dev/null || echo "No output available"
+            echo "$test_output"
             echo "::endgroup::"
         fi
 
