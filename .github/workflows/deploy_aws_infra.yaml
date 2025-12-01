@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: eu-west-1
-  TERRAFORM_VERSION: 1.10.3 # Required for terraform test command with override_data support (>= 1.7.0)
+  TERRAFORM_VERSION: 1.10.3 # Update to version when needed
 
 jobs:
   test-terraform-modules:
