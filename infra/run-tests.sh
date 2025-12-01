@@ -116,11 +116,19 @@ run_module_tests() {
 
     if [ $test_exit_code -eq 0 ]; then
         # Count passed tests (look for lines ending with "pass")
-        local passed=$(echo "$test_output" | grep -c "pass$" 2>/dev/null || echo "0")
+        local passed=$(echo "$test_output" | grep -c "pass$" 2>/dev/null)
+
+        # Ensure passed is a valid integer (default to 0 if empty or invalid)
+        if [ -z "$passed" ] || ! [[ "$passed" =~ ^[0-9]+$ ]]; then
+            passed=0
+        fi
 
         if [ "$passed" -eq 0 ]; then
             # If no passes found, count Success! lines
-            passed=$(echo "$test_output" | grep -c "Success!" 2>/dev/null || echo "1")
+            passed=$(echo "$test_output" | grep -c "Success!" 2>/dev/null)
+            if [ -z "$passed" ] || ! [[ "$passed" =~ ^[0-9]+$ ]]; then
+                passed=1
+            fi
         fi
 
         PASSED_TESTS=$((PASSED_TESTS + passed))
@@ -131,7 +139,11 @@ run_module_tests() {
         return 0
     else
         # Count failed tests
-        local failed=$(echo "$test_output" | grep -c "fail$" 2>/dev/null || echo "1")
+        local failed=$(echo "$test_output" | grep -c "fail$" 2>/dev/null)
+        if [ -z "$failed" ] || ! [[ "$failed" =~ ^[0-9]+$ ]]; then
+            failed=1
+        fi
+
         FAILED_TESTS=$((FAILED_TESTS + failed))
         TOTAL_TESTS=$((TOTAL_TESTS + failed))
         FAILED_MODULES+=("$module_name")
