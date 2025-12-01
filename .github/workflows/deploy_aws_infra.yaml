@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: eu-west-1
-  TERRAFORM_VERSION: 1.5.7 # Update to version when needed
+  TERRAFORM_VERSION: 1.6.0 # Required for terraform test command (testing framework introduced in 1.6.0)
 
 jobs:
   test-terraform-modules:
