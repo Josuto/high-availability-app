@@ -107,10 +107,15 @@ Test run complete.
 ```yaml
 - name: Run Terraform module tests
   run: |
+    export AWS_ACCESS_KEY_ID="mock-access-key"
+    export AWS_SECRET_ACCESS_KEY="mock-secret-key"  # pragma: allowlist secret
+    export AWS_DEFAULT_REGION="eu-west-1"
     cd infra
     chmod +x run-tests.sh
     ./run-tests.sh
 ```
+
+**Note:** The explicit `export` statements ensure AWS credentials are available for module validation, particularly for modules with AWS data sources (like ecs_cluster).
 
 ### 2. Pre-Commit Hook
 

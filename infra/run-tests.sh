@@ -156,19 +156,46 @@ validate_module() {
 
     cd "$module_path"
 
-    if ! terraform init -backend=false > /dev/null 2>&1; then
+    # Capture init output for debugging
+    local init_output=$(terraform init -backend=false 2>&1)
+    local init_exit_code=$?
+
+    if [ $init_exit_code -ne 0 ]; then
         cd - > /dev/null
         gh_error "Failed to initialize $module_name for validation"
+
+        # Show detailed error in GitHub Actions or when verbose
+        if [ "$IS_GITHUB_ACTIONS" = "true" ]; then
+            echo "::group::$module_name initialization failure details"
+            echo "$init_output"
+            echo "::endgroup::"
+        elif [ "${VERBOSE:-false}" = "true" ]; then
+            echo "$init_output" >&2
+        fi
+
         return 1
     fi
 
-    if terraform validate > /dev/null 2>&1; then
+    local validate_output=$(terraform validate 2>&1)
+    local validate_exit_code=$?
+
+    if [ $validate_exit_code -eq 0 ]; then
         cd - > /dev/null
         gh_notice "$module_name syntax is valid"
         return 0
     else
         cd - > /dev/null
         gh_error "$module_name has syntax errors"
+
+        # Show validation errors in GitHub Actions or when verbose
+        if [ "$IS_GITHUB_ACTIONS" = "true" ]; then
+            echo "::group::$module_name validation errors"
+            echo "$validate_output"
+            echo "::endgroup::"
+        elif [ "${VERBOSE:-false}" = "true" ]; then
+            echo "$validate_output" >&2
+        fi
+
         return 1
     fi
 }
