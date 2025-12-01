@@ -71,7 +71,10 @@ run_module_tests() {
 
     # Check if test file exists
     if [ ! -f "$test_file" ]; then
-        gh_warning "Test file $test_file not found, skipping"
+        gh_error "Test file $test_file not found, skipping"
+        if [ "$IS_GITHUB_ACTIONS" = "true" ]; then
+            echo "::error::Test file $test_file does not exist. PWD=$(pwd), Files: $(ls -la tests/unit/ 2>&1)"
+        fi
         return 0
     fi
 
@@ -87,7 +90,16 @@ run_module_tests() {
 
     # Copy test file directly to the module directory (in-place testing)
     # For in-place testing, the test file must be in the same directory as the module files
-    cp "$test_file" "$test_dir/$(basename $test_file)"
+    if ! cp "$test_file" "$test_dir/$(basename $test_file)" 2>/dev/null; then
+        gh_error "Failed to copy test file $test_file to $test_dir"
+        return 1
+    fi
+
+    # Debug: Show what files are in the test directory (only in GitHub Actions)
+    if [ "$IS_GITHUB_ACTIONS" = "true" ]; then
+        echo "::debug::Test directory contents for $module_name:"
+        ls -la "$test_dir/" | grep "\.tftest\.hcl" || echo "::warning::No .tftest.hcl files found in $test_dir"
+    fi
 
     # Change to test directory
     cd "$test_dir"
