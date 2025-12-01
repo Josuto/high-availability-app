@@ -8,7 +8,7 @@
 
 ### Test Files Created
 
-Created comprehensive test coverage with **32+ test runs** across 4 unit test files using **in-place testing**:
+Created comprehensive test coverage with **34 test runs** across 5 unit test files using **in-place testing**:
 
 1. **`infra/tests/unit/alb.tftest.hcl`** (6 test runs)
    - ALB basic configuration and naming
@@ -45,6 +45,15 @@ Created comprehensive test coverage with **32+ test runs** across 4 unit test fi
    - Dev vs prod retention counts
    - Resource tagging
    - Variable validation
+
+5. **`infra/tests/unit/ssl.tftest.hcl`** (6 test runs) ⭐ **NEW**
+   - ACM certificate configuration
+   - DNS validation method (not email)
+   - Subject Alternative Names for wildcard domains
+   - Lifecycle rules (create_before_destroy)
+   - Validation record creation and configuration
+   - Certificate validation workflow
+   - **Critical security component with complex for_each logic**
 
 ### In-Place Testing Approach
 
@@ -295,17 +304,24 @@ infra/
 │   ├── alb/
 │   ├── ecs_cluster/
 │   ├── ecs_service/
-│   └── ecr/
+│   ├── ecr/
+│   ├── ssl/
+│   ├── hosted_zone/      (no tests - too simple)
+│   ├── routing/          (no tests - too simple)
+│   └── alb_rule/         (no tests - commented out)
 └── tests/                # Centralized tests
     ├── unit/             # Unit tests for individual modules
     │   ├── alb.tftest.hcl
     │   ├── ecs_cluster.tftest.hcl
     │   ├── ecs_service.tftest.hcl
-    │   └── ecr.tftest.hcl
+    │   ├── ecr.tftest.hcl
+    │   └── ssl.tftest.hcl ⭐ NEW
     ├── integration/      # Integration tests for module combinations
     │   └── minimal_stack.tftest.hcl
     └── versions.tf       # Provider configuration for tests
 ```
+
+**Testing Strategy:** Selective unit testing based on module complexity and criticality. See [ADR 004](adr/004-terraform-module-testing-strategy.md) for rationale.
 
 ### Terraform Test Framework Limitations
 

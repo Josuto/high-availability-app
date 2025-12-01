@@ -249,6 +249,7 @@ run_module_tests "alb" "tests/unit/alb.tftest.hcl" || ANY_FAILED=true
 run_module_tests "ecs_cluster" "tests/unit/ecs_cluster.tftest.hcl" || ANY_FAILED=true
 run_module_tests "ecs_service" "tests/unit/ecs_service.tftest.hcl" || ANY_FAILED=true
 run_module_tests "ecr" "tests/unit/ecr.tftest.hcl" || ANY_FAILED=true
+run_module_tests "ssl" "tests/unit/ssl.tftest.hcl" || ANY_FAILED=true
 
 echo ""
 echo "================================"

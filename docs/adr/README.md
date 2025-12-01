@@ -26,6 +26,12 @@ Each ADR follows this structure:
 | [002](./002-internet-facing-alb.md) | Internet-Facing Application Load Balancer | Accepted | Deploy ALB as internet-facing for public web application |
 | [003](./003-s3-aws-managed-encryption.md) | S3 Bucket Encryption with AWS-Managed Keys | Accepted | Use SSE-S3 instead of customer-managed KMS keys |
 
+### Testing & Quality Assurance
+
+| ADR | Title | Status | Summary |
+|-----|-------|--------|---------|
+| [004](./004-terraform-module-testing-strategy.md) | Terraform Module Testing Strategy | Accepted | Selective unit testing based on module complexity and criticality |
+
 ## Relationship to Security Scanning
 
 These ADRs document **intentional design decisions** that security scanners (Trivy, tfsec) may flag as findings. Each ADR:
