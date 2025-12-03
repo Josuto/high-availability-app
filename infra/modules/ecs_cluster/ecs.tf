@@ -72,6 +72,24 @@ resource "aws_autoscaling_group" "ecs_autoscaling_group" {
     propagate_at_launch = true
   }
 
+  tag {
+    key                 = "ManagedBy"
+    value               = "Terraform"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "Module"
+    value               = "ecs_cluster"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "CreatedDate"
+    value               = timestamp()
+    propagate_at_launch = true
+  }
+
   tag { # Required for ECS Capacity Provider Managed Scaling to work
     key                 = "AmazonECSManaged"
     value               = "true"
