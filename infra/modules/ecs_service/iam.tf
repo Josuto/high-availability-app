@@ -3,10 +3,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   name               = "${var.environment}-${var.project_name}-ecs-task-execution-role"
   assume_role_policy = file("${path.module}/iam-policies/ecs-task-execution-role-assumption.json")
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }
 
 # Attach the AmazonECSTaskExecutionRolePolicy policy to the ECS agent role

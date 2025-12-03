@@ -4,8 +4,5 @@ resource "aws_route53_zone" "domain_zone" {
   comment       = "Hosted zone for the domain"
   force_destroy = var.force_destroy[var.environment] # Set to false in PROD environment
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }

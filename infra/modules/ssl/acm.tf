@@ -10,10 +10,7 @@ resource "aws_acm_certificate" "certificate" {
     create_before_destroy = true
   }
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }
 
 # 2. Create the Route 53 validation records

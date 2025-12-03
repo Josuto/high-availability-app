@@ -8,10 +8,7 @@ resource "aws_alb" "alb" {
   enable_deletion_protection = var.enable_deletion_protection[var.environment] # Set to true in PROD environments to prevent the accidental deletion of the ALB
   drop_invalid_header_fields = true                                            # Drop HTTP headers with invalid fields to prevent potential security risks
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }
 
 # HTTPS listener
@@ -29,10 +26,7 @@ resource "aws_alb_listener" "alb_https" {
     type             = "forward"                            # Indicates that the action is to forward the request to the specified target group
   }
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }
 
 # HTTP listener
@@ -52,8 +46,5 @@ resource "aws_alb_listener" "alb_http" {
     }
   }
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }

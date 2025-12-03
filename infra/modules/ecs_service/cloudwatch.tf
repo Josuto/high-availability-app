@@ -2,8 +2,5 @@
 resource "aws_cloudwatch_log_group" "cluster_lg" {
   name = var.log_group
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }

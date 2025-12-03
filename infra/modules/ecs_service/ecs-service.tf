@@ -21,10 +21,7 @@ resource "aws_ecs_task_definition" "ecs_service_taskdef" {
     aws_region     = var.aws_region
   })
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }
 
 # Data source used to retrieve the latest revision number of the task definition. This is particularly useful for ensuring that the
@@ -75,8 +72,5 @@ resource "aws_ecs_service" "ecs_service" {
     assign_public_ip = false # Do not expose task IPs outside the private network
   }
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }

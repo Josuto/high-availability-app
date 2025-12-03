@@ -5,10 +5,7 @@ resource "aws_security_group" "cluster" {
   vpc_id      = var.vpc_id
   description = "ECS cluster security group"
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }
 
 # Rule that allows all outbound traffic from your ECS cluster's instances/tasks to anywhere on the internet.

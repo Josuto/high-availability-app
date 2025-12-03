@@ -1,18 +1,11 @@
-locals {
-  cluster_name = "${var.environment}-${var.project_name}-ecs-cluster"
-}
+# Moved to locals.tf
 
 # ECS Cluster definition
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = local.cluster_name
 }
 
-# EC2 instance bootstrapping process
-locals {
-  template = templatefile("${path.module}/templates/ec2-instance-init.tpl", {
-    ecs_cluster_name = local.cluster_name
-  })
-}
+# EC2 instance bootstrapping process (template defined in locals.tf)
 
 # Launch template used by the Auto Scaling Group to create EC2 instances
 # Note: Launch templates do not replace existing EC2 instances; Auto Scaling Groups do
@@ -38,11 +31,7 @@ resource "aws_launch_template" "ecs_launch_template" {
 
   tag_specifications {
     resource_type = "instance"
-    tags = {
-      Name        = "ecs-ec2-container"
-      Project     = var.project_name
-      Environment = var.environment
-    }
+    tags          = local.instance_tags
   }
 }
 

@@ -32,6 +32,12 @@ Each ADR follows this structure:
 |-----|-------|--------|---------|
 | [004](./004-terraform-module-testing-strategy.md) | Terraform Module Testing Strategy | Accepted | Selective unit testing based on module complexity and criticality |
 
+### Cost Management & FinOps
+
+| ADR | Title | Status | Summary |
+|-----|-------|--------|---------|
+| [005](./005-cost-tracking-tags-strategy.md) | Cost Tracking Tags Strategy | Accepted | Dual-layer tagging architecture for comprehensive cost allocation |
+
 ## Relationship to Security Scanning
 
 These ADRs document **intentional design decisions** that security scanners (Trivy, tfsec) may flag as findings. Each ADR:

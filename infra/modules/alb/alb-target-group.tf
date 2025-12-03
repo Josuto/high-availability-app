@@ -26,8 +26,5 @@ resource "aws_alb_target_group" "ecs_service" {
     matcher             = var.healthcheck_matcher # The expected HTTP response code or codes for a successful health check e.g., 200
   }
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }

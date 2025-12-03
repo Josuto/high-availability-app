@@ -7,10 +7,7 @@ resource "aws_ecr_repository" "app_ecr_repository" {
     scan_on_push = true # Automatically scan images for vulnerabilities when pushed
   }
 
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = local.common_tags
 }
 
 # Define a local variable for the tag prefix based on the environment being deployed
