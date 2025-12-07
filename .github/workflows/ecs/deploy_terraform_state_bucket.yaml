@@ -54,4 +54,4 @@ jobs:
             terraform plan -var-file="../common.tfvars" -var-file="../backend.tfvars"
             terraform apply -var-file="../common.tfvars" -var-file="../backend.tfvars" -auto-approve
           fi
-        working-directory: infra/deployment/backend
+        working-directory: infra-ecs/deployment/backend

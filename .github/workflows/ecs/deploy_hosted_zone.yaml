@@ -10,7 +10,7 @@ env:
 jobs:
   deploy-terraform-state-bucket:
     name: Deploy Terraform State Bucket
-    uses: ./.github/workflows/deploy_terraform_state_bucket.yaml # reusable workflow
+    uses: ./.github/workflows/ecs/deploy_terraform_state_bucket.yaml # reusable workflow
     with:
       github_head_commit_message: ${{ github.event.head_commit.message }}
     secrets:
@@ -39,12 +39,12 @@ jobs:
 
       - name: Initialize Terraform
         run: terraform init -backend-config="../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra/deployment/hosted_zone
+        working-directory: infra-ecs/deployment/hosted_zone
 
       - name: Validate IaC changes
         run: terraform plan -var-file="../common.tfvars" -var-file="../domain.tfvars"
-        working-directory: infra/deployment/hosted_zone
+        working-directory: infra-ecs/deployment/hosted_zone
 
       - name: Create AWS Route53 Hosted Zone
         run: terraform apply -var-file="../common.tfvars" -var-file="../domain.tfvars" -auto-approve
-        working-directory: infra/deployment/hosted_zone
+        working-directory: infra-ecs/deployment/hosted_zone

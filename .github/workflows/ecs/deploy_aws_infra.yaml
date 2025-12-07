@@ -27,7 +27,7 @@ jobs:
         run: |
           chmod +x run-tests.sh
           ./run-tests.sh
-        working-directory: infra
+        working-directory: infra-ecs
         env:
           AWS_ACCESS_KEY_ID: "mock-access-key"
           AWS_SECRET_ACCESS_KEY: "mock-secret-key" # pragma: allowlist secret
@@ -36,7 +36,7 @@ jobs:
   deploy-terraform-state-bucket:
     name: Deploy Terraform State Bucket
     needs: test-terraform-modules
-    uses: ./.github/workflows/deploy_terraform_state_bucket.yaml # reusable workflow
+    uses: ./.github/workflows/ecs/deploy_terraform_state_bucket.yaml # reusable workflow
     with:
       github_head_commit_message: ${{ github.event.head_commit.message }}
     secrets:
@@ -76,22 +76,22 @@ jobs:
 
       - name: Initialise Terraform on ECR directory
         run: terraform init -backend-config="../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra/deployment/ecr
+        working-directory: infra-ecs/deployment/ecr
 
       - name: Validate IaC changes on ECR directory
         run: terraform plan -var-file="../common.tfvars"
-        working-directory: infra/deployment/ecr
+        working-directory: infra-ecs/deployment/ecr
 
       - name: Create ECR repository if it does not yet exist
         run: terraform apply -var-file="../common.tfvars" -auto-approve
-        working-directory: infra/deployment/ecr
+        working-directory: infra-ecs/deployment/ecr
 
       - name: Fetch ECR repository name from Terraform output
         id: get-ecr-output # make the output available to other jobs
         run: |
           ecr_repo_url=$(terraform output -raw ${{ env.ECR_REPO_URL }})
           echo "ecr_repository_name=$ecr_repo_url" >> $GITHUB_OUTPUT
-        working-directory: infra/deployment/ecr
+        working-directory: infra-ecs/deployment/ecr
         env:
           TF_IN_AUTOMATION: true # suppresses prompts
 
@@ -124,15 +124,15 @@ jobs:
 
       - name: Initialise Terraform on SSL directory
         run: terraform init -backend-config="../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra/deployment/ssl
+        working-directory: infra-ecs/deployment/ssl
 
       - name: Validate IaC changes on SSL directory
         run: terraform plan -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars"
-        working-directory: infra/deployment/ssl
+        working-directory: infra-ecs/deployment/ssl
 
       - name: Retrieve SSL certificate
         run: terraform apply -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars" -auto-approve
-        working-directory: infra/deployment/ssl
+        working-directory: infra-ecs/deployment/ssl
 
   build-and-push-app-docker-image-to-ecr:
     name: Build and Push App Docker Image to ECR
@@ -151,7 +151,7 @@ jobs:
         run: |
           # Extract environment from common.tfvars and construct ECR image tag
           REPO_URL="${{ needs.deploy-ecr.outputs.ecr_repository_name }}"
-          ENVIRONMENT=$(grep "^environment" infra/deployment/common.tfvars | cut -d'"' -f2)
+          ENVIRONMENT=$(grep "^environment" infra-ecs/deployment/common.tfvars | cut -d'"' -f2)
           FULL_IMAGE="${REPO_URL}:${ENVIRONMENT}-${{ github.sha }}"
           echo "ECR_APP_IMAGE=$FULL_IMAGE" >> $GITHUB_ENV
 
@@ -210,15 +210,15 @@ jobs:
 
       - name: Initialise Terraform on the VPC directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra/deployment/prod/vpc
+        working-directory: infra-ecs/deployment/prod/vpc
 
       - name: Validate IaC changes on the VPC directory
         run: terraform plan -var-file="../../common.tfvars"
-        working-directory: infra/deployment/prod/vpc
+        working-directory: infra-ecs/deployment/prod/vpc
 
       - name: Deploy the VPC
         run: terraform apply -var-file="../../common.tfvars" -auto-approve
-        working-directory: infra/deployment/prod/vpc
+        working-directory: infra-ecs/deployment/prod/vpc
 
   deploy-ecs-cluster:
     name: Deploy the ECS cluster on AWS
@@ -249,15 +249,15 @@ jobs:
 
       - name: Initialise Terraform on ECS cluster directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra/deployment/prod/ecs_cluster
+        working-directory: infra-ecs/deployment/prod/ecs_cluster
 
       - name: Validate IaC changes on ECS cluster directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
-        working-directory: infra/deployment/prod/ecs_cluster
+        working-directory: infra-ecs/deployment/prod/ecs_cluster
 
       - name: Deploy the ECS cluster
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra/deployment/prod/ecs_cluster
+        working-directory: infra-ecs/deployment/prod/ecs_cluster
 
   deploy-alb:
     name: Deploy the ALB on AWS
@@ -288,15 +288,15 @@ jobs:
 
       - name: Initialise Terraform on the ALB directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra/deployment/prod/alb
+        working-directory: infra-ecs/deployment/prod/alb
 
       - name: Validate IaC changes on the ALB directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
-        working-directory: infra/deployment/prod/alb
+        working-directory: infra-ecs/deployment/prod/alb
 
       - name: Deploy the ALB
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra/deployment/prod/alb
+        working-directory: infra-ecs/deployment/prod/alb
 
   deploy-ecs-service:
     name: Deploy the ECS service on AWS
@@ -319,7 +319,7 @@ jobs:
         run: |
           # Extract environment from common.tfvars and construct ECR image tag
           REPO_URL="${{ needs.deploy-ecr.outputs.ecr_repository_name }}"
-          ENVIRONMENT=$(grep "^environment" infra/deployment/common.tfvars | cut -d'"' -f2)
+          ENVIRONMENT=$(grep "^environment" infra-ecs/deployment/common.tfvars | cut -d'"' -f2)
           FULL_IMAGE="${REPO_URL}:${ENVIRONMENT}-${{ github.sha }}"
           echo "ECR_APP_IMAGE=$FULL_IMAGE" >> $GITHUB_ENV
 
@@ -341,15 +341,15 @@ jobs:
 
       - name: Initialise Terraform on the ECS service directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra/deployment/prod/ecs_service
+        working-directory: infra-ecs/deployment/prod/ecs_service
 
       - name: Validate IaC changes on the ECS service directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}"
-        working-directory: infra/deployment/prod/ecs_service
+        working-directory: infra-ecs/deployment/prod/ecs_service
 
       - name: Deploy the ECS service
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -auto-approve
-        working-directory: infra/deployment/prod/ecs_service
+        working-directory: infra-ecs/deployment/prod/ecs_service
 
   deploy-routing:
     name: Deploy the Route53 on AWS
@@ -380,12 +380,12 @@ jobs:
 
       - name: Initialise Terraform on the routing directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra/deployment/prod/routing
+        working-directory: infra-ecs/deployment/prod/routing
 
       - name: Validate IaC changes on the routing directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -out=tfplan.binary
-        working-directory: infra/deployment/prod/routing
+        working-directory: infra-ecs/deployment/prod/routing
 
       - name: Deploy the Route53
         run: terraform apply -auto-approve tfplan.binary
-        working-directory: infra/deployment/prod/routing
+        working-directory: infra-ecs/deployment/prod/routing
