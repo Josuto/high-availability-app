@@ -10,7 +10,7 @@ env:
 jobs:
   deploy-terraform-state-bucket:
     name: Deploy Terraform State Bucket
-    uses: ./.github/workflows/ecs/deploy_terraform_state_bucket.yaml # reusable workflow
+    uses: ./.github/workflows/ecs-deploy-terraform-state-bucket.yaml # reusable workflow
     with:
       github_head_commit_message: ${{ github.event.head_commit.message }}
     secrets:
