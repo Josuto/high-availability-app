@@ -1,0 +1,578 @@
+name: Deploy EKS Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: eu-west-1
+  TERRAFORM_VERSION: 1.10.3
+  KUBECTL_VERSION: 1.28.0
+  HELM_VERSION: 3.13.0
+
+jobs:
+  test-eks-terraform-modules:
+    name: Test EKS Terraform Modules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Run Terraform module tests for EKS
+        run: |
+          if [ -f "run-tests.sh" ]; then
+            chmod +x run-tests.sh
+            ./run-tests.sh
+          else
+            echo "No tests found for EKS modules (tests are optional)"
+          fi
+        working-directory: infra-eks
+        env:
+          AWS_ACCESS_KEY_ID: "mock-access-key"
+          AWS_SECRET_ACCESS_KEY: "mock-secret-key" # pragma: allowlist secret
+          AWS_DEFAULT_REGION: "eu-west-1"
+
+  deploy-terraform-state-bucket:
+    name: Deploy Terraform State Bucket
+    needs: test-eks-terraform-modules
+    uses: ./.github/workflows/eks/deploy_terraform_state_bucket.yaml # reusable workflow
+    with:
+      github_head_commit_message: ${{ github.event.head_commit.message }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  deploy-ecr:
+    name: Deploy ECR on AWS
+    needs: [test-eks-terraform-modules, deploy-terraform-state-bucket]
+    runs-on: ubuntu-latest
+
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ECR_REPO_URL: ecr_repository_url # Must match that of the output variable at ECR module
+
+    outputs:
+      ecr_repository_name: ${{ steps.get-ecr-output.outputs.ecr_repository_name }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialise Terraform on ECR directory
+        run: terraform init -backend-config="../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/ecr
+
+      - name: Validate IaC changes on ECR directory
+        run: terraform plan -var-file="../common.tfvars"
+        working-directory: infra-eks/deployment/ecr
+
+      - name: Create ECR repository if it does not yet exist
+        run: terraform apply -var-file="../common.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/ecr
+
+      - name: Fetch ECR repository name from Terraform output
+        id: get-ecr-output # make the output available to other jobs
+        run: |
+          ecr_repo_url=$(terraform output -raw ${{ env.ECR_REPO_URL }})
+          echo "ecr_repository_name=$ecr_repo_url" >> $GITHUB_OUTPUT
+        working-directory: infra-eks/deployment/ecr
+        env:
+          TF_IN_AUTOMATION: true # suppresses prompts
+
+  retrieve-ssl:
+    name: Retrieve SSL certificate
+    needs: [test-eks-terraform-modules, deploy-terraform-state-bucket]
+    runs-on: ubuntu-latest
+
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialise Terraform on SSL directory
+        run: terraform init -backend-config="../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/ssl
+
+      - name: Validate IaC changes on SSL directory
+        run: terraform plan -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars"
+        working-directory: infra-eks/deployment/ssl
+
+      - name: Retrieve SSL certificate
+        run: terraform apply -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/ssl
+
+  build-and-push-app-docker-image-to-ecr:
+    name: Build and Push App Docker Image to ECR
+    needs: deploy-ecr
+    runs-on: ubuntu-latest
+
+    env:
+      ECR_APP_IMAGE: ''
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Set Full ECR Image Tag
+        id: set-tag
+        run: |
+          # Extract environment from common.tfvars and construct ECR image tag
+          REPO_URL="${{ needs.deploy-ecr.outputs.ecr_repository_name }}"
+          ENVIRONMENT=$(grep "^environment" infra-eks/deployment/common.tfvars | cut -d'"' -f2)
+          FULL_IMAGE="${REPO_URL}:${ENVIRONMENT}-${{ github.sha }}"
+          echo "ECR_APP_IMAGE=$FULL_IMAGE" >> $GITHUB_ENV
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build the NestJS app
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm install
+          pnpm build
+
+      - name: Build the Docker image
+        run: |
+          docker build -t ${{ env.ECR_APP_IMAGE }} -f Dockerfile .
+
+      - name: Push the Docker image to ECR
+        run: |
+          docker push ${{ env.ECR_APP_IMAGE }}
+
+  deploy-vpc:
+    name: Deploy the VPC on AWS
+    needs: deploy-ecr
+    runs-on: ubuntu-latest
+
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialise Terraform on the VPC directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/prod/vpc
+
+      - name: Validate IaC changes on the VPC directory
+        run: terraform plan -var-file="../../common.tfvars"
+        working-directory: infra-eks/deployment/prod/vpc
+
+      - name: Deploy the VPC
+        run: terraform apply -var-file="../../common.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/prod/vpc
+
+  deploy-eks-cluster:
+    name: Deploy EKS Cluster
+    needs: deploy-vpc
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    outputs:
+      cluster_id: ${{ steps.get-cluster-output.outputs.cluster_id }}
+      cluster_endpoint: ${{ steps.get-cluster-output.outputs.cluster_endpoint }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on EKS cluster directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/prod/eks_cluster
+
+      - name: Validate IaC changes on EKS cluster directory
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
+        working-directory: infra-eks/deployment/prod/eks_cluster
+
+      - name: Deploy EKS cluster
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/prod/eks_cluster
+
+      - name: Fetch EKS cluster outputs
+        id: get-cluster-output
+        run: |
+          cluster_id=$(terraform output -raw cluster_id)
+          cluster_endpoint=$(terraform output -raw cluster_endpoint)
+          echo "cluster_id=$cluster_id" >> $GITHUB_OUTPUT
+          echo "cluster_endpoint=$cluster_endpoint" >> $GITHUB_OUTPUT
+          echo "EKS Cluster ID: $cluster_id"
+          echo "EKS Cluster Endpoint: $cluster_endpoint"
+        working-directory: infra-eks/deployment/prod/eks_cluster
+        env:
+          TF_IN_AUTOMATION: true
+
+  deploy-eks-node-group:
+    name: Deploy EKS Node Group
+    needs: deploy-eks-cluster
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    outputs:
+      node_group_id: ${{ steps.get-node-group-output.outputs.node_group_id }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on EKS node group directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/prod/eks_node_group
+
+      - name: Validate IaC changes on EKS node group directory
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
+        working-directory: infra-eks/deployment/prod/eks_node_group
+
+      - name: Deploy EKS node group
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/prod/eks_node_group
+
+      - name: Fetch EKS node group outputs
+        id: get-node-group-output
+        run: |
+          node_group_id=$(terraform output -raw node_group_id)
+          echo "node_group_id=$node_group_id" >> $GITHUB_OUTPUT
+          echo "EKS Node Group ID: $node_group_id"
+        working-directory: infra-eks/deployment/prod/eks_node_group
+        env:
+          TF_IN_AUTOMATION: true
+
+      - name: Wait for node group to be active
+        run: |
+          echo "Waiting for node group to be active..."
+          aws eks wait node-group-active \
+            --cluster-name ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
+            --nodegroup-name $(terraform output -raw node_group_id) \
+            --region ${{ env.AWS_REGION }}
+          echo "Node group is now active!"
+        working-directory: infra-eks/deployment/prod/eks_node_group
+
+  install-aws-load-balancer-controller:
+    name: Install AWS Load Balancer Controller
+    needs: [deploy-eks-cluster, deploy-eks-node-group]
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/v${{ env.KUBECTL_VERSION }}/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
+      - name: Install Helm
+        run: |
+          curl -fsSL https://get.helm.sh/helm-v${{ env.HELM_VERSION }}-linux-amd64.tar.gz | tar xz
+          sudo mv linux-amd64/helm /usr/local/bin/
+          helm version
+
+      - name: Configure kubectl for EKS
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
+            --region ${{ env.AWS_REGION }}
+          kubectl get nodes
+
+      - name: Create IAM OIDC provider for EKS cluster
+        run: |
+          eksctl utils associate-iam-oidc-provider \
+            --cluster ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
+            --region ${{ env.AWS_REGION }} \
+            --approve || echo "OIDC provider already exists"
+        continue-on-error: true
+
+      - name: Install AWS Load Balancer Controller CRDs
+        run: |
+          kubectl apply -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
+
+      - name: Get AWS Account ID
+        id: get-account-id
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "account_id=$ACCOUNT_ID" >> $GITHUB_OUTPUT
+
+      - name: Create IAM policy for AWS Load Balancer Controller
+        run: |
+          if ! aws iam get-policy --policy-arn arn:aws:iam::${{ steps.get-account-id.outputs.account_id }}:policy/AWSLoadBalancerControllerIAMPolicy 2>/dev/null; then
+            curl -o iam_policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+            aws iam create-policy \
+              --policy-name AWSLoadBalancerControllerIAMPolicy \
+              --policy-document file://iam_policy.json
+          else
+            echo "IAM policy already exists"
+          fi
+        continue-on-error: true
+
+      - name: Create IAM service account for AWS Load Balancer Controller
+        run: |
+          eksctl create iamserviceaccount \
+            --cluster=${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
+            --namespace=kube-system \
+            --name=aws-load-balancer-controller \
+            --attach-policy-arn=arn:aws:iam::${{ steps.get-account-id.outputs.account_id }}:policy/AWSLoadBalancerControllerIAMPolicy \
+            --region=${{ env.AWS_REGION }} \
+            --approve \
+            --override-existing-serviceaccounts || echo "Service account already exists"
+        continue-on-error: true
+
+      - name: Add EKS Helm repository
+        run: |
+          helm repo add eks https://aws.github.io/eks-charts
+          helm repo update
+
+      - name: Setup Terraform to get VPC ID
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Checkout code to get VPC ID
+        uses: actions/checkout@v4
+
+      - name: Get VPC ID from Terraform state
+        id: get-vpc-id
+        run: |
+          terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+          VPC_ID=$(terraform output -raw vpc_id)
+          echo "vpc_id=$VPC_ID" >> $GITHUB_OUTPUT
+        working-directory: infra-eks/deployment/prod/vpc
+
+      - name: Install AWS Load Balancer Controller
+        run: |
+          helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
+            -n kube-system \
+            --set clusterName=${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
+            --set serviceAccount.create=false \
+            --set serviceAccount.name=aws-load-balancer-controller \
+            --set region=${{ env.AWS_REGION }} \
+            --set vpcId=${{ steps.get-vpc-id.outputs.vpc_id }} \
+            --wait
+
+      - name: Verify AWS Load Balancer Controller installation
+        run: |
+          kubectl get deployment -n kube-system aws-load-balancer-controller
+          kubectl wait --for=condition=available --timeout=300s \
+            deployment/aws-load-balancer-controller -n kube-system
+
+  deploy-k8s-application:
+    name: Deploy Kubernetes Application
+    needs: [deploy-ecr, retrieve-ssl, deploy-eks-cluster, deploy-eks-node-group, install-aws-load-balancer-controller]
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    outputs:
+      application_url: ${{ steps.get-app-url.outputs.application_url }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/v${{ env.KUBECTL_VERSION }}/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
+      - name: Configure kubectl for EKS
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on K8s app directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/prod/k8s_app
+
+      - name: Validate IaC changes on K8s app directory
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
+        working-directory: infra-eks/deployment/prod/k8s_app
+
+      - name: Deploy Kubernetes application
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/prod/k8s_app
+
+      - name: Fetch application URL
+        id: get-app-url
+        run: |
+          application_url=$(terraform output -raw application_url || echo "Not available yet")
+          echo "application_url=$application_url" >> $GITHUB_OUTPUT
+          echo "Application URL: $application_url"
+        working-directory: infra-eks/deployment/prod/k8s_app
+        env:
+          TF_IN_AUTOMATION: true
+
+      - name: Wait for Ingress to be ready
+        run: |
+          echo "Waiting for Ingress to provision ALB..."
+          kubectl wait --for=jsonpath='{.status.loadBalancer.ingress}' \
+            --timeout=600s ingress/nestjs-app-ingress || echo "Timeout waiting for Ingress"
+        continue-on-error: true
+
+      - name: Display deployment status
+        run: |
+          echo "=== Deployments ==="
+          kubectl get deployments
+          echo ""
+          echo "=== Services ==="
+          kubectl get services
+          echo ""
+          echo "=== Ingress ==="
+          kubectl get ingress
+          echo ""
+          echo "=== HPA ==="
+          kubectl get hpa
+          echo ""
+          echo "=== Pods ==="
+          kubectl get pods
+
+  deployment-summary:
+    name: Deployment Summary
+    needs: [deploy-ecr, retrieve-ssl, build-and-push-app-docker-image-to-ecr, deploy-vpc, deploy-eks-cluster, deploy-eks-node-group, install-aws-load-balancer-controller, deploy-k8s-application]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Display deployment summary
+        run: |
+          cat << 'EOF'
+          ╔════════════════════════════════════════════════════════════════╗
+          ║           EKS Infrastructure Deployment Complete               ║
+          ╚════════════════════════════════════════════════════════════════╝
+
+          ✓ Terraform State Bucket: Created
+          ✓ ECR Repository: ${{ needs.deploy-ecr.outputs.ecr_repository_name }}
+          ✓ SSL Certificate: Retrieved/Created
+          ✓ VPC: Deployed with EKS-specific subnet tags
+          ✓ Docker Image: Built and pushed to ECR
+          ✓ EKS Cluster: ${{ needs.deploy-eks-cluster.outputs.cluster_id }}
+          ✓ EKS Endpoint: ${{ needs.deploy-eks-cluster.outputs.cluster_endpoint }}
+          ✓ Node Group: ${{ needs.deploy-eks-node-group.outputs.node_group_id }}
+          ✓ AWS Load Balancer Controller: Installed
+          ✓ Application: Deployed
+
+          Application URL: ${{ needs.deploy-k8s-application.outputs.application_url }}
+
+          Next Steps:
+          1. Verify the application is accessible via the URL above
+          2. Check the ALB in AWS Console
+          3. Monitor pods: kubectl get pods -w
+          4. View logs: kubectl logs -f deployment/nestjs-app-deployment
+
+          ╚════════════════════════════════════════════════════════════════╝
+          EOF

@@ -1,0 +1,57 @@
+name: Deploy Terraform State Bucket (EKS)
+
+on:
+  workflow_call:
+    inputs:
+      github_head_commit_message:
+        required: true
+        type: string
+        description: "Message of the last commit sent to the GitHub account"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+        description: "AWS access key ID"
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+        description: "AWS secret"
+
+env:
+  AWS_REGION: eu-west-1
+  TERRAFORM_VERSION: 1.10.3
+
+jobs:
+  deploy-terraform-state-bucket:
+    name: Deploy Terraform State Bucket (EKS)
+    runs-on: ubuntu-latest
+
+    # Skip this job if the commit message starts with 'ci:' or 'docs:'
+    if: ${{ !startsWith(inputs.github_head_commit_message, 'ci:') && !startsWith(inputs.github_head_commit_message, 'docs:') }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create S3 bucket if it does not yet exist
+        run: |
+          STATE_BUCKET_NAME=$(grep "^state_bucket_name" ../backend.tfvars | cut -d'"' -f2)
+          if aws s3api head-bucket --bucket ${STATE_BUCKET_NAME} 2>/dev/null; then
+            echo "The Terraform state bucket already exists. Skipping creation."
+          else
+            echo "The Terraform state bucket does not exist yet. Creating it now."
+            terraform init
+            terraform plan -var-file="../common.tfvars" -var-file="../backend.tfvars"
+            terraform apply -var-file="../common.tfvars" -var-file="../backend.tfvars" -auto-approve
+          fi
+        working-directory: infra-eks/deployment/backend
