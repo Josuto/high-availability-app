@@ -10,7 +10,7 @@
 
 Created comprehensive test coverage with **34 test runs** across 5 unit test files using **in-place testing**:
 
-1. **`infra/tests/unit/alb.tftest.hcl`** (6 test runs)
+1. **`infra-ecs/tests/unit/alb.tftest.hcl`** (6 test runs)
    - ALB basic configuration and naming
    - Production vs dev configuration
    - HTTPS and HTTP listeners
@@ -18,7 +18,7 @@ Created comprehensive test coverage with **34 test runs** across 5 unit test fil
    - Security group rules
    - Resource tagging
 
-2. **`infra/tests/unit/ecs_cluster.tftest.hcl`** (7 test runs)
+2. **`infra-ecs/tests/unit/ecs_cluster.tftest.hcl`** (7 test runs)
    - ECS cluster configuration
    - Auto Scaling Group settings
    - Launch template (IMDSv2, instance type)
@@ -28,7 +28,7 @@ Created comprehensive test coverage with **34 test runs** across 5 unit test fil
    - Resource tagging
    - **Uses data source overrides** for AMI lookups
 
-3. **`infra/tests/unit/ecs_service.tftest.hcl`** (7 test runs)
+3. **`infra-ecs/tests/unit/ecs_service.tftest.hcl`** (7 test runs)
    - ECS service basic configuration
    - Task definition (CPU, memory, container definitions)
    - Deployment configuration
@@ -37,7 +37,7 @@ Created comprehensive test coverage with **34 test runs** across 5 unit test fil
    - CloudWatch logs
    - IAM execution roles
 
-4. **`infra/tests/unit/ecr.tftest.hcl`** (8 test runs)
+4. **`infra-ecs/tests/unit/ecr.tftest.hcl`** (8 test runs)
    - ECR repository configuration
    - Image tag immutability
    - Image scanning on push
@@ -46,7 +46,7 @@ Created comprehensive test coverage with **34 test runs** across 5 unit test fil
    - Resource tagging
    - Variable validation
 
-5. **`infra/tests/unit/ssl.tftest.hcl`** (6 test runs) ⭐ **NEW**
+5. **`infra-ecs/tests/unit/ssl.tftest.hcl`** (6 test runs) ⭐ **NEW**
    - ACM certificate configuration
    - DNS validation method (not email)
    - Subject Alternative Names for wildcard domains
@@ -76,17 +76,17 @@ All tests use the **in-place testing pattern**:
 
 2. **`docs/TESTING_SUMMARY.md`** - This summary document
 
-3. **`infra/run-tests.README.md`** - Centralized test script documentation
+3. **`infra-ecs/run-tests.README.md`** - Centralized test script documentation
 
 ### Test Infrastructure
 
-- Test directory structure: `infra/tests/unit/`
+- Test directory structure: `infra-ecs/tests/unit/`
 - **In-place testing**: Tests run directly against module resources
 - Mock AWS provider in each test file (no real credentials needed)
 - Data source overrides for modules that fetch AWS data (e.g., AMI lookups)
 - All tests use `command = plan` mode (no AWS resources created)
 - Tests validate configuration, security settings, and naming conventions
-- Centralized test runner: `infra/run-tests.sh`
+- Centralized test runner: `infra-ecs/run-tests.sh`
 
 ## Test Coverage
 
@@ -129,7 +129,7 @@ The test files are complete and **fully integrated into the CI/CD pipeline**. Te
 
 ### CI/CD Integration - ✅ COMPLETE
 
-Tests are now the **first job** in the deployment pipeline using the centralized test script [infra/run-tests.sh](../infra/run-tests.sh).
+Tests are now the **first job** in the deployment pipeline using the centralized test script [infra-ecs/run-tests.sh](../infra-ecs/run-tests.sh).
 
 The workflow:
 
@@ -179,7 +179,7 @@ For local development and debugging:
 
 **Recommended approach** - Use the centralized script:
 ```bash
-cd infra
+cd infra-ecs
 ./run-tests.sh
 ```
 
@@ -193,12 +193,12 @@ Run tests by colocating them with each module:
 
 ```bash
 # Copy test to module directory
-cp infra/tests/unit/alb.tftest.hcl infra/modules/alb/tests/
+cp infra-ecs/tests/unit/alb.tftest.hcl infra-ecs/modules/alb/tests/
 
 # Update source path in test file to: source = "./.."
 
 # Run tests
-cd infra/modules/alb
+cd infra-ecs/modules/alb
 terraform init
 terraform test
 ```
@@ -230,7 +230,7 @@ From GitHub issue #9, Task 5.3:
 
 - [x] ✅ Tests run automatically in CI/CD
   - **FULLY IMPLEMENTED** in `.github/workflows/deploy_aws_infra.yaml`
-  - Uses centralized `infra/run-tests.sh` script
+  - Uses centralized `infra-ecs/run-tests.sh` script
   - `test-terraform-modules` job runs as first job in pipeline
   - All deployment jobs depend on tests passing
   - Tests block deployments on failure
@@ -299,7 +299,7 @@ From GitHub issue #9, Task 5.3:
 ### Test File Organization
 
 ```
-infra/
+infra-ecs/
 ├── modules/              # Terraform modules
 │   ├── alb/
 │   ├── ecs_cluster/
@@ -356,7 +356,7 @@ infra/
 - ✅ **In-place testing approach** - Direct resource assertions without module namespace issues
 - ✅ **Mock AWS provider** - Tests run without real AWS credentials
 - ✅ **Data source overrides** - Handle AMI lookups and other AWS data sources
-- ✅ **Centralized test script** ([infra/run-tests.sh](../infra/run-tests.sh)) used everywhere
+- ✅ **Centralized test script** ([infra-ecs/run-tests.sh](../infra-ecs/run-tests.sh)) used everywhere
 - ✅ **Full CI/CD integration** - tests run on every push to main
 - ✅ **Pre-commit hook integration** - tests run before every commit
 - ✅ Tests block deployments and commits if they fail

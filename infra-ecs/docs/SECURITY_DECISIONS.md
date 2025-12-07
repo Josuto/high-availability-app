@@ -104,7 +104,7 @@ trivy config --severity HIGH,CRITICAL --ignorefile .trivyignore .
 
 ### Run TFLint
 ```bash
-tflint --recursive --filter=infra/
+tflint --recursive --filter=infra-ecs/
 ```
 
 ### Run Pre-commit Hooks

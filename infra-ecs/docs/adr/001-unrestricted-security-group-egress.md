@@ -15,9 +15,9 @@ Each of these components needs outbound internet connectivity for various operat
 We will **maintain unrestricted egress rules (0.0.0.0/0)** for all security groups in the infrastructure.
 
 **Affected Resources:**
-- `infra/modules/alb/alb-securitygroup.tf` - ALB egress
-- `infra/modules/ecs_cluster/ecs-securitygroup.tf` - Cluster egress
-- `infra/modules/ecs_service/task-securitygroup.tf` - Task egress
+- `infra-ecs/modules/alb/alb-securitygroup.tf` - ALB egress
+- `infra-ecs/modules/ecs_cluster/ecs-securitygroup.tf` - Cluster egress
+- `infra-ecs/modules/ecs_service/task-securitygroup.tf` - Task egress
 
 ## Alternatives Considered
 

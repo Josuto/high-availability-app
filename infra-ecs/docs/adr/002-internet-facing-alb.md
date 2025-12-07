@@ -10,7 +10,7 @@ Our web application needs to be accessible to end users over the internet. The A
 We will **deploy the ALB as internet-facing** (`internal = false`) to allow public access to our web application.
 
 **Affected Resource:**
-- `infra/modules/alb/alb.tf` - ALB configuration
+- `infra-ecs/modules/alb/alb.tf` - ALB configuration
 
 ## Alternatives Considered
 

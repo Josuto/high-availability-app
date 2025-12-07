@@ -36,23 +36,23 @@ We will implement **selective unit testing** based on module complexity and crit
 
 ### ✅ Modules WITH Unit Tests (5 modules)
 
-1. **ALB Module** - `infra/tests/unit/alb.tftest.hcl`
+1. **ALB Module** - `infra-ecs/tests/unit/alb.tftest.hcl`
    - **Why:** Complex configuration with security implications (HTTPS, redirects)
    - **Tests:** Listeners, target groups, security groups, deletion protection
 
-2. **ECS Cluster Module** - `infra/tests/unit/ecs_cluster.tftest.hcl`
+2. **ECS Cluster Module** - `infra-ecs/tests/unit/ecs_cluster.tftest.hcl`
    - **Why:** Complex ASG + Launch Template + IAM configuration, uses data sources requiring overrides
    - **Tests:** ASG settings, launch template (IMDSv2), IAM roles, security groups, scale-in protection
 
-3. **ECS Service Module** - `infra/tests/unit/ecs_service.tftest.hcl`
+3. **ECS Service Module** - `infra-ecs/tests/unit/ecs_service.tftest.hcl`
    - **Why:** Critical application deployment configuration with task definitions
    - **Tests:** Task definitions, deployment configuration, load balancer integration, CloudWatch logs
 
-4. **ECR Module** - `infra/tests/unit/ecr.tftest.hcl`
+4. **ECR Module** - `infra-ecs/tests/unit/ecr.tftest.hcl`
    - **Why:** Security-sensitive (image scanning, lifecycle policies)
    - **Tests:** Image scanning, tag immutability, lifecycle policies, retention counts
 
-5. **SSL Module** - `infra/tests/unit/ssl.tftest.hcl` ⭐ **NEW**
+5. **SSL Module** - `infra-ecs/tests/unit/ssl.tftest.hcl` ⭐ **NEW**
    - **Why:** Critical security component with complex for_each logic for validation records
    - **Tests:** DNS validation method, SANs, lifecycle rules, validation records, certificate validation workflow
 
@@ -250,7 +250,7 @@ resource "aws_route53_zone" "domain_zone" {
 
 ### Test Structure
 ```
-infra/
+infra-ecs/
 ├── tests/
 │   └── unit/
 │       ├── alb.tftest.hcl         (6 test runs)
@@ -270,7 +270,7 @@ infra/
 ```
 
 ### Test Execution
-- **Local:** `cd infra && ./run-tests.sh`
+- **Local:** `cd infra-ecs && ./run-tests.sh`
 - **Pre-commit:** Automatic on Terraform file changes
 - **CI/CD:** First job in GitHub Actions workflow (blocks deployment on failure)
 
@@ -283,7 +283,7 @@ infra/
 
 - [TESTING.md](../TESTING.md) - Comprehensive testing guide
 - [TESTING_SUMMARY.md](../TESTING_SUMMARY.md) - Implementation details
-- [run-tests.sh](../../infra/run-tests.sh) - Centralized test runner
+- [run-tests.sh](../../run-tests.sh) - Centralized test runner
 - Terraform Testing Documentation: https://developer.hashicorp.com/terraform/language/tests
 
 ## Revision History

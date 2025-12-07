@@ -57,7 +57,7 @@ We will implement a **dual-layer tagging architecture** using:
 
 **Layer 1: Provider Default Tags**
 
-All `provider.tf` files in `infra/deployment/*/` configured with:
+All `provider.tf` files in `infra-ecs/deployment/*/` configured with:
 
 ```hcl
 provider "aws" {
@@ -75,7 +75,7 @@ provider "aws" {
 
 **Layer 2: Module-Specific Tags**
 
-Each module in `infra/modules/*/` gets a `locals.tf` file:
+Each module in `infra-ecs/modules/*/` gets a `locals.tf` file:
 
 ```hcl
 locals {
@@ -326,7 +326,7 @@ Resources then use: `tags = local.common_tags`
 
 ```bash
 # Step 1: Validate Terraform configurations
-cd infra && terraform validate
+cd infra-ecs && terraform validate
 
 # Step 2: Check for untagged resources (after apply)
 aws resourcegroupstaggingapi get-resources \
@@ -343,21 +343,21 @@ aws elbv2 describe-load-balancers \
 ### Files Changed
 
 **New Files:**
-- `infra/modules/alb/locals.tf`
-- `infra/modules/ecr/locals.tf`
-- `infra/modules/ecs_cluster/locals.tf`
-- `infra/modules/ecs_service/locals.tf`
-- `infra/modules/ssl/locals.tf`
-- `infra/modules/hosted_zone/locals.tf`
-- `infra/modules/alb_rule/locals.tf`
+- `infra-ecs/modules/alb/locals.tf`
+- `infra-ecs/modules/ecr/locals.tf`
+- `infra-ecs/modules/ecs_cluster/locals.tf`
+- `infra-ecs/modules/ecs_service/locals.tf`
+- `infra-ecs/modules/ssl/locals.tf`
+- `infra-ecs/modules/hosted_zone/locals.tf`
+- `infra-ecs/modules/alb_rule/locals.tf`
 - `docs/COST_TRACKING.md`
 - `docs/adr/005-cost-tracking-tags-strategy.md` (this file)
 
 **Note:** The `routing` module does not have a `locals.tf` file because Route53 A/CNAME records do not support tags in AWS.
 
 **Modified Files:**
-- All `*.tf` files in `infra/modules/*/` (tag blocks updated)
-- All `provider.tf` files in `infra/deployment/*/` (default_tags added)
+- All `*.tf` files in `infra-ecs/modules/*/` (tag blocks updated)
+- All `provider.tf` files in `infra-ecs/deployment/*/` (default_tags added)
 
 ## Monitoring and Maintenance
 

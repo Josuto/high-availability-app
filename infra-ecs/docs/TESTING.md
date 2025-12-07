@@ -13,7 +13,7 @@ This project uses Terraform's native testing framework (available in Terraform 1
 ## Test Structure
 
 ```
-infra/
+infra-ecs/
 ├── tests/
 │   ├── unit/
 │   │   ├── alb.tftest.hcl              # ALB module tests (6 test runs)
@@ -49,7 +49,7 @@ terraform version
 Use the centralized test script - the same one used in CI/CD:
 
 ```bash
-cd infra
+cd infra-ecs
 ./run-tests.sh
 ```
 
@@ -65,7 +65,7 @@ You can also run specific tests directly using Terraform:
 
 ```bash
 # Test ALB module only
-cd infra
+cd infra-ecs
 # Follow manual test setup...
 
 # Or use terraform test with filters (requires proper setup)
@@ -187,10 +187,10 @@ run "test_name" {
 
 ```bash
 # Create new unit test file
-touch infra/tests/unit/my_module.tftest.hcl
+touch infra-ecs/tests/unit/my_module.tftest.hcl
 
 # Create new integration test
-touch infra/tests/integration/my_integration.tftest.hcl
+touch infra-ecs/tests/integration/my_integration.tftest.hcl
 ```
 
 ### Step 3: Write Test Runs
@@ -266,7 +266,7 @@ run "module_validation" {
 ### Step 4: Test Your Tests
 
 ```bash
-cd infra/tests
+cd infra-ecs/tests
 terraform test -filter=tests/unit/my_module.tftest.hcl -verbose
 ```
 
@@ -438,7 +438,7 @@ All deployment jobs transitively depend on tests passing.
 
 ### Test Job Implementation
 
-The test job uses the centralized test script [infra/run-tests.sh](../infra/run-tests.sh):
+The test job uses the centralized test script [infra-ecs/run-tests.sh](../infra-ecs/run-tests.sh):
 
 ```yaml
 test-terraform-modules:
@@ -456,7 +456,7 @@ test-terraform-modules:
 
     - name: Run Terraform module tests
       run: |
-        cd infra
+        cd infra-ecs
         chmod +x run-tests.sh
         ./run-tests.sh
 ```
@@ -474,7 +474,7 @@ Tests also run automatically as a pre-commit hook when committing changes to Ter
 **Configuration Location:** [.pre-commit-config.yaml](../.pre-commit-config.yaml)
 
 The pre-commit hook:
-- **Triggers on**: Changes to `*.tf` or `*.tftest.hcl` files in `infra/modules/` or `infra/tests/`
+- **Triggers on**: Changes to `*.tf` or `*.tftest.hcl` files in `infra-ecs/modules/` or `infra-ecs/tests/`
 - **Runs**: The same `run-tests.sh` script used in CI/CD
 - **Blocks commits**: If tests fail
 - **Provides**: Immediate feedback before pushing code
@@ -486,7 +486,7 @@ git commit --no-verify
 
 To run tests manually before committing:
 ```bash
-cd infra
+cd infra-ecs
 ./run-tests.sh
 ```
 
@@ -638,7 +638,7 @@ Update tests when:
 ### Running Complete Test Suite
 
 ```bash
-$ cd infra/tests
+$ cd infra-ecs/tests
 $ terraform init
 $ terraform test
 
@@ -696,7 +696,7 @@ Summary: 35/35 tests passed, 0 failed
 ### Testing Single Module
 
 ```bash
-$ cd infra/tests
+$ cd infra-ecs/tests
 $ terraform test -filter=tests/unit/ecr.tftest.hcl -verbose
 
 Testing unit/ecr.tftest.hcl... in progress

@@ -14,7 +14,7 @@ Centralized script for running all Terraform module tests. Used consistently acr
 ### Run All Tests
 
 ```bash
-cd infra
+cd infra-ecs
 ./run-tests.sh
 ```
 
@@ -110,7 +110,7 @@ Test run complete.
     export AWS_ACCESS_KEY_ID="mock-access-key"
     export AWS_SECRET_ACCESS_KEY="mock-secret-key"  # pragma: allowlist secret
     export AWS_DEFAULT_REGION="eu-west-1"
-    cd infra
+    cd infra-ecs
     chmod +x run-tests.sh
     ./run-tests.sh
 ```
@@ -126,14 +126,14 @@ Test run complete.
   hooks:
     - id: terraform-tests
       name: Terraform Module Tests
-      entry: bash -c 'cd infra && ./run-tests.sh'
-      files: ^infra/(modules/|tests/).*\.(tf|tftest\.hcl)$
+      entry: bash -c 'cd infra-ecs && ./run-tests.sh'
+      files: ^infra-ecs/(modules/|tests/).*\.(tf|tftest\.hcl)$
 ```
 
 ### 3. Manual Execution
 
 ```bash
-cd infra
+cd infra-ecs
 ./run-tests.sh
 ```
 
@@ -162,7 +162,7 @@ git commit --no-verify
 ### Tests Fail Locally But Pass in CI
 
 - Check Terraform version: `terraform version`
-- Ensure modules are up to date: `cd infra && git pull`
+- Ensure modules are up to date: `cd infra-ecs && git pull`
 - Clean temporary files: `rm -rf tests/.tmp`
 
 ### Permission Denied Error

@@ -10,7 +10,7 @@ The Terraform state bucket requires encryption at rest to protect sensitive infr
 We will **use AWS-managed keys (SSE-S3 with AES256)** for Terraform state bucket encryption in production, with no encryption in development.
 
 **Affected Resource:**
-- `infra/deployment/backend/s3.tf` - S3 bucket server-side encryption configuration
+- `infra-ecs/deployment/backend/s3.tf` - S3 bucket server-side encryption configuration
 
 **Current Implementation:**
 ```hcl

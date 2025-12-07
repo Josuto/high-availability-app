@@ -8,7 +8,7 @@ Variable validation ensures that only valid values can be passed to modules, cat
 
 ## ALB Module
 
-**File:** `infra/modules/alb/vars.tf`
+**File:** `infra-ecs/modules/alb/vars.tf`
 
 | Variable | Validation Rule | Error Message |
 |----------|----------------|---------------|
@@ -30,7 +30,7 @@ deregistration_delay = 5000  # Error: Deregistration delay must be between 0 and
 
 ## ECS Service Module
 
-**File:** `infra/modules/ecs_service/vars.tf`
+**File:** `infra-ecs/modules/ecs_service/vars.tf`
 
 | Variable | Validation Rule | Error Message |
 |----------|----------------|---------------|
@@ -71,7 +71,7 @@ deployment_minimum_healthy_percent = 150  # Error: Must be between 0 and 100
 
 ## ECS Cluster Module
 
-**File:** `infra/modules/ecs_cluster/vars.tf`
+**File:** `infra-ecs/modules/ecs_cluster/vars.tf`
 
 | Variable | Validation Rule | Error Message |
 |----------|----------------|---------------|
@@ -103,7 +103,7 @@ instance_max_size = 2  # Error: Must be >= instance_min_size
 
 ## ECR Module
 
-**File:** `infra/modules/ecr/vars.tf`
+**File:** `infra-ecs/modules/ecr/vars.tf`
 
 | Variable | Validation Rule | Error Message |
 |----------|----------------|---------------|

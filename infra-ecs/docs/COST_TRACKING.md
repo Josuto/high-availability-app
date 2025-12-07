@@ -27,7 +27,7 @@ provider "aws" {
 }
 ```
 
-**Location:** `infra/deployment/*/provider.tf`
+**Location:** `infra-ecs/deployment/*/provider.tf`
 
 **Benefits:**
 - ✅ Guaranteed consistency across all resources
@@ -51,7 +51,7 @@ locals {
 }
 ```
 
-**Location:** `infra/modules/*/locals.tf`
+**Location:** `infra-ecs/modules/*/locals.tf`
 
 **Benefits:**
 - ✅ Module-level cost tracking
@@ -110,7 +110,7 @@ locals {
 Each module contains a `locals.tf` file with:
 
 ```hcl
-# Example: infra/modules/alb/locals.tf
+# Example: infra-ecs/modules/alb/locals.tf
 locals {
   common_tags = {
     Project     = var.project_name
@@ -248,7 +248,7 @@ Chart Type: Line
 **Automated Checks:**
 ```bash
 # Run Terraform validation
-cd infra && ./run-tests.sh
+cd infra-ecs && ./run-tests.sh
 
 # Check for missing tags (AWS CLI)
 aws resourcegroupstaggingapi get-resources \
@@ -336,7 +336,7 @@ tflint
 ### Audit Trail
 
 All tagging changes are tracked via:
-1. **Git History:** `infra/modules/*/locals.tf` and `infra/deployment/*/provider.tf`
+1. **Git History:** `infra-ecs/modules/*/locals.tf` and `infra-ecs/deployment/*/provider.tf`
 2. **Terraform State:** State files record all tag values
 3. **CloudTrail:** AWS API calls for tag updates
 
