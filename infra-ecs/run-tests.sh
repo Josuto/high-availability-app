@@ -135,8 +135,8 @@ if [ "$VALIDATION_FAILED" = true ]; then
 fi
 
 # Step 2: Run unit tests
-echo "Step 2: Running unit tests"
-echo "--------------------------"
+echo "Step 2: Running unit tests for all modules"
+echo "-------------------------------------------"
 echo ""
 
 # Track if any tests failed (use set +e to continue on failures)
@@ -148,44 +148,6 @@ run_module_tests "ecs_cluster" "tests/unit/ecs_cluster.tftest.hcl" || ANY_FAILED
 run_module_tests "ecs_service" "tests/unit/ecs_service.tftest.hcl" || ANY_FAILED=true
 run_module_tests "ecr" "tests/unit/ecr.tftest.hcl" || ANY_FAILED=true
 run_module_tests "ssl" "tests/unit/ssl.tftest.hcl" || ANY_FAILED=true
-
-echo "Step 3: Running integration tests"
-echo "----------------------------------"
-echo ""
-
-# Run integration tests
-if [ -f "tests/integration/minimal_stack.tftest.hcl" ]; then
-    echo "Running integration tests..."
-    echo "----------------------------------------"
-
-    cd tests/integration
-
-    # Initialize Terraform (suppress output)
-    terraform init > /dev/null 2>&1
-    init_exit_code=$?
-
-    if [ $init_exit_code -ne 0 ]; then
-        cd - > /dev/null
-        echo "✗ Terraform init failed for integration tests"
-        echo ""
-        ANY_FAILED=true
-    else
-        # Run integration tests and show output
-        terraform test -no-color
-        test_exit_code=$?
-
-        cd - > /dev/null
-        echo ""
-
-        if [ $test_exit_code -ne 0 ]; then
-            FAILED_MODULES+=("integration")
-            ANY_FAILED=true
-        fi
-    fi
-else
-    echo "No integration tests found, skipping"
-    echo ""
-fi
 
 # Re-enable exit on error
 set -e

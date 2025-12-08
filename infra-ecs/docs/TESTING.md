@@ -7,7 +7,6 @@ This document explains the Terraform testing framework for this project, includi
 This project uses Terraform's native testing framework (available in Terraform 1.6+) to validate infrastructure as code. The testing strategy includes:
 
 - **Unit Tests**: Test individual modules in isolation to verify resource configuration
-- **Integration Tests**: Test multiple modules together to verify they work correctly when combined
 - **Validation Tests**: Verify that variable validation rules work as expected
 
 ## Test Structure
@@ -15,26 +14,25 @@ This project uses Terraform's native testing framework (available in Terraform 1
 ```
 infra-ecs/
 ├── tests/
-│   ├── unit/
-│   │   ├── alb.tftest.hcl              # ALB module tests (6 test runs)
-│   │   ├── ecs_cluster.tftest.hcl      # ECS Cluster module tests (7 test runs)
-│   │   ├── ecs_service.tftest.hcl      # ECS Service module tests (7 test runs)
-│   │   └── ecr.tftest.hcl              # ECR module tests (8 test runs)
-│   └── integration/
-│       └── minimal_stack.tftest.hcl    # Integration tests (6 test runs)
+│   └── unit/
+│       ├── alb.tftest.hcl              # ALB module tests (6 test runs)
+│       ├── ecs_cluster.tftest.hcl      # ECS Cluster module tests (7 test runs)
+│       ├── ecs_service.tftest.hcl      # ECS Service module tests (7 test runs)
+│       ├── ecr.tftest.hcl              # ECR module tests (8 test runs)
+│       └── ssl.tftest.hcl              # SSL module tests (6 test runs)
 └── modules/
     ├── alb/
     ├── ecs_cluster/
     ├── ecs_service/
-    └── ecr/
+    ├── ecr/
+    └── ssl/
 ```
 
-**Total: 32+ test runs** covering all critical infrastructure components.
+**Total: 34 test runs** covering all critical infrastructure components.
 
 ## Prerequisites
 
 - **Terraform >= 1.6.0** (tests use native testing framework)
-- AWS provider configuration (for integration tests that use real AWS data sources)
 - Basic understanding of Terraform configuration
 
 Check your Terraform version:
@@ -133,7 +131,7 @@ provider "aws" {
 }
 
 run "test_name" {
-  command = plan  # or 'apply' for integration tests
+  command = plan
 
   variables {
     # Input variables for this test
@@ -170,27 +168,22 @@ run "test_name" {
 - Verifies resource attributes, naming, and configuration
 
 **Apply Mode** (`command = apply`):
-- Used for integration tests (when needed)
-- Actually creates resources in AWS
+- Creates real resources in AWS
 - Slower and incurs AWS costs
 - Tests real resource creation and interactions
-- **Currently not used** to avoid AWS costs during testing
+- **Not used in this project** to avoid AWS costs during testing
 
 ## Writing New Tests
 
 ### Step 1: Determine Test Type
 
 - **Unit Test**: Testing a single module in isolation → Create in `tests/unit/`
-- **Integration Test**: Testing multiple modules together → Create in `tests/integration/`
 
 ### Step 2: Create Test File
 
 ```bash
 # Create new unit test file
 touch infra-ecs/tests/unit/my_module.tftest.hcl
-
-# Create new integration test
-touch infra-ecs/tests/integration/my_integration.tftest.hcl
 ```
 
 ### Step 3: Write Test Runs
@@ -682,15 +675,16 @@ Testing unit/ecr.tftest.hcl... in progress
   run "ecr_variable_validation_environment"... pass
 Testing unit/ecr.tftest.hcl... 8/8 passed, 0 failed
 
-Testing integration/minimal_stack.tftest.hcl... in progress
-  run "setup_ecr"... pass
-  run "setup_ecs_cluster"... pass
-  run "setup_alb"... pass
-  run "setup_ecs_service"... pass
-  run "validate_naming_consistency"... pass
-Testing integration/minimal_stack.tftest.hcl... 6/6 passed, 0 failed
+Testing unit/ssl.tftest.hcl... in progress
+  run "ssl_certificate_basic_configuration"... pass
+  run "ssl_validation_records_configuration"... pass
+  run "ssl_certificate_validation_configuration"... pass
+  run "ssl_production_environment"... pass
+  run "ssl_san_wildcard_coverage"... pass
+  run "ssl_validation_method_dns_only"... pass
+Testing unit/ssl.tftest.hcl... 6/6 passed, 0 failed
 
-Summary: 35/35 tests passed, 0 failed
+Summary: 34/34 tests passed, 0 failed
 ```
 
 ### Testing Single Module
@@ -716,14 +710,13 @@ Testing unit/ecr.tftest.hcl... 8/8 passed, 0 failed
 
 ## Summary
 
-- **35+ test runs** across 5 test files validate all infrastructure modules
+- **34 test runs** across 5 test files validate all critical infrastructure modules
 - **Unit tests** verify individual module configuration and behavior
-- **Integration tests** ensure modules work correctly together
 - **Plan mode** tests avoid AWS costs while validating configuration
 - **Clear assertions** with descriptive error messages aid debugging
 - **Comprehensive coverage** includes security, naming, tagging, and functionality
 
-Run `terraform test` before committing changes to catch issues early!
+Run `./run-tests.sh` before committing changes to catch issues early!
 
 ## Maintenance
 

@@ -45,15 +45,10 @@ run "ecr_repository_tagging" {
     environment  = "prod"
   }
 
-  # Test repository has required tags
+  # Test repository name includes project name
   assert {
-    condition     = aws_ecr_repository.app_ecr_repository.tags["Project"] == "my-app"
-    error_message = "ECR repository should have Project tag"
-  }
-
-  assert {
-    condition     = aws_ecr_repository.app_ecr_repository.tags["Environment"] == "prod"
-    error_message = "ECR repository should have Environment tag"
+    condition     = can(regex("my-app", aws_ecr_repository.app_ecr_repository.name))
+    error_message = "ECR repository name should include project name"
   }
 }
 

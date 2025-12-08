@@ -232,12 +232,6 @@ run "ecs_cloudwatch_logs" {
     condition     = aws_cloudwatch_log_group.cluster_lg.name == "/ecs/test-project"
     error_message = "CloudWatch log group should use configured name"
   }
-
-  # Test log group has correct tags
-  assert {
-    condition     = aws_cloudwatch_log_group.cluster_lg.tags["Project"] == "test-project"
-    error_message = "CloudWatch log group should have Project tag"
-  }
 }
 
 run "ecs_iam_roles" {

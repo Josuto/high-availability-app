@@ -110,14 +110,14 @@ All tests use the **in-place testing pattern**:
 ✅ CloudWatch logging
 ✅ Resource tagging (Project, Environment)
 
-### Integration Validations
+### SSL/Certificate Validations
 
-✅ Module outputs used as inputs
-✅ Security group references
-✅ Load balancer to ECS service connection
-✅ ECS service to cluster association
-✅ Capacity provider configuration
-✅ Cross-module consistency
+✅ DNS validation method (not email)
+✅ Subject Alternative Names for wildcard domains
+✅ Lifecycle rules (create_before_destroy)
+✅ Validation record creation and configuration
+✅ Certificate validation workflow
+✅ Production certificate configuration
 
 ## Running the Tests
 
@@ -223,8 +223,8 @@ func TestAlbModule(t *testing.T) {
 From GitHub issue #9, Task 5.3:
 
 - [x] ✅ At least 5 module tests created and passing
-  - Created 4 unit test files covering all major modules
-  - Total of 32+ individual test runs
+  - Created 5 unit test files covering all major modules
+  - Total of 34 individual test runs
   - All tests validate critical functionality, security, and configuration
   - Uses in-place testing pattern for reliable assertions
 
@@ -257,6 +257,7 @@ From GitHub issue #9, Task 5.3:
    - ECS Cluster module tests (7 test runs)
    - ECS Service module tests (7 test runs)
    - ECR module tests (8 test runs)
+   - SSL module tests (6 test runs)
    - Uses in-place testing approach (no module namespace issues)
 
 3. ✅ **Documentation Complete:**
@@ -310,15 +311,12 @@ infra-ecs/
 │   ├── routing/          (no tests - too simple)
 │   └── alb_rule/         (no tests - commented out)
 └── tests/                # Centralized tests
-    ├── unit/             # Unit tests for individual modules
-    │   ├── alb.tftest.hcl
-    │   ├── ecs_cluster.tftest.hcl
-    │   ├── ecs_service.tftest.hcl
-    │   ├── ecr.tftest.hcl
-    │   └── ssl.tftest.hcl ⭐ NEW
-    ├── integration/      # Integration tests for module combinations
-    │   └── minimal_stack.tftest.hcl
-    └── versions.tf       # Provider configuration for tests
+    └── unit/             # Unit tests for individual modules
+        ├── alb.tftest.hcl
+        ├── ecs_cluster.tftest.hcl
+        ├── ecs_service.tftest.hcl
+        ├── ecr.tftest.hcl
+        └── ssl.tftest.hcl
 ```
 
 **Testing Strategy:** Selective unit testing based on module complexity and criticality. See [ADR 004](adr/004-terraform-module-testing-strategy.md) for rationale.
@@ -352,7 +350,7 @@ infra-ecs/
 
 **Task 5.3 is complete with full CI/CD and pre-commit integration.** We have:
 
-- ✅ Created 32+ comprehensive test runs across 4 unit test files
+- ✅ Created 34 comprehensive test runs across 5 unit test files
 - ✅ **In-place testing approach** - Direct resource assertions without module namespace issues
 - ✅ **Mock AWS provider** - Tests run without real AWS credentials
 - ✅ **Data source overrides** - Handle AMI lookups and other AWS data sources
