@@ -4,25 +4,25 @@ This directory contains GitHub Actions workflows for deploying and managing the 
 
 ## ⚠️ Important: Workflow Location
 
-These workflow files are provided in `.github/workflows/eks/` for reference and documentation purposes.
+These workflow files are provided in `.github/workflows/` for reference and documentation purposes.
 
 **✅ These workflows have already been copied to `.github/workflows/` with EKS-specific naming:**
 
-| Source (.github/workflows/eks/) | Destination (.github/workflows/) |
+| Source (.github/workflows/) | Destination (.github/workflows/) |
 |-------------------------------|----------------------------------|
-| deploy_terraform_state_bucket.yaml | deploy_terraform_state_bucket_eks.yaml |
-| deploy_hosted_zone.yaml | deploy_hosted_zone_eks.yaml |
-| destroy_hosted_zone.yaml | destroy_hosted_zone_eks.yaml |
+| eks_deploy_terraform_state_bucket.yaml | eks_deploy_terraform_state_bucket_eks.yaml |
+| eks_deploy_hosted_zone.yaml | eks_deploy_hosted_zone_eks.yaml |
+| eks_destroy_hosted_zone.yaml | eks_destroy_hosted_zone_eks.yaml |
 | deploy_shared_aws_infra.yaml | deploy_shared_aws_infra_eks.yaml |
 | destroy_shared_aws_infra.yaml | destroy_shared_aws_infra_eks.yaml |
-| deploy_eks_infra.yaml | deploy_eks_infra.yaml |
-| destroy_eks_infra.yaml | destroy_eks_infra.yaml |
+| eks_deploy_aws_infra.yaml | eks_deploy_aws_infra.yaml |
+| eks_destroy_aws_infra.yaml | eks_destroy_aws_infra.yaml |
 
 The EKS workflows use the `_eks` suffix (or are named specifically for EKS) to avoid conflicts with the existing ECS workflows. Both ECS and EKS workflows can coexist in `.github/workflows/` without interference.
 
 ## Why Are They Here?
 
-The workflows are placed in `.github/workflows/eks/` (instead of `.github/workflows/`) because:
+The workflows are placed in `.github/workflows/` (instead of `.github/workflows/`) because:
 
 1. **Documentation** - Keep EKS-related workflows with EKS infrastructure code
 2. **Separation** - Avoid automatically triggering EKS workflows when you only want ECS
@@ -31,7 +31,7 @@ The workflows are placed in `.github/workflows/eks/` (instead of `.github/workfl
 
 ## Available Workflows
 
-### 1. deploy_terraform_state_bucket.yaml
+### 1. eks_deploy_terraform_state_bucket.yaml
 
 **Purpose:** Create S3 bucket for Terraform state storage (reusable workflow)
 
@@ -50,7 +50,7 @@ The workflows are placed in `.github/workflows/eks/` (instead of `.github/workfl
 
 **Execution Time:** ~2 minutes
 
-### 2. deploy_hosted_zone.yaml
+### 2. eks_deploy_hosted_zone.yaml
 
 **Purpose:** Deploy Route53 hosted zone and state bucket
 
@@ -68,7 +68,7 @@ The workflows are placed in `.github/workflows/eks/` (instead of `.github/workfl
 
 **Execution Time:** ~3-5 minutes
 
-### 3. destroy_hosted_zone.yaml
+### 3. eks_destroy_hosted_zone.yaml
 
 **Purpose:** Destroy Route53 hosted zone and state bucket
 
@@ -161,7 +161,7 @@ destroy-vpc (5 min)
 destruction-summary (30 sec)
 ```
 
-### 6. deploy_eks_infra.yaml
+### 6. eks_deploy_aws_infra.yaml
 
 **Purpose:** Automated deployment of the complete EKS infrastructure
 
@@ -202,7 +202,7 @@ deploy-k8s-application (5 min)
 deployment-summary (1 min)
 ```
 
-### 7. destroy_eks_infra.yaml
+### 7. eks_destroy_aws_infra.yaml
 
 **Purpose:** Safe teardown of EKS infrastructure
 
@@ -326,7 +326,7 @@ The recommended order for deploying the complete EKS infrastructure:
 
 ```bash
 # 1. Copy workflows to .github/workflows/
-cp .github/workflows/eks/*.yaml .github/workflows/
+cp .github/workflows/*.yaml .github/workflows/
 
 # 2. Make changes to EKS infrastructure
 git add infra-eks/
@@ -381,15 +381,15 @@ git push origin main
 ```
 
 **Complete Destruction Order:**
-1. Destroy EKS Infrastructure (`destroy_eks_infra.yaml`)
+1. Destroy EKS Infrastructure (`eks_destroy_aws_infra.yaml`)
 2. Destroy Shared Infrastructure (`destroy_shared_aws_infra.yaml`)
-3. Destroy Hosted Zone and State Bucket (`destroy_hosted_zone.yaml`)
+3. Destroy Hosted Zone and State Bucket (`eks_destroy_hosted_zone.yaml`)
 
 ## Workflow Customization
 
 ### Change Kubernetes Version
 
-Edit `.github/workflows/eks/deploy_eks_infra.yaml`:
+Edit `.github/workflows/eks_deploy_aws_infra.yaml`:
 
 ```yaml
 env:
@@ -426,7 +426,7 @@ env:
 
 ### Disable Automatic Deployment
 
-Remove the `push` trigger from `deploy_eks_infra.yaml`:
+Remove the `push` trigger from `eks_deploy_aws_infra.yaml`:
 
 ```yaml
 on:
@@ -549,7 +549,7 @@ on:
     branches: [main]
     paths: ['infra/**']  # Only triggers on infra/ changes
 
-# EKS Workflow (.github/workflows/deploy_eks_infra.yaml)
+# EKS Workflow (.github/workflows/eks_deploy_aws_infra.yaml)
 on:
   push:
     branches: [main]
@@ -576,7 +576,7 @@ Running these workflows incurs costs:
 - **ALB:** ~$16/month
 - **Total:** ~$148/month
 
-**Recommendation:** Use `destroy_eks_infra.yaml` when not actively using EKS.
+**Recommendation:** Use `eks_destroy_aws_infra.yaml` when not actively using EKS.
 
 ## Best Practices
 
@@ -706,7 +706,7 @@ act -j test-eks-terraform-modules
 
 A: Create separate workflow files for each environment with different trigger paths:
 ```yaml
-# .github/workflows/deploy_eks_dev.yaml
+# .github/workflows/eks_deploy_aws_dev.yaml
 on:
   push:
     branches: [develop]

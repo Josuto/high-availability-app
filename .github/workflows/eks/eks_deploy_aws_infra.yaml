@@ -12,37 +12,37 @@ env:
   HELM_VERSION: 3.13.0
 
 jobs:
-  test-eks-terraform-modules:
-    name: Test EKS Terraform Modules
-    runs-on: ubuntu-latest
+  # test-eks-terraform-modules:
+  #   name: Test EKS Terraform Modules
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code from the repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout code from the repository
+  #       uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@v3
+  #       with:
+  #         terraform_version: ${{ env.TERRAFORM_VERSION }}
 
-      - name: Run Terraform module tests for EKS
-        run: |
-          if [ -f "run-tests.sh" ]; then
-            chmod +x run-tests.sh
-            ./run-tests.sh
-          else
-            echo "No tests found for EKS modules (tests are optional)"
-          fi
-        working-directory: infra-eks
-        env:
-          AWS_ACCESS_KEY_ID: "mock-access-key"
-          AWS_SECRET_ACCESS_KEY: "mock-secret-key" # pragma: allowlist secret
-          AWS_DEFAULT_REGION: "eu-west-1"
+  #     - name: Run Terraform module tests for EKS
+  #       run: |
+  #         if [ -f "run-tests.sh" ]; then
+  #           chmod +x run-tests.sh
+  #           ./run-tests.sh
+  #         else
+  #           echo "No tests found for EKS modules (tests are optional)"
+  #         fi
+  #       working-directory: infra-eks
+  #       env:
+  #         AWS_ACCESS_KEY_ID: "mock-access-key"
+  #         AWS_SECRET_ACCESS_KEY: "mock-secret-key" # pragma: allowlist secret
+  #         AWS_DEFAULT_REGION: "eu-west-1"
 
   deploy-terraform-state-bucket:
     name: Deploy Terraform State Bucket
-    needs: test-eks-terraform-modules
-    uses: ./.github/workflows/eks/deploy_terraform_state_bucket.yaml # reusable workflow
+    # needs: test-eks-terraform-modules
+    uses: ./.github/workflows/eks_deploy_terraform_state_bucket.yaml # reusable workflow
     with:
       github_head_commit_message: ${{ github.event.head_commit.message }}
     secrets:

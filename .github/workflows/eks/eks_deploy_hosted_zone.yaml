@@ -10,7 +10,7 @@ env:
 jobs:
   deploy-terraform-state-bucket:
     name: Deploy Terraform State Bucket (EKS)
-    uses: ./.github/workflows/eks/deploy_terraform_state_bucket.yaml # Note: Copy to .github/workflows first
+    uses: ./.github/workflows/eks_deploy_terraform_state_bucket.yaml # Note: Copy to .github/workflows first
     with:
       github_head_commit_message: "Manual trigger for EKS infrastructure"
     secrets:
