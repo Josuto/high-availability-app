@@ -38,3 +38,8 @@ output "cluster_iam_role_arn" {
   description = "IAM role ARN of the EKS cluster"
   value       = aws_iam_role.eks_cluster.arn
 }
+
+output "cluster_oidc_issuer_url" {
+  description = "The URL on the EKS cluster OIDC Issuer"
+  value       = try(aws_eks_cluster.main.identity[0].oidc[0].issuer, "")
+}

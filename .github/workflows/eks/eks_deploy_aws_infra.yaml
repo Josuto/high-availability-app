@@ -261,6 +261,7 @@ jobs:
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
         working-directory: infra-eks/deployment/prod/eks_cluster
 
+      # Export job outputs for downstream job consumption
       - name: Fetch EKS cluster outputs
         id: get-cluster-output
         run: |
@@ -347,6 +348,11 @@ jobs:
       - name: Checkout code from the repository
         uses: actions/checkout@v4
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -354,105 +360,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Install kubectl
-        run: |
-          curl -LO "https://dl.k8s.io/release/v${{ env.KUBECTL_VERSION }}/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
-          kubectl version --client
+      - name: Initialize Terraform on AWS LB Controller directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/prod/aws_lb_controller
 
-      - name: Install Helm
-        run: |
-          curl -fsSL https://get.helm.sh/helm-v${{ env.HELM_VERSION }}-linux-amd64.tar.gz | tar xz
-          sudo mv linux-amd64/helm /usr/local/bin/
-          helm version
+      - name: Validate IaC changes on AWS LB Controller directory
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
+        working-directory: infra-eks/deployment/prod/aws_lb_controller
 
-      - name: Configure kubectl for EKS
-        run: |
-          aws eks update-kubeconfig \
-            --name ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
-            --region ${{ env.AWS_REGION }}
-          kubectl get nodes
-
-      - name: Create IAM OIDC provider for EKS cluster
-        run: |
-          eksctl utils associate-iam-oidc-provider \
-            --cluster ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
-            --region ${{ env.AWS_REGION }} \
-            --approve || echo "OIDC provider already exists"
-        continue-on-error: true
-
-      - name: Install AWS Load Balancer Controller CRDs
-        run: |
-          kubectl apply -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
-
-      - name: Get AWS Account ID
-        id: get-account-id
-        run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          echo "account_id=$ACCOUNT_ID" >> $GITHUB_OUTPUT
-
-      - name: Create IAM policy for AWS Load Balancer Controller
-        run: |
-          if ! aws iam get-policy --policy-arn arn:aws:iam::${{ steps.get-account-id.outputs.account_id }}:policy/AWSLoadBalancerControllerIAMPolicy 2>/dev/null; then
-            curl -o iam_policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
-            aws iam create-policy \
-              --policy-name AWSLoadBalancerControllerIAMPolicy \
-              --policy-document file://iam_policy.json
-          else
-            echo "IAM policy already exists"
-          fi
-        continue-on-error: true
-
-      - name: Create IAM service account for AWS Load Balancer Controller
-        run: |
-          eksctl create iamserviceaccount \
-            --cluster=${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
-            --namespace=kube-system \
-            --name=aws-load-balancer-controller \
-            --attach-policy-arn=arn:aws:iam::${{ steps.get-account-id.outputs.account_id }}:policy/AWSLoadBalancerControllerIAMPolicy \
-            --region=${{ env.AWS_REGION }} \
-            --approve \
-            --override-existing-serviceaccounts || echo "Service account already exists"
-        continue-on-error: true
-
-      - name: Add EKS Helm repository
-        run: |
-          helm repo add eks https://aws.github.io/eks-charts
-          helm repo update
-
-      - name: Setup Terraform to get VPC ID
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TERRAFORM_VERSION }}
-
-      - name: Checkout code to get VPC ID
-        uses: actions/checkout@v4
-
-      - name: Get VPC ID from Terraform state
-        id: get-vpc-id
-        run: |
-          terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-          VPC_ID=$(terraform output -raw vpc_id)
-          echo "vpc_id=$VPC_ID" >> $GITHUB_OUTPUT
-        working-directory: infra-eks/deployment/prod/vpc
-
-      - name: Install AWS Load Balancer Controller
-        run: |
-          helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
-            -n kube-system \
-            --set clusterName=${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
-            --set serviceAccount.create=false \
-            --set serviceAccount.name=aws-load-balancer-controller \
-            --set region=${{ env.AWS_REGION }} \
-            --set vpcId=${{ steps.get-vpc-id.outputs.vpc_id }} \
-            --wait
-
-      - name: Verify AWS Load Balancer Controller installation
-        run: |
-          kubectl get deployment -n kube-system aws-load-balancer-controller
-          kubectl wait --for=condition=available --timeout=300s \
-            deployment/aws-load-balancer-controller -n kube-system
+      - name: Deploy AWS Load Balancer Controller
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/prod/aws_lb_controller
 
   deploy-k8s-application:
     name: Deploy Kubernetes Application

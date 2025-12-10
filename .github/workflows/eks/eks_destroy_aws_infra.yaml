@@ -121,53 +121,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Install kubectl and Helm
-        run: |
-          curl -LO "https://dl.k8s.io/release/v${{ env.KUBECTL_VERSION }}/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
-
-          curl -fsSL https://get.helm.sh/helm-v3.13.0-linux-amd64.tar.gz | tar xz
-          sudo mv linux-amd64/helm /usr/local/bin/
-
-      - name: Get EKS cluster name
-        id: get-cluster-name
-        run: |
-          terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-          cluster_id=$(terraform output -raw cluster_id 2>/dev/null || echo "")
-          echo "cluster_id=$cluster_id" >> $GITHUB_OUTPUT
-        working-directory: infra-eks/deployment/prod/eks_cluster
+      - name: Initialize Terraform on AWS LB Controller directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/prod/aws_lb_controller
         continue-on-error: true
 
-      - name: Configure kubectl for EKS
-        if: steps.get-cluster-name.outputs.cluster_id != ''
-        run: |
-          aws eks update-kubeconfig \
-            --name ${{ steps.get-cluster-name.outputs.cluster_id }} \
-            --region ${{ env.AWS_REGION }}
-        continue-on-error: true
-
-      - name: Uninstall AWS Load Balancer Controller
-        if: steps.get-cluster-name.outputs.cluster_id != ''
-        run: |
-          helm uninstall aws-load-balancer-controller -n kube-system || echo "AWS Load Balancer Controller not found"
-          sleep 30
-        continue-on-error: true
-
-      - name: Delete AWS Load Balancer Controller CRDs
-        if: steps.get-cluster-name.outputs.cluster_id != ''
-        run: |
-          kubectl delete -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master" || echo "CRDs not found"
-        continue-on-error: true
-
-      - name: Delete IAM service account for AWS Load Balancer Controller
-        if: steps.get-cluster-name.outputs.cluster_id != ''
-        run: |
-          eksctl delete iamserviceaccount \
-            --cluster=${{ steps.get-cluster-name.outputs.cluster_id }} \
-            --namespace=kube-system \
-            --name=aws-load-balancer-controller \
-            --region=${{ env.AWS_REGION }} || echo "IAM service account not found"
+      - name: Destroy AWS Load Balancer Controller
+        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/prod/aws_lb_controller
         continue-on-error: true
 
   destroy-eks-node-group:

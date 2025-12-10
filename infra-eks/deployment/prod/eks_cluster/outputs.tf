@@ -38,3 +38,8 @@ output "cluster_iam_role_arn" {
   description = "IAM role ARN of the EKS cluster"
   value       = module.eks_cluster.cluster_iam_role_arn
 }
+
+output "cluster_oidc_issuer_url" {
+  description = "The URL on the EKS cluster OIDC Issuer"
+  value       = module.eks_cluster.cluster_oidc_issuer_url
+}
