@@ -17,6 +17,10 @@ spec:
         app: nestjs-app
         environment: prod
     spec:
+      # Pod Security Context
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
       containers:
       - name: nestjs
         image: <ECR_REPOSITORY_URL>:latest  # Replace with your ECR image
@@ -35,6 +39,15 @@ spec:
           limits:
             memory: "1024Mi"
             cpu: "500m"
+        # Container Security Context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           httpGet:
             path: /health

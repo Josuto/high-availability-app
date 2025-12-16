@@ -103,7 +103,7 @@ resource "kubernetes_deployment" "app" {
             run_as_non_root            = true
             run_as_user                = 1000
             allow_privilege_escalation = false
-            read_only_root_filesystem  = false
+            read_only_root_filesystem  = true
 
             capabilities {
               drop = ["ALL"]

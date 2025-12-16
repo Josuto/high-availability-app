@@ -2,6 +2,7 @@
 # Creates an EKS cluster with necessary IAM roles and security groups
 # Equivalent to ECS Cluster but for Kubernetes
 
+# trivy:ignore:AVD-AWS-0039 - Encryption is optional and controlled by kms_key_arn variable. AWS uses managed encryption by default.
 resource "aws_eks_cluster" "main" {
   name     = local.cluster_name
   role_arn = aws_iam_role.eks_cluster.arn
@@ -17,12 +18,15 @@ resource "aws_eks_cluster" "main" {
 
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
-  # Encryption configuration for secrets
-  encryption_config {
-    provider {
-      key_arn = var.kms_key_arn != "" ? var.kms_key_arn : null
+  # Encryption configuration for secrets (only when KMS key is provided)
+  dynamic "encryption_config" {
+    for_each = var.kms_key_arn != "" ? [1] : []
+    content {
+      provider {
+        key_arn = var.kms_key_arn
+      }
+      resources = ["secrets"]
     }
-    resources = ["secrets"]
   }
 
   tags = local.common_tags
