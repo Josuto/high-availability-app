@@ -3,10 +3,10 @@
 # IMPORTANT: Update these values with your own before deploying
 
 # Project identifier (used for resource tagging and naming)
-project_name = "terraform-course-dummy-nestjs-app"
+project_name = "hademo"
 
-# Environment identifier (dev, staging, prod)
-environment = "prod"
+# Environment identifier (dev, prod)
+environment = "dev"
 
 # AWS Region (can also be set via AWS_REGION environment variable)
 aws_region = "eu-west-1"

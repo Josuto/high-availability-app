@@ -277,8 +277,7 @@ bucket = "YOUR_TERRAFORM_STATE_BUCKET_NAME"
 
 ### domain.tfvars
 ```hcl
-domain_name               = "example.com"
-subject_alternative_names = ["*.example.com", "www.example.com"]
+root_domain               = "example.com"
 ```
 
 ## GitHub Actions Workflows

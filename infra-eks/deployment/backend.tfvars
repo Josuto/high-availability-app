@@ -4,7 +4,7 @@
 
 # Name of the S3 bucket for storing Terraform state
 # Must be globally unique across all AWS accounts
-state_bucket_name = "YOUR_UNIQUE_BUCKET_NAME_HERE"
+state_bucket_name = "josumartinez-terraform-state-bucket"
 
 # Optional: DynamoDB table name for state locking
 # Uncomment if you want to enable state locking
