@@ -10,6 +10,7 @@
     * [3.2. Core AWS Components](#32-core-aws-components)
     * [3.3. Infrastructure Diagrams](#33-infrastructure-diagrams)
     * [3.4. Security and Access Permissions](#34-security-and-access-permissions)
+    * [3.5. **Alternative Implementation: EKS (Kubernetes)**](#35-alternative-implementation-eks-kubernetes)
 4. [Environment Configuration Differences](#4-environment-configuration-differences)
 5. [CI/CD Workflows (GitHub Actions)](#5-cicd-workflows-github-actions-)
     * [5.1. Deployment Prerequisites and Initial Setup](#51-deployment-prerequisites-and-initial-setup)
@@ -194,6 +195,74 @@ The network model is secured by isolating the application tier within the privat
     * **Egress:** Allows all outbound traffic (`0.0.0.0/0`), enabling tasks to pull dependencies and access other necessary AWS services like the NAT Gateway.
 * **ECS Cluster SG (`cluster-sg`):** This is associated with the underlying EC2 instances. It ensures the instances themselves can communicate and perform necessary management functions.
     * **Egress:** Allows all outbound traffic (`0.0.0.0/0`) for tasks like instance patching, running the ECS Agent, and pulling images.
+
+---
+
+## 3.5. Alternative Implementation: EKS (Kubernetes)
+
+This repository includes a **complete alternative implementation** using **AWS EKS (Elastic Kubernetes Service)** instead of ECS. The EKS implementation is located in the [`infra-eks/`](infra-eks/) directory and provides a Kubernetes-based container orchestration platform.
+
+### Key Differences
+
+| Aspect | ECS (infra/) | EKS (infra-eks/) |
+|--------|--------------|------------------|
+| **Orchestration** | AWS ECS | Kubernetes (EKS) |
+| **Control Plane** | FREE | $72/month |
+| **Total Cost** | ~$76/month | ~$148/month |
+| **Complexity** | Simpler | More complex |
+| **Portability** | AWS-only | Multi-cloud compatible |
+| **Ecosystem** | AWS services | Kubernetes ecosystem |
+
+### What's Included in infra-eks/
+
+The EKS implementation is **completely self-contained** and includes:
+
+- ✅ **Terraform Modules** - EKS cluster, node groups, and Kubernetes application deployment
+- ✅ **Deployment Configurations** - VPC, ECR, SSL/ACM, EKS cluster, nodes, and app
+- ✅ **Kubernetes Manifests** - YAML files for deployment, service, ingress, and HPA
+- ✅ **GitHub Actions Workflows** - Automated CI/CD for EKS infrastructure
+- ✅ **Comprehensive Documentation** - 8+ guides covering all aspects
+
+### Quick Start with EKS
+
+1. **Review the EKS documentation:**
+   ```bash
+   # Start here
+   cat infra-eks/GETTING-STARTED.md
+
+   # Or jump straight to deployment
+   cat infra-eks/QUICKSTART.md
+   ```
+
+2. **Deploy EKS infrastructure** (choose one approach):
+   - **Manual deployment**: Follow [`infra-eks/QUICKSTART.md`](infra-eks/QUICKSTART.md)
+   - **Automated CI/CD**: Copy workflows and push to GitHub (see [`infra-eks/workflows/README.md`](infra-eks/workflows/README.md))
+
+3. **Compare ECS vs EKS**: Read [`infra-eks/ECS-vs-EKS-COMPARISON.md`](infra-eks/ECS-vs-EKS-COMPARISON.md) for a detailed comparison
+
+### Running Both ECS and EKS Simultaneously
+
+The ECS and EKS implementations are designed to run side-by-side without conflicts:
+
+- **Separate State Files** - ECS uses `deployment/`, EKS uses `deployment-eks/`
+- **Independent Resources** - Each has its own compute and load balancers
+- **Isolated CI/CD** - Workflows trigger independently based on file paths
+
+This allows you to:
+- Test both platforms simultaneously
+- Gradually migrate from ECS to EKS
+- Compare performance and costs in real-world scenarios
+
+### When to Use EKS Over ECS
+
+Consider EKS if you:
+- Need Kubernetes-standard platform for portability
+- Want to avoid vendor lock-in
+- Have Kubernetes expertise in your team
+- Run complex microservices (3+ services)
+- Need advanced features (StatefulSets, Operators, CRDs)
+
+**For more details**, see the complete EKS documentation in the [`infra-eks/`](infra-eks/) directory.
 
 ---
 
