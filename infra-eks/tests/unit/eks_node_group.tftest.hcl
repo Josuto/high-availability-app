@@ -14,14 +14,12 @@ run "eks_node_group_basic_configuration" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111", "subnet-22222222"]
-    kubernetes_version                 = "1.28"
-    instance_type                      = "t3.medium"
-    environment                        = "dev"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111", "subnet-22222222"]
+    kubernetes_version  = "1.28"
+    instance_type       = "t3.medium"
+    environment         = "dev"
   }
 
   # Test node group name follows naming convention
@@ -53,13 +51,11 @@ run "eks_node_group_dev_scaling_config" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111", "subnet-22222222"]
-    kubernetes_version                 = "1.28"
-    environment                        = "dev"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111", "subnet-22222222"]
+    kubernetes_version  = "1.28"
+    environment         = "dev"
     desired_size = {
       dev  = 2
       prod = 3
@@ -97,13 +93,11 @@ run "eks_node_group_prod_scaling_config" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "prod-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111", "subnet-22222222"]
-    kubernetes_version                 = "1.28"
-    environment                        = "prod"
+    project_name        = "test-project"
+    eks_cluster_name    = "prod-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111", "subnet-22222222"]
+    kubernetes_version  = "1.28"
+    environment         = "prod"
     desired_size = {
       dev  = 2
       prod = 3
@@ -141,13 +135,11 @@ run "eks_node_group_capacity_type_dev" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111"]
-    kubernetes_version                 = "1.28"
-    environment                        = "dev"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111"]
+    kubernetes_version  = "1.28"
+    environment         = "dev"
     capacity_type = {
       dev  = "SPOT"
       prod = "ON_DEMAND"
@@ -165,13 +157,11 @@ run "eks_node_group_capacity_type_prod" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "prod-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111"]
-    kubernetes_version                 = "1.28"
-    environment                        = "prod"
+    project_name        = "test-project"
+    eks_cluster_name    = "prod-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111"]
+    kubernetes_version  = "1.28"
+    environment         = "prod"
     capacity_type = {
       dev  = "SPOT"
       prod = "ON_DEMAND"
@@ -189,13 +179,11 @@ run "eks_node_group_update_config" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111"]
-    kubernetes_version                 = "1.28"
-    environment                        = "dev"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111"]
+    kubernetes_version  = "1.28"
+    environment         = "dev"
     max_unavailable = {
       dev  = 1
       prod = 1
@@ -213,15 +201,13 @@ run "eks_node_group_ami_and_disk" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111"]
-    kubernetes_version                 = "1.28"
-    environment                        = "dev"
-    ami_type                           = "AL2_x86_64"
-    disk_size                          = 20
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111"]
+    kubernetes_version  = "1.28"
+    environment         = "dev"
+    ami_type            = "AL2_x86_64"
+    disk_size           = 20
   }
 
   # Test AMI type
@@ -253,13 +239,11 @@ run "eks_node_group_labels" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111"]
-    kubernetes_version                 = "1.28"
-    environment                        = "prod"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111"]
+    kubernetes_version  = "1.28"
+    environment         = "prod"
   }
 
   # Test node labels include environment
@@ -279,14 +263,12 @@ run "eks_node_group_launch_template" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111"]
-    kubernetes_version                 = "1.28"
-    environment                        = "dev"
-    instance_type                      = "t3.large"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111"]
+    kubernetes_version  = "1.28"
+    environment         = "dev"
+    instance_type       = "t3.large"
   }
 
   # Test launch template is attached
@@ -324,13 +306,11 @@ run "eks_node_group_iam_role" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111"]
-    kubernetes_version                 = "1.28"
-    environment                        = "dev"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111"]
+    kubernetes_version  = "1.28"
+    environment         = "dev"
   }
 
   # Test IAM role name
@@ -350,13 +330,11 @@ run "eks_node_group_iam_policies" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111"]
-    kubernetes_version                 = "1.28"
-    environment                        = "dev"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111"]
+    kubernetes_version  = "1.28"
+    environment         = "dev"
   }
 
   # Test EKS Worker Node Policy is attached
@@ -388,13 +366,11 @@ run "eks_node_group_custom_policies" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111"]
-    kubernetes_version                 = "1.28"
-    environment                        = "dev"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111"]
+    kubernetes_version  = "1.28"
+    environment         = "dev"
   }
 
   # Test CloudWatch policy exists
@@ -426,13 +402,11 @@ run "eks_node_group_tags" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111"]
-    kubernetes_version                 = "1.28"
-    environment                        = "dev"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111"]
+    kubernetes_version  = "1.28"
+    environment         = "dev"
   }
 
   override_resource {
@@ -476,13 +450,11 @@ run "eks_node_group_subnets" {
   command = plan
 
   variables {
-    project_name                       = "test-project"
-    eks_cluster_name                   = "dev-test-project-eks-cluster"
-    cluster_endpoint                   = "https://mock-endpoint.eks.eu-west-1.amazonaws.com"
-    cluster_certificate_authority_data = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t"
-    vpc_private_subnets                = ["subnet-11111111", "subnet-22222222", "subnet-33333333"]
-    kubernetes_version                 = "1.28"
-    environment                        = "dev"
+    project_name        = "test-project"
+    eks_cluster_name    = "dev-test-project-eks-cluster"
+    vpc_private_subnets = ["subnet-11111111", "subnet-22222222", "subnet-33333333"]
+    kubernetes_version  = "1.28"
+    environment         = "dev"
   }
 
   # Test node group uses all private subnets

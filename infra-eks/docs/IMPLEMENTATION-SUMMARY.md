@@ -18,15 +18,15 @@ infra-eks/                           # NEW - EKS alternative implementation
 │   │   ├── outputs.tf               # Cluster outputs
 │   │   └── versions.tf              # Terraform version constraints
 │   │
-│   └── eks_node_group/              # Worker nodes module
+│   └── eks_node_group/              # Managed worker nodes module
 │       ├── main.tf                  # Node group + launch template
 │       ├── iam.tf                   # Node IAM roles
 │       ├── locals.tf                # Common tags
 │       ├── vars.tf                  # Input variables
 │       ├── outputs.tf               # Node group outputs
-│       ├── versions.tf              # Terraform version constraints
-│       └── templates/
-│           └── userdata.sh          # Node bootstrap script
+│       └── versions.tf              # Terraform version constraints
+│       # AWS EKS automatically handles node bootstrapping
+│       # for managed node groups (no custom user data needed)
 │
 ├── k8s-manifests/                   # Kubernetes YAML manifests
 │   ├── deployment.yaml              # Application deployment

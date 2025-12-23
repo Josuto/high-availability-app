@@ -13,27 +13,28 @@ The `infra-eks/deployment/prod/eks_node_group/config.tf` file was passing incorr
 - ❌ `eks_nodes_security_group_id` (incorrect)
 
 ### Solution
-Updated the configuration to use the correct variable names as defined in `modules/eks_node_group/vars.tf`:
+Initially updated the configuration to use the correct variable names. However, these variables were **later removed entirely** because AWS EKS managed node groups automatically handle node bootstrapping, making these variables unnecessary.
 
-- ✅ `cluster_endpoint` (correct)
-- ✅ `cluster_certificate_authority_data` (correct)
-- ✅ `node_security_group_id` (correct - no cluster_security_group_id needed)
-
-### Fixed Configuration
+**Current Configuration (Simplified):**
 ```hcl
 # infra-eks/deployment/prod/eks_node_group/config.tf
 module "eks_node_group" {
   source = "../../../modules/eks_node_group"
 
   # EKS Cluster Configuration
-  eks_cluster_name                   = data.terraform_remote_state.eks_cluster.outputs.cluster_id
-  cluster_endpoint                   = data.terraform_remote_state.eks_cluster.outputs.cluster_endpoint
-  cluster_certificate_authority_data = data.terraform_remote_state.eks_cluster.outputs.cluster_certificate_authority_data
-  node_security_group_id             = data.terraform_remote_state.eks_cluster.outputs.nodes_security_group_id
+  eks_cluster_name = data.terraform_remote_state.eks_cluster.outputs.cluster_id
+
+  # Note: cluster_endpoint and cluster_certificate_authority_data are NO LONGER NEEDED
+  # AWS EKS managed node groups automatically handle node bootstrapping
 
   # ... rest of configuration
 }
 ```
+
+**Why These Variables Were Removed:**
+- `cluster_endpoint` - Not needed; AWS EKS handles cluster communication
+- `cluster_certificate_authority_data` - Not needed; AWS EKS handles authentication
+- Custom user data scripts - Not needed; AWS EKS bootstraps nodes automatically
 
 ## Issue 2: Inconsistent Folder Naming
 

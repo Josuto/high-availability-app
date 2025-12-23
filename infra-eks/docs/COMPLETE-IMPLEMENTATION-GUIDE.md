@@ -102,14 +102,15 @@ infra-eks/
 │   │   ├── outputs.tf                         # Module outputs
 │   │   └── versions.tf                        # Provider versions
 │   │
-│   ├── eks_node_group/                        # EKS worker nodes
+│   ├── eks_node_group/                        # EKS managed worker nodes
 │   │   ├── main.tf                            # Node group + launch template
 │   │   ├── iam.tf                             # Node IAM roles
 │   │   ├── locals.tf                          # Common tags
 │   │   ├── vars.tf                            # Input variables
 │   │   ├── outputs.tf                         # Module outputs
-│   │   ├── versions.tf                        # Provider versions
-│   │   └── templates/userdata.sh              # Node bootstrap script
+│   │   └── versions.tf                        # Provider versions
+│   │   # Note: AWS EKS automatically handles node bootstrapping
+│   │   # (joining cluster, authentication) for managed node groups
 │   │
 │   └── k8s_app_deployment/                    # Kubernetes application
 │       ├── main.tf                            # Deployment + ServiceAccount
@@ -689,9 +690,9 @@ aws service-quotas list-service-quotas \
 **Symptom:** Node group created but nodes not appearing in `kubectl get nodes`
 
 **Possible Causes:**
-- Security group misconfiguration
-- IAM role missing permissions
-- Node userdata script issues
+- Security group misconfiguration blocking cluster communication
+- IAM role missing required EKS policies (AmazonEKSWorkerNodePolicy, AmazonEKS_CNI_Policy, AmazonEC2ContainerRegistryReadOnly)
+- Launch template configuration issues (note: AWS EKS automatically handles node bootstrapping for managed node groups)
 
 **Solution:**
 ```bash

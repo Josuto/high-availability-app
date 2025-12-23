@@ -17,16 +17,6 @@ variable "eks_cluster_name" {
   type        = string
 }
 
-variable "cluster_endpoint" {
-  description = "Endpoint for EKS control plane"
-  type        = string
-}
-
-variable "cluster_certificate_authority_data" {
-  description = "Base64 encoded certificate data required to communicate with the cluster"
-  type        = string
-}
-
 variable "vpc_private_subnets" {
   description = "List of private subnet IDs for the node group"
   type        = list(string)

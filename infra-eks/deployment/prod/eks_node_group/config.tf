@@ -36,9 +36,7 @@ module "eks_node_group" {
   environment  = var.environment
 
   # EKS Cluster Configuration
-  eks_cluster_name                   = data.terraform_remote_state.eks_cluster.outputs.cluster_id
-  cluster_endpoint                   = data.terraform_remote_state.eks_cluster.outputs.cluster_endpoint
-  cluster_certificate_authority_data = data.terraform_remote_state.eks_cluster.outputs.cluster_certificate_authority_data
+  eks_cluster_name = data.terraform_remote_state.eks_cluster.outputs.cluster_id
 
   # VPC Configuration
   vpc_private_subnets = data.terraform_remote_state.vpc.outputs.vpc_private_subnets

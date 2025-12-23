@@ -106,12 +106,5 @@ resource "aws_launch_template" "eks_nodes" {
     )
   }
 
-  user_data = base64encode(templatefile("${path.module}/templates/userdata.sh", {
-    cluster_name        = var.eks_cluster_name
-    cluster_endpoint    = var.cluster_endpoint
-    cluster_ca_data     = var.cluster_certificate_authority_data
-    enable_spot_drainer = var.capacity_type[var.environment] == "SPOT"
-  }))
-
   tags = local.common_tags
 }

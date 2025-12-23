@@ -231,7 +231,6 @@ jobs:
 
     outputs:
       cluster_id: ${{ steps.get-cluster-output.outputs.cluster_id }}
-      cluster_endpoint: ${{ steps.get-cluster-output.outputs.cluster_endpoint }}
 
     steps:
       - name: Checkout code from the repository
@@ -266,11 +265,8 @@ jobs:
         id: get-cluster-output
         run: |
           cluster_id=$(terraform output -raw cluster_id)
-          cluster_endpoint=$(terraform output -raw cluster_endpoint)
           echo "cluster_id=$cluster_id" >> $GITHUB_OUTPUT
-          echo "cluster_endpoint=$cluster_endpoint" >> $GITHUB_OUTPUT
           echo "EKS Cluster ID: $cluster_id"
-          echo "EKS Cluster Endpoint: $cluster_endpoint"
         working-directory: infra-eks/deployment/prod/eks_cluster
         env:
           TF_IN_AUTOMATION: true
@@ -479,7 +475,6 @@ jobs:
           ✓ VPC: Deployed with EKS-specific subnet tags
           ✓ Docker Image: Built and pushed to ECR
           ✓ EKS Cluster: ${{ needs.deploy-eks-cluster.outputs.cluster_id }}
-          ✓ EKS Endpoint: ${{ needs.deploy-eks-cluster.outputs.cluster_endpoint }}
           ✓ Node Group: ${{ needs.deploy-eks-node-group.outputs.node_group_id }}
           ✓ AWS Load Balancer Controller: Installed
           ✓ Application: Deployed

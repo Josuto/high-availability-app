@@ -29,15 +29,15 @@ infra-eks/
 │   │   ├── outputs.tf
 │   │   └── versions.tf
 │   │
-│   ├── eks_node_group/        # Worker nodes (EC2) module
-│   │   ├── main.tf
-│   │   ├── iam.tf
+│   ├── eks_node_group/        # Managed worker nodes (EC2) module
+│   │   ├── main.tf            # Node group with launch template
+│   │   ├── iam.tf             # IAM roles and policies
 │   │   ├── locals.tf
 │   │   ├── vars.tf
 │   │   ├── outputs.tf
-│   │   ├── versions.tf
-│   │   └── templates/
-│   │       └── userdata.sh
+│   │   └── versions.tf
+│   │   # Note: AWS EKS automatically handles node bootstrapping
+│   │   # for managed node groups. No custom user data needed.
 │   │
 │   └── k8s_app_deployment/    # Kubernetes manifests via Terraform
 │       ├── main.tf
