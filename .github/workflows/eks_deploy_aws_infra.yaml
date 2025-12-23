@@ -41,7 +41,7 @@ jobs:
 
   deploy-terraform-state-bucket:
     name: Deploy Terraform State Bucket
-    # needs: test-eks-terraform-modules
+    needs: test-eks-terraform-modules
     uses: ./.github/workflows/eks_deploy_terraform_state_bucket.yaml # reusable workflow
     with:
       github_head_commit_message: ${{ github.event.head_commit.message }}
