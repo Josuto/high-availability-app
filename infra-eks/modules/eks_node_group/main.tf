@@ -19,9 +19,6 @@ resource "aws_eks_node_group" "main" {
     max_unavailable = var.max_unavailable[var.environment]
   }
 
-  # Instance types for the node group
-  instance_types = [var.instance_type]
-
   # AMI type
   ami_type = var.ami_type
 

@@ -42,10 +42,10 @@ run "eks_node_group_basic_configuration" {
     error_message = "Node group should use specified Kubernetes version"
   }
 
-  # Test instance type
+  # Test instance type in launch template
   assert {
-    condition     = contains(aws_eks_node_group.main.instance_types, "t3.medium")
-    error_message = "Node group should use specified instance type"
+    condition     = aws_launch_template.eks_nodes.instance_type == "t3.medium"
+    error_message = "Launch template should use specified instance type"
   }
 }
 
