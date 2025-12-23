@@ -22,9 +22,6 @@ resource "aws_eks_node_group" "main" {
   # Instance types for the node group
   instance_types = [var.instance_type]
 
-  # Disk size for worker nodes
-  disk_size = var.disk_size
-
   # AMI type
   ami_type = var.ami_type
 
@@ -69,6 +66,18 @@ resource "aws_eks_node_group" "main" {
 resource "aws_launch_template" "eks_nodes" {
   name_prefix   = "${var.eks_cluster_name}-node-"
   instance_type = var.instance_type
+
+  # Disk configuration for worker nodes
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size           = var.disk_size
+      volume_type           = "gp3"
+      delete_on_termination = true
+      encrypted             = true
+    }
+  }
 
   metadata_options {
     http_endpoint               = "enabled"

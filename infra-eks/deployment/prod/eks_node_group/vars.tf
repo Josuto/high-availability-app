@@ -84,7 +84,7 @@ variable "disk_size" {
   description = "Disk size in GB for worker nodes per environment"
   type        = map(number)
   default = {
-    dev  = 1
-    prod = 20
+    dev  = 20
+    prod = 40
   }
 }
