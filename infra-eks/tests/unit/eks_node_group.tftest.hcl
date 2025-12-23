@@ -230,10 +230,22 @@ run "eks_node_group_ami_and_disk" {
     error_message = "Node group should use Amazon Linux 2 AMI"
   }
 
-  # Test disk size
+  # Test disk size in launch template
   assert {
-    condition     = aws_eks_node_group.main.disk_size == 20
-    error_message = "Node group should have 20GB disk size"
+    condition     = aws_launch_template.eks_nodes.block_device_mappings[0].ebs[0].volume_size == 20
+    error_message = "Launch template should have 20GB disk size"
+  }
+
+  # Test disk is encrypted
+  assert {
+    condition     = aws_launch_template.eks_nodes.block_device_mappings[0].ebs[0].encrypted == "true"
+    error_message = "Launch template disk should be encrypted"
+  }
+
+  # Test disk volume type is gp3
+  assert {
+    condition     = aws_launch_template.eks_nodes.block_device_mappings[0].ebs[0].volume_type == "gp3"
+    error_message = "Launch template should use gp3 volume type"
   }
 }
 
