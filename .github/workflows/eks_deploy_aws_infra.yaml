@@ -330,7 +330,7 @@ jobs:
           echo "Waiting for node group to be active..."
           aws eks wait nodegroup-active \
             --cluster-name ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
-            --nodegroup-name ${{ needs.deploy-eks-node-group.outputs.node_group_name }} \
+            --nodegroup-name ${{ steps.get-node-group-output.outputs.node_group_name }} \
             --region ${{ env.AWS_REGION }}
           echo "Node group is now active!"
 
