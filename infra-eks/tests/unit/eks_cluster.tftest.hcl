@@ -18,7 +18,7 @@ run "eks_cluster_basic_configuration" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111", "subnet-22222222"]
     vpc_public_subnets  = ["subnet-33333333", "subnet-44444444"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "dev"
   }
 
@@ -30,7 +30,7 @@ run "eks_cluster_basic_configuration" {
 
   # Test Kubernetes version
   assert {
-    condition     = aws_eks_cluster.main.version == "1.28"
+    condition     = aws_eks_cluster.main.version == "1.34"
     error_message = "EKS cluster should use specified Kubernetes version"
   }
 }
@@ -43,7 +43,7 @@ run "eks_cluster_vpc_configuration" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111", "subnet-22222222"]
     vpc_public_subnets  = ["subnet-33333333", "subnet-44444444"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "dev"
   }
 
@@ -80,7 +80,7 @@ run "eks_cluster_prod_endpoint_access" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111", "subnet-22222222"]
     vpc_public_subnets  = ["subnet-33333333", "subnet-44444444"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "prod"
     endpoint_public_access = {
       dev  = true
@@ -103,7 +103,7 @@ run "eks_cluster_logging_configuration" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111", "subnet-22222222"]
     vpc_public_subnets  = ["subnet-33333333", "subnet-44444444"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "dev"
   }
 
@@ -134,7 +134,7 @@ run "eks_cluster_cloudwatch_log_group_dev" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111"]
     vpc_public_subnets  = ["subnet-33333333"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "dev"
     log_retention_days = {
       dev  = 7
@@ -163,7 +163,7 @@ run "eks_cluster_cloudwatch_log_group_prod" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111"]
     vpc_public_subnets  = ["subnet-33333333"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "prod"
     log_retention_days = {
       dev  = 7
@@ -186,7 +186,7 @@ run "eks_cluster_encryption_without_kms" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111"]
     vpc_public_subnets  = ["subnet-33333333"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "dev"
     kms_key_arn         = ""
   }
@@ -207,7 +207,7 @@ run "eks_cluster_iam_role" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111"]
     vpc_public_subnets  = ["subnet-33333333"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "dev"
   }
 
@@ -232,7 +232,7 @@ run "eks_cluster_iam_policies" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111"]
     vpc_public_subnets  = ["subnet-33333333"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "dev"
   }
 
@@ -263,7 +263,7 @@ run "eks_cluster_security_group" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111"]
     vpc_public_subnets  = ["subnet-33333333"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "dev"
   }
 
@@ -300,7 +300,7 @@ run "eks_nodes_security_group" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111"]
     vpc_public_subnets  = ["subnet-33333333"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "dev"
   }
 
@@ -325,7 +325,7 @@ run "eks_security_group_rules" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111"]
     vpc_public_subnets  = ["subnet-33333333"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "dev"
   }
 
@@ -356,7 +356,7 @@ run "eks_cluster_tags" {
     vpc_id              = "vpc-12345678"
     vpc_private_subnets = ["subnet-11111111"]
     vpc_public_subnets  = ["subnet-33333333"]
-    kubernetes_version  = "1.28"
+    kubernetes_version  = "1.34"
     environment         = "prod"
   }
 
@@ -405,7 +405,7 @@ run "eks_cluster_with_alb_security_group" {
     vpc_id                = "vpc-12345678"
     vpc_private_subnets   = ["subnet-11111111"]
     vpc_public_subnets    = ["subnet-33333333"]
-    kubernetes_version    = "1.28"
+    kubernetes_version    = "1.34"
     environment           = "dev"
     alb_security_group_id = "sg-alb123456"
   }

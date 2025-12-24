@@ -47,7 +47,7 @@ infra-eks/                           # NEW - EKS alternative implementation
 
 ### 1. Production-Ready EKS Cluster
 
-- ✅ Kubernetes 1.28
+- ✅ Kubernetes 1.34
 - ✅ Private + Public subnets
 - ✅ Control plane logging (CloudWatch)
 - ✅ IMDSv2 required on nodes
@@ -152,7 +152,7 @@ EKS control plane cost is **shared** across all applications:
 ### 1. EKS Cluster Module
 
 **Features:**
-- Kubernetes version: 1.28 (configurable)
+- Kubernetes version: 1.34 (configurable)
 - Control plane logging: All 5 log types
 - Encryption: Optional KMS integration
 - Network: Private + Public endpoint options
