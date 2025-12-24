@@ -324,7 +324,7 @@ jobs:
       - name: Wait for node group to be active
         run: |
           echo "Waiting for node group to be active..."
-          aws eks wait node-group-active \
+          aws eks wait nodegroup-active \
             --cluster-name ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
             --nodegroup-name $(terraform output -raw node_group_id) \
             --region ${{ env.AWS_REGION }}
