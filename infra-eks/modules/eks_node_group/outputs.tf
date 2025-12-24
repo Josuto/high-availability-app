@@ -1,6 +1,11 @@
 output "node_group_id" {
-  description = "EKS node group ID"
+  description = "EKS node group ID (format: cluster_name:node_group_name)"
   value       = aws_eks_node_group.main.id
+}
+
+output "node_group_name" {
+  description = "EKS node group name (for use with AWS CLI commands)"
+  value       = aws_eks_node_group.main.node_group_name
 }
 
 output "node_group_arn" {

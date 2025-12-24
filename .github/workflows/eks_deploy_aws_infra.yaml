@@ -282,6 +282,7 @@ jobs:
 
     outputs:
       node_group_id: ${{ steps.get-node-group-output.outputs.node_group_id }}
+      node_group_name: ${{ steps.get-node-group-output.outputs.node_group_name }}
 
     steps:
       - name: Checkout code from the repository
@@ -315,8 +316,11 @@ jobs:
         id: get-node-group-output
         run: |
           node_group_id=$(terraform output -raw node_group_id)
+          node_group_name=$(terraform output -raw node_group_name)
           echo "node_group_id=$node_group_id" >> $GITHUB_OUTPUT
+          echo "node_group_name=$node_group_name" >> $GITHUB_OUTPUT
           echo "EKS Node Group ID: $node_group_id"
+          echo "EKS Node Group Name: $node_group_name"
         working-directory: infra-eks/deployment/prod/eks_node_group
         env:
           TF_IN_AUTOMATION: true
@@ -326,10 +330,9 @@ jobs:
           echo "Waiting for node group to be active..."
           aws eks wait nodegroup-active \
             --cluster-name ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
-            --nodegroup-name $(terraform output -raw node_group_id) \
+            --nodegroup-name ${{ needs.deploy-eks-node-group.outputs.node_group_name }} \
             --region ${{ env.AWS_REGION }}
           echo "Node group is now active!"
-        working-directory: infra-eks/deployment/prod/eks_node_group
 
   install-aws-load-balancer-controller:
     name: Install AWS Load Balancer Controller
@@ -475,7 +478,7 @@ jobs:
           ✓ VPC: Deployed with EKS-specific subnet tags
           ✓ Docker Image: Built and pushed to ECR
           ✓ EKS Cluster: ${{ needs.deploy-eks-cluster.outputs.cluster_id }}
-          ✓ Node Group: ${{ needs.deploy-eks-node-group.outputs.node_group_id }}
+          ✓ Node Group: ${{ needs.deploy-eks-node-group.outputs.node_group_name }}
           ✓ AWS Load Balancer Controller: Installed
           ✓ Application: Deployed
 
