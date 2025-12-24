@@ -144,7 +144,7 @@ Before you start, ensure you have:
 
 ### Required Tools
 - [x] Terraform >= 1.7.0
-- [x] kubectl >= 1.34.0
+- [x] kubectl >= 1.32.0
 - [x] AWS CLI configured
 - [x] Helm >= 3.13.0 (for Load Balancer Controller)
 

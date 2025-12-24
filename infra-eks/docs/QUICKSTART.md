@@ -68,8 +68,8 @@ kubectl get nodes
 
 # Expected output:
 # NAME                         STATUS   ROLES    AGE   VERSION
-# ip-10-0-1-123...             Ready    <none>   5m    v1.34.x
-# ip-10-0-2-456...             Ready    <none>   5m    v1.34.x
+# ip-10-0-1-123...             Ready    <none>   5m    v1.32.x
+# ip-10-0-2-456...             Ready    <none>   5m    v1.32.x
 ```
 
 ### Step 4: Install AWS Load Balancer Controller (5 min)

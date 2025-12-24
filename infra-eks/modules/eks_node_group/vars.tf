@@ -25,7 +25,7 @@ variable "vpc_private_subnets" {
 variable "kubernetes_version" {
   description = "Kubernetes version for the node group"
   type        = string
-  default     = "1.34"
+  default     = "1.32"
 }
 
 variable "instance_type" {

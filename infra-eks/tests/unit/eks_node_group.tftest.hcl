@@ -17,7 +17,7 @@ run "eks_node_group_basic_configuration" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111", "subnet-22222222"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     instance_type       = "t3.medium"
     environment         = "dev"
   }
@@ -36,7 +36,7 @@ run "eks_node_group_basic_configuration" {
 
   # Test Kubernetes version
   assert {
-    condition     = aws_eks_node_group.main.version == "1.34"
+    condition     = aws_eks_node_group.main.version == "1.32"
     error_message = "Node group should use specified Kubernetes version"
   }
 
@@ -54,7 +54,7 @@ run "eks_node_group_dev_scaling_config" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111", "subnet-22222222"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "dev"
     desired_size = {
       dev  = 2
@@ -96,7 +96,7 @@ run "eks_node_group_prod_scaling_config" {
     project_name        = "test-project"
     eks_cluster_name    = "prod-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111", "subnet-22222222"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "prod"
     desired_size = {
       dev  = 2
@@ -138,7 +138,7 @@ run "eks_node_group_capacity_type_dev" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "dev"
     capacity_type = {
       dev  = "SPOT"
@@ -160,7 +160,7 @@ run "eks_node_group_capacity_type_prod" {
     project_name        = "test-project"
     eks_cluster_name    = "prod-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "prod"
     capacity_type = {
       dev  = "SPOT"
@@ -182,7 +182,7 @@ run "eks_node_group_update_config" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "dev"
     max_unavailable = {
       dev  = 1
@@ -204,7 +204,7 @@ run "eks_node_group_ami_and_disk" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "dev"
     ami_type            = "AL2_x86_64"
     disk_size           = 20
@@ -242,7 +242,7 @@ run "eks_node_group_labels" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "prod"
   }
 
@@ -266,7 +266,7 @@ run "eks_node_group_launch_template" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "dev"
     instance_type       = "t3.large"
   }
@@ -309,7 +309,7 @@ run "eks_node_group_iam_role" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "dev"
   }
 
@@ -333,7 +333,7 @@ run "eks_node_group_iam_policies" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "dev"
   }
 
@@ -369,7 +369,7 @@ run "eks_node_group_custom_policies" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "dev"
   }
 
@@ -405,7 +405,7 @@ run "eks_node_group_tags" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "dev"
   }
 
@@ -453,7 +453,7 @@ run "eks_node_group_subnets" {
     project_name        = "test-project"
     eks_cluster_name    = "dev-test-project-eks-cluster"
     vpc_private_subnets = ["subnet-11111111", "subnet-22222222", "subnet-33333333"]
-    kubernetes_version  = "1.34"
+    kubernetes_version  = "1.32"
     environment         = "dev"
   }
 

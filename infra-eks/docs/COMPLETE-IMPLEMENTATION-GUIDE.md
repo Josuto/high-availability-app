@@ -249,7 +249,7 @@ These resources are only used by EKS:
 - OIDC provider for IRSA
 
 **Configuration:**
-- Kubernetes version: 1.34
+- Kubernetes version: 1.32
 - Endpoint access: Public + Private
 - Encryption: Enabled for secrets
 - Logging: All 5 log types enabled
@@ -448,7 +448,7 @@ cp .github/workflows/eks/*.yaml .github/workflows/
 
 2. **Required Tools Installed:**
    - Terraform >= 1.7.0
-   - kubectl >= 1.34.0
+   - kubectl >= 1.32.0
    - AWS CLI configured
    - Helm >= 3.13.0
 
