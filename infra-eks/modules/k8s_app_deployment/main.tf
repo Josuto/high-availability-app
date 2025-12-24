@@ -101,9 +101,9 @@ resource "kubernetes_deployment" "app" {
           # Security Context
           security_context {
             run_as_non_root            = true
-            run_as_user                = 1000
+            run_as_user                = 1001
             allow_privilege_escalation = false
-            read_only_root_filesystem  = true
+            read_only_root_filesystem  = false
 
             capabilities {
               drop = ["ALL"]
