@@ -232,8 +232,8 @@ run "k8s_deployment_security_context" {
 
   # Test run as user
   assert {
-    condition     = kubernetes_deployment.app.spec[0].template[0].spec[0].container[0].security_context[0].run_as_user == "1000"
-    error_message = "Container should run as user 1000"
+    condition     = kubernetes_deployment.app.spec[0].template[0].spec[0].container[0].security_context[0].run_as_user == "1001"
+    error_message = "Container should run as user 1001"
   }
 
   # Test pod fs_group
