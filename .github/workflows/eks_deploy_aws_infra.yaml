@@ -342,7 +342,7 @@ jobs:
 
   install-aws-load-balancer-controller:
     name: Install AWS Load Balancer Controller
-    needs: [deploy-eks-cluster, deploy-eks-node-group]
+    needs: deploy-eks-node-group
     runs-on: ubuntu-latest
 
     env:
@@ -379,7 +379,7 @@ jobs:
 
   deploy-k8s-application:
     name: Deploy Kubernetes Application
-    needs: [deploy-ecr, retrieve-ssl, build-and-push-app-docker-image-to-ecr, deploy-eks-cluster, deploy-eks-node-group, install-aws-load-balancer-controller]
+    needs: [build-and-push-app-docker-image-to-ecr, install-aws-load-balancer-controller]
     runs-on: ubuntu-latest
 
     env:
@@ -476,7 +476,7 @@ jobs:
 
   deployment-summary:
     name: Deployment Summary
-    needs: [deploy-ecr, retrieve-ssl, build-and-push-app-docker-image-to-ecr, deploy-vpc, deploy-eks-cluster, deploy-eks-node-group, install-aws-load-balancer-controller, deploy-k8s-application]
+    needs: deploy-k8s-application
     runs-on: ubuntu-latest
     if: always()
 
