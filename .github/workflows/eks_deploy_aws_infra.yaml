@@ -440,6 +440,24 @@ jobs:
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
         working-directory: infra-eks/deployment/prod/k8s_app
 
+      - name: Debug pods on failure
+        if: failure()
+        run: |
+          echo "=== Pods ==="
+          kubectl get pods -n default
+
+          echo ""
+          echo "=== Pod Descriptions ==="
+          kubectl describe pods -n default
+
+          echo ""
+          echo "=== Pod Logs ==="
+          kubectl logs -n default --all-containers --tail=200
+
+          echo ""
+          echo "=== Deployment Description ==="
+          kubectl describe deployment nestjs-app-deployment -n default
+
       - name: Fetch application URL
         id: get-app-url
         run: |
