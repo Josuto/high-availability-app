@@ -417,6 +417,12 @@ jobs:
           aws eks update-kubeconfig \
             --name ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
             --region ${{ env.AWS_REGION }}
+          echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+
+      - name: Verify kubectl access
+        run: |
+          kubectl config current-context
+          kubectl get nodes
 
       - name: Initialize Terraform on K8s app directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
@@ -442,21 +448,22 @@ jobs:
 
       - name: Debug pods on failure
         if: failure()
+        continue-on-error: true
         run: |
           echo "=== Pods ==="
-          kubectl get pods -n default
+          kubectl get pods -n default || true
 
           echo ""
           echo "=== Pod Descriptions ==="
-          kubectl describe pods -n default
+          kubectl describe pods -n default || true
 
           echo ""
           echo "=== Pod Logs ==="
-          kubectl logs -n default --all-containers --tail=200
+          kubectl logs -n default --all-containers --tail=200 || true
 
           echo ""
           echo "=== Deployment Description ==="
-          kubectl describe deployment nestjs-app-deployment -n default
+          kubectl describe deployment nestjs-app-deployment -n default || true
 
       - name: Fetch application URL
         id: get-app-url
