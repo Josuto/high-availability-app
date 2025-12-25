@@ -141,6 +141,9 @@ jobs:
     needs: deploy-ecr
     runs-on: ubuntu-latest
 
+    outputs:
+      image_tag: ${{ steps.set-tag.outputs.image_tag }}
+
     env:
       ECR_APP_IMAGE: ''
 
@@ -154,8 +157,11 @@ jobs:
           # Extract environment from common.tfvars and construct ECR image tag
           REPO_URL="${{ needs.deploy-ecr.outputs.ecr_repository_name }}"
           ENVIRONMENT=$(grep "^environment" infra-eks/deployment/common.tfvars | cut -d'"' -f2)
-          FULL_IMAGE="${REPO_URL}:${ENVIRONMENT}-${{ github.sha }}"
+          IMAGE_TAG="${ENVIRONMENT}-${{ github.sha }}"
+          FULL_IMAGE="${REPO_URL}:${IMAGE_TAG}"
           echo "ECR_APP_IMAGE=$FULL_IMAGE" >> $GITHUB_ENV
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "Image tag: $IMAGE_TAG"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -373,7 +379,7 @@ jobs:
 
   deploy-k8s-application:
     name: Deploy Kubernetes Application
-    needs: [deploy-ecr, retrieve-ssl, deploy-eks-cluster, deploy-eks-node-group, install-aws-load-balancer-controller]
+    needs: [deploy-ecr, retrieve-ssl, build-and-push-app-docker-image-to-ecr, deploy-eks-cluster, deploy-eks-node-group, install-aws-load-balancer-controller]
     runs-on: ubuntu-latest
 
     env:
@@ -417,11 +423,11 @@ jobs:
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Validate IaC changes on K8s app directory
-        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -var="image_tag=${{ needs.build-and-push-app-docker-image-to-ecr.outputs.image_tag }}"
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Deploy Kubernetes application
-        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -var="image_tag=${{ needs.build-and-push-app-docker-image-to-ecr.outputs.image_tag }}" -auto-approve
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Fetch application URL
