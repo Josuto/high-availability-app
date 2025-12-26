@@ -32,7 +32,7 @@ variable "instance_type" {
   description = "EC2 instance type for EKS nodes per environment"
   type        = map(string)
   default = {
-    dev  = "t2.micro"
+    dev  = "t3.small"
     prod = "t3.medium"
   }
 }

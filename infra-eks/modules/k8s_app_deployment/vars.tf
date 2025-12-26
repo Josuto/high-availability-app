@@ -77,7 +77,7 @@ variable "memory_request" {
   description = "Memory request per environment"
   type        = map(string)
   default = {
-    dev  = "256Mi"
+    dev  = "128Mi"
     prod = "512Mi"
   }
 }
@@ -95,7 +95,7 @@ variable "cpu_request" {
   description = "CPU request per environment"
   type        = map(string)
   default = {
-    dev  = "125m"
+    dev  = "50m"
     prod = "250m"
   }
 }

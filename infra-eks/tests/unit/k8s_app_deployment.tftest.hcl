@@ -109,25 +109,25 @@ run "k8s_deployment_resources_dev" {
     ecr_repository_url = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/repo"
     image_tag          = "latest"
     memory_request = {
-      dev  = "256Mi"
+      dev  = "128Mi"
       prod = "512Mi"
     }
     cpu_request = {
-      dev  = "125m"
+      dev  = "50m"
       prod = "250m"
     }
   }
 
   # Test memory request for dev
   assert {
-    condition     = kubernetes_deployment.app.spec[0].template[0].spec[0].container[0].resources[0].requests["memory"] == "256Mi"
-    error_message = "Container should request 256Mi memory for dev"
+    condition     = kubernetes_deployment.app.spec[0].template[0].spec[0].container[0].resources[0].requests["memory"] == "128Mi"
+    error_message = "Container should request 128Mi memory for dev"
   }
 
   # Test CPU request for dev
   assert {
-    condition     = kubernetes_deployment.app.spec[0].template[0].spec[0].container[0].resources[0].requests["cpu"] == "125m"
-    error_message = "Container should request 125m CPU for dev"
+    condition     = kubernetes_deployment.app.spec[0].template[0].spec[0].container[0].resources[0].requests["cpu"] == "50m"
+    error_message = "Container should request 50m CPU for dev"
   }
 }
 

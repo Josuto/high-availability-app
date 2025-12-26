@@ -297,8 +297,8 @@ These resources are only used by EKS:
 
 **Configuration:**
 - Replicas: 3 (prod), 2 (dev)
-- CPU request: 250m (prod), 125m (dev)
-- Memory request: 512Mi (prod), 256Mi (dev)
+- CPU request: 250m (prod), 50m (dev)
+- Memory request: 512Mi (prod), 128Mi (dev)
 - HPA min/max: 3-10 (prod), 2-5 (dev)
 
 **Cost:** ~$16/month for ALB (created by Ingress)
