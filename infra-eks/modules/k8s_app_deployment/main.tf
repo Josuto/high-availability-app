@@ -133,8 +133,8 @@ resource "kubernetes_deployment" "app" {
   wait_for_rollout = true
 
   timeouts {
-    create = "15m"
-    update = "15m"
+    create = "10m"
+    update = "10m"
     delete = "5m"
   }
 }
