@@ -85,7 +85,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "app" {
           period_seconds = 60
         }
 
-        select_policy = "Default" # Required when deploying the TF recipe (could be other values i.e., "Min" or "Max", although may not make sense in this case)
+        select_policy = "Max" # Required when deploying the TF recipe (could be other values i.e., "Min" or "Disabled", although may not make sense in this case)
       }
     }
   }
