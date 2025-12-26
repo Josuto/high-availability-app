@@ -53,36 +53,39 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "app" {
 
     # Scaling behavior configuration
     behavior {
-      # Scale down behavior
-      scale_down {
-        stabilization_window_seconds = 300 # Wait 5 minutes before scaling down
-
-        policy {
-          type           = "Percent"
-          value          = 50 # Scale down by max 50% of current pods
-          period_seconds = 60
-        }
-
-        select_policy = "Max" # Use the policy that scales down the most
-      }
-
       # Scale up behavior
       scale_up {
         stabilization_window_seconds = 0 # Scale up immediately
 
+        # Scale up 100% of current replicas (relative scaling) at most once per 30 seconds
         policy {
           type           = "Percent"
           value          = 100 # Double the number of pods
           period_seconds = 30
         }
 
+        # Add at most 2 pods at a time (absolute scaling) at most once per 30 seconds
         policy {
           type           = "Pods"
-          value          = 2 # Add 2 pods at a time
+          value          = 2
           period_seconds = 30
         }
 
         select_policy = "Max" # Use the policy that scales up the most
+      }
+
+      # Scale down behavior
+      scale_down {
+        stabilization_window_seconds = 300 # Wait 5 minutes before scaling down
+
+        # Scale down by max 50% of current pods at most once per minute
+        policy {
+          type           = "Percent"
+          value          = 50
+          period_seconds = 60
+        }
+
+        select_policy = "Default" # Required when deploying the TF recipe (could be other values i.e., "Min" or "Max", although may not make sense in this case)
       }
     }
   }
