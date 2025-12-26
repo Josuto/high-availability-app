@@ -24,12 +24,6 @@ spec:
         type: Utilization
         averageUtilization: 80
   behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 300
-      policies:
-      - type: Percent
-        value: 50
-        periodSeconds: 60
     scaleUp:
       stabilizationWindowSeconds: 0
       policies:
@@ -40,3 +34,10 @@ spec:
         value: 2
         periodSeconds: 30
       selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      selectPolicy: Default
