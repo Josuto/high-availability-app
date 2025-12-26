@@ -62,6 +62,8 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "app" {
           value          = 50 # Scale down by max 50% of current pods
           period_seconds = 60
         }
+
+        select_policy = "Max" # Use the policy that scales down the most
       }
 
       # Scale up behavior
