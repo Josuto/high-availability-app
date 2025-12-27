@@ -419,10 +419,11 @@ jobs:
             --region ${{ env.AWS_REGION }}
           echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
 
-      - name: Verify kubectl access
+      - name: Verify kubectl access and load balancer controller ingress config
         run: |
           kubectl config current-context
           kubectl get nodes
+          kubectl get ingress -A
 
       - name: Initialize Terraform on K8s app directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
