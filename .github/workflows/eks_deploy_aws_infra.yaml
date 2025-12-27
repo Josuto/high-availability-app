@@ -419,11 +419,10 @@ jobs:
             --region ${{ env.AWS_REGION }}
           echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
 
-      - name: Verify kubectl access and load balancer controller ingress config
+      - name: Verify kubectl access
         run: |
           kubectl config current-context
           kubectl get nodes
-          kubectl get ingress -A
 
       - name: Initialize Terraform on K8s app directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
@@ -526,6 +525,19 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl
+        uses: aws-actions/eks-setup-kubectl@v1
+        with:
+          cluster-name: ${{ needs.deploy-eks-cluster.outputs.cluster_id }}
+
+      - name: Wait for ALB to be ready
+        run: |
+          kubectl wait \
+            --for=jsonpath='{.status.loadBalancer.ingress[0].hostname}' \
+            ingress/nestjs-app-ingress \
+            -n default \
+            --timeout=10m
 
       - name: Initialise Terraform on the routing directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
