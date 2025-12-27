@@ -178,6 +178,12 @@ variable "additional_ingress_annotations" {
   default     = {}
 }
 
+variable "root_domain_name" {
+  description = "Root domain name for the Ingress resource"
+  type        = string
+  default     = ""
+}
+
 #####################################
 # Autoscaling Configuration
 #####################################

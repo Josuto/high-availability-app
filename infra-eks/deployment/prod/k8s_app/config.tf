@@ -84,6 +84,7 @@ module "k8s_app" {
   alb_scheme                     = var.alb_scheme
   enable_https                   = var.enable_https
   acm_certificate_arn            = var.enable_https ? data.terraform_remote_state.acm.outputs.certificate_arn : ""
+  root_domain_name               = var.root_domain
   additional_ingress_annotations = var.additional_ingress_annotations
 
   # Autoscaling Configuration

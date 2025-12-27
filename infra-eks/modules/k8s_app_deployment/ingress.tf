@@ -53,6 +53,8 @@ resource "kubernetes_ingress_v1" "app" {
     ingress_class_name = "alb"
 
     rule {
+      host = var.root_domain_name # e.g. api.example.com
+
       http {
         path {
           path      = "/"

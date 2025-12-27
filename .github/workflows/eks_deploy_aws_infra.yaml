@@ -499,9 +499,48 @@ jobs:
           echo "=== Pods ==="
           kubectl get pods
 
+  deploy-routing:
+    name: Enable routing to app via custom domain via AWS Route53
+    needs: deploy-k8s-application
+    runs-on: ubuntu-latest
+
+    env: # required by some steps
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      # Checkout the repository to enable the runner clone the project repo into its filesystem from the last repo
+      # commit, and make the files available to other steps of the workflow
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialise Terraform on the routing directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/prod/routing
+
+      - name: Validate IaC changes on the routing directory
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -out=tfplan.binary
+        working-directory: infra-eks/deployment/prod/routing
+
+      - name: Deploy the Route53
+        run: terraform apply -auto-approve tfplan.binary
+        working-directory: infra-eks/deployment/prod/routing
+
   deployment-summary:
     name: Deployment Summary
-    needs: [deploy-ecr, retrieve-ssl, build-and-push-app-docker-image-to-ecr, deploy-vpc, deploy-eks-cluster, deploy-eks-node-group, install-aws-load-balancer-controller, deploy-k8s-application]
+    needs: [deploy-ecr, retrieve-ssl, build-and-push-app-docker-image-to-ecr, deploy-vpc, deploy-eks-cluster, deploy-eks-node-group, install-aws-load-balancer-controller, deploy-k8s-application, deploy-routing]
     runs-on: ubuntu-latest
     if: always()
 

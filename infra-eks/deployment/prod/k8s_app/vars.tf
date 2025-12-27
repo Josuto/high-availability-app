@@ -168,6 +168,11 @@ variable "enable_https" {
   default     = true
 }
 
+variable "root_domain" {
+  description = "The root domain name (e.g., example.com)"
+  type        = string
+}
+
 variable "additional_ingress_annotations" {
   description = "Additional annotations for the Ingress resource"
   type        = map(string)
