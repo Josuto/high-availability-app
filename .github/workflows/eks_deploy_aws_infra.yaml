@@ -501,7 +501,7 @@ jobs:
 
   deploy-routing:
     name: Route to app via custom domain
-    needs: [install-aws-load-balancer-controller, deploy-k8s-application]
+    needs: [deploy-eks-cluster, install-aws-load-balancer-controller, deploy-k8s-application]
     runs-on: ubuntu-latest
 
     env: # required by some steps
@@ -536,7 +536,7 @@ jobs:
       - name: Configure kubectl for EKS
         run: |
           aws eks update-kubeconfig \
-            --name ${{ steps.deploy-eks-cluster.outputs.cluster_id }} \
+            --name ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
             --region ${{ env.AWS_REGION }}
           echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
 
