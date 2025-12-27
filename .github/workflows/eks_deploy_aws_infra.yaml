@@ -443,7 +443,7 @@ jobs:
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Deploy Kubernetes application
-        run: terraform apply -var-file="../../common.tfvars" -var-file="../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Debug pods on failure
