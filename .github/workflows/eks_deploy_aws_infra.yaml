@@ -439,11 +439,11 @@ jobs:
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Validate IaC changes on K8s app directory
-        run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../domain.tfvars" -var-file="../../backend.tfvars"
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Deploy Kubernetes application
-        run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Debug pods on failure
@@ -500,7 +500,7 @@ jobs:
           kubectl get pods
 
   deploy-routing:
-    name: Enable routing to app via custom domain via AWS Route53
+    name: Route to app via custom domain
     needs: deploy-k8s-application
     runs-on: ubuntu-latest
 
@@ -534,7 +534,7 @@ jobs:
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -out=tfplan.binary
         working-directory: infra-eks/deployment/prod/routing
 
-      - name: Deploy the Route53
+      - name: Deploy the Route53 DNS record
         run: terraform apply -auto-approve tfplan.binary
         working-directory: infra-eks/deployment/prod/routing
 

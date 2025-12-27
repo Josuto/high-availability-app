@@ -79,7 +79,7 @@ jobs:
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Destroy Kubernetes application via Terraform
-        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        run: terraform destroy -var-file="../../common.tfvars" -var-file="../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
         working-directory: infra-eks/deployment/prod/k8s_app
         continue-on-error: true
 
