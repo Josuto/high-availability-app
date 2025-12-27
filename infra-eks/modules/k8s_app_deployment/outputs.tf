@@ -61,6 +61,13 @@ output "ingress_hostname" {
   ) : null
 }
 
+data "aws_elb_hosted_zone_id" "current" {}
+
+output "alb_zone_id" {
+  description = "Canonical hosted zone ID of the ALB"
+  value       = data.aws_elb_hosted_zone_id.current.id
+}
+
 output "alb_url" {
   description = "URL of the Application Load Balancer (if ingress enabled and HTTPS)"
   value = var.enable_ingress && var.enable_https && length(kubernetes_ingress_v1.app[0].status) > 0 && length(kubernetes_ingress_v1.app[0].status[0].load_balancer) > 0 && length(kubernetes_ingress_v1.app[0].status[0].load_balancer[0].ingress) > 0 ? (

@@ -14,17 +14,15 @@ variable "hosted_zone_id" {
 }
 
 ############################
-# Kubernetes / Ingress Info
+# Kubernetes Ingress Info
 ############################
 
-variable "namespace" {
-  description = "Kubernetes namespace where the ingress resource is deployed."
+variable "ingress_hostname" {
+  description = "Hostname of the ingress load balancer (if enabled)"
   type        = string
-  default     = "default"
 }
 
-variable "app_name" {
-  description = "Application name used to derive the Kubernetes ingress name and ALB tags."
+variable "alb_zone_id" {
+  description = "Canonical hosted zone ID of the ALB"
   type        = string
-  default     = "nestjs-app"
 }
