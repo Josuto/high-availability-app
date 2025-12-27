@@ -501,7 +501,7 @@ jobs:
 
   deploy-routing:
     name: Route to app via custom domain
-    needs: deploy-k8s-application
+    needs: [install-aws-load-balancer-controller, deploy-k8s-application]
     runs-on: ubuntu-latest
 
     env: # required by some steps
@@ -531,11 +531,11 @@ jobs:
         working-directory: infra-eks/deployment/prod/routing
 
       - name: Validate IaC changes on the routing directory
-        run: terraform plan -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -out=tfplan.binary
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars"
         working-directory: infra-eks/deployment/prod/routing
 
       - name: Deploy the Route53 DNS record
-        run: terraform apply -auto-approve tfplan.binary
+        run: terraform apply -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
         working-directory: infra-eks/deployment/prod/routing
 
   deployment-summary:
