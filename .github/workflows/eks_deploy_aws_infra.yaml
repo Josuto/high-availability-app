@@ -439,7 +439,7 @@ jobs:
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Validate IaC changes on K8s app directory
-        run: terraform plan -var-file="../../common.tfvars" -var-file="../domain.tfvars" -var-file="../../backend.tfvars"
+        run: terraform plan -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars"
         working-directory: infra-eks/deployment/prod/k8s_app
 
       - name: Deploy Kubernetes application
