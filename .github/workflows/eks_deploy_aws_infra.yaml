@@ -526,10 +526,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Configure kubectl
-        uses: aws-actions/eks-setup-kubectl@v1
-        with:
-          cluster-name: ${{ needs.deploy-eks-cluster.outputs.cluster_id }}
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/v${{ env.KUBECTL_VERSION }}/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
+      - name: Configure kubectl for EKS
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ needs.deploy-eks-cluster.outputs.cluster_id }} \
+            --region ${{ env.AWS_REGION }}
+          echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+
+      - name: Verify load balancer controller ingress config
+        run: |
+          kubectl get ingress -A
 
       - name: Wait for ALB to be ready
         run: |
