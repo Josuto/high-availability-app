@@ -61,11 +61,11 @@ output "ingress_hostname" {
   ) : null
 }
 
-data "aws_elb_hosted_zone_id" "current" {}
+data "aws_lb_hosted_zone_id" "current" {}
 
 output "alb_zone_id" {
   description = "Canonical hosted zone ID of the ALB"
-  value       = data.aws_elb_hosted_zone_id.current.id
+  value       = data.aws_lb_hosted_zone_id.current.id
 }
 
 output "alb_url" {
