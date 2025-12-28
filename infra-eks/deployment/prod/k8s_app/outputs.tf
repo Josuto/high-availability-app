@@ -64,6 +64,11 @@ output "alb_url" {
   value       = module.k8s_app.alb_url
 }
 
+output "alb_zone_id" {
+  description = "Canonical hosted zone ID of the ALB"
+  value       = module.k8s_app.alb_zone_id
+}
+
 #####################################
 # HPA Outputs
 #####################################
