@@ -9,8 +9,37 @@ env:
   KUBECTL_VERSION: 1.28.0
 
 jobs:
+
+  destroy-routing:
+    name: Destroy routing resources
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on the routing directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/prod/routing
+
+      - name: Destroy Resources on the routing directory
+        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/prod/routing
+
   destroy-k8s-application:
     name: Destroy Kubernetes Application
+    needs: destroy-routing
     runs-on: ubuntu-latest
 
     env:
@@ -95,34 +124,6 @@ jobs:
             echo "All Ingress resources deleted successfully"
           fi
         continue-on-error: true
-
-  destroy-routing:
-    name: Destroy routing resources
-    needs: destroy-k8s-application
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code from the repository
-        uses: actions/checkout@v4
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{env.TERRAFORM_VERSION}}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Initialize Terraform on the routing directory
-        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/routing
-
-      - name: Destroy Resources on the routing directory
-        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/routing
 
   uninstall-aws-load-balancer-controller:
     name: Uninstall AWS Load Balancer Controller
