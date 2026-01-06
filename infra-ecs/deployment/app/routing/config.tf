@@ -2,7 +2,7 @@ data "terraform_remote_state" "alb" {
   backend = "s3"
   config = {
     bucket = var.state_bucket_name
-    key    = "deployment/prod/alb/terraform.tfstate"
+    key    = "deployment/app/alb/terraform.tfstate"
     # region = "eu-west-1" # When omitted, that of the provider is taken
   }
 }

@@ -15,7 +15,7 @@ terraform {
   }
 
   backend "s3" {
-    key     = "deployment/prod/vpc/terraform.tfstate"
+    key     = "deployment/app/ecs_service/terraform.tfstate"
     encrypt = true
   }
 }

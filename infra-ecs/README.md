@@ -280,7 +280,7 @@ After deploying the Route 53 Hosted Zone (see [Section 5.1: Initial Setup](#51-i
 
 ## 3. AWS Resources Deep Dive
 
-### Module Architecture: Root Modules vs Child Modules
+### 3.1. Module Architecture: Root Modules vs Child Modules
 
 The infrastructure follows a strict separation between **Root Modules** (deployment stages) and **Child Modules** (reusable components), implementing the Single Responsibility Principle and maximizing reusability.
 
@@ -300,32 +300,32 @@ Root modules are **environment-specific orchestration layers** that:
 - Stitch child modules together to create complete infrastructure stages
 - Use `data "terraform_remote_state"` to read outputs from previous deployment stages
 - Pass environment-specific configuration to child modules
-- Examples: `deployment/prod/vpc`, `deployment/prod/ecs_cluster`, `deployment/prod/alb`
+- Examples: `deployment/app/vpc`, `deployment/app/ecs_cluster`, `deployment/app/alb`
 
 #### How They Work Together
 
 **Example 1: ECS Service depends on outputs from VPC, Cluster, and ALB**
 
-The `deployment/prod/ecs_service/` root module:
-1. Reads VPC outputs from `deployment/prod/vpc/` remote state:
+The `deployment/app/ecs_service/` root module:
+1. Reads VPC outputs from `deployment/app/vpc/` remote state:
    ```hcl
    data "terraform_remote_state" "vpc" {
      backend = "s3"
      config = {
        bucket = "terraform-state-bucket"
-       key    = "prod/vpc/terraform.tfstate"
+       key    = "deployment/app/vpc/terraform.tfstate"
        region = "eu-west-1"
      }
    }
    ```
 
-2. Reads ECS cluster outputs from `deployment/prod/ecs_cluster/` remote state:
+2. Reads ECS cluster outputs from `deployment/app/ecs_cluster/` remote state:
    ```hcl
    data "terraform_remote_state" "ecs_cluster" {
      backend = "s3"
      config = {
        bucket = "terraform-state-bucket"
-       key    = "prod/ecs_cluster/terraform.tfstate"
+       key    = "deployment/app/ecs_cluster/terraform.tfstate"
        region = "eu-west-1"
      }
    }
@@ -351,11 +351,11 @@ The deployment stages must be executed in dependency order:
 2. `hosted_zone/` → Creates Route53 zone (no dependencies)
 3. `ssl/` → Requires outputs from `hosted_zone/` (reads hosted_zone_id)
 4. `ecr/` → Creates ECR repository (no dependencies)
-5. `prod/vpc/` → Creates network infrastructure (no dependencies)
-6. `prod/ecs_cluster/` → Requires outputs from `vpc/` (reads vpc_id, private_subnets)
-7. `prod/alb/` → Requires outputs from `vpc/` and `ssl/` (reads vpc_id, public_subnets, certificate_arn)
-8. `prod/ecs_service/` → Requires outputs from `vpc/`, `ecs_cluster/`, and `alb/`
-9. `prod/routing/` → Requires outputs from `hosted_zone/` and `alb/` (reads zone_id, alb_dns_name)
+5. `app/vpc/` → Creates network infrastructure (no dependencies)
+6. `app/ecs_cluster/` → Requires outputs from `vpc/` (reads vpc_id, private_subnets)
+7. `app/alb/` → Requires outputs from `vpc/` and `ssl/` (reads vpc_id, public_subnets, certificate_arn)
+8. `app/ecs_service/` → Requires outputs from `vpc/`, `ecs_cluster/`, and `alb/`
+9. `app/routing/` → Requires outputs from `hosted_zone/` and `alb/` (reads zone_id, alb_dns_name)
 
 **Why This Architecture?**
 
@@ -367,7 +367,38 @@ The deployment stages must be executed in dependency order:
 
 ---
 
-### 3.1. Virtual Private Cloud (VPC)
+### 3.2. Foundational Infrastructure (Approach-Agnostic)
+
+These root modules represent **approach-agnostic infrastructure** - components that are shared between different container orchestration approaches (ECS and EKS implementations). They reside directly under `infra-ecs/deployment/` and provide foundational services required by any application deployment.
+
+**Approach-Agnostic Modules:**
+- **`backend/`**: S3 bucket for Terraform remote state storage
+- **`hosted_zone/`**: Route53 hosted zone for DNS management
+- **`ssl/`**: ACM SSL certificate for HTTPS (see [Section 3.2.2](#322-ssl-certificate-acm))
+- **`ecr/`**: Docker container registry (see [Section 3.2.1](#321-elastic-container-registry-ecr))
+- **`routing/`**: Route53 A records pointing to load balancer (see [Section 3.2.3](#323-route-53))
+
+**Key Characteristic:** These modules are not specific to ECS - the same modules are also used in the EKS implementation (`infra-eks/`), providing shared infrastructure across both approaches.
+
+---
+
+### 3.3. Application Deployment Infrastructure (ECS-Specific)
+
+These root modules represent **ECS-specific application infrastructure** - components that are unique to the ECS cluster-based container orchestration approach. They reside under `infra-ecs/deployment/app/` and implement the compute, networking, and load balancing layers specific to running containers on ECS with EC2 instances.
+
+**ECS-Specific Modules:**
+- **`app/vpc/`**: Network infrastructure for ECS deployment (see [Section 3.3.1](#331-virtual-private-cloud-vpc))
+- **`app/ecs_cluster/`**: ECS cluster with EC2 Auto Scaling Group (see [Section 3.3.2](#332-ecs-cluster))
+- **`app/alb/`**: Application Load Balancer for traffic distribution (see [Section 3.3.3](#333-application-load-balancer-alb))
+- **`app/ecs_service/`**: ECS service managing containerized tasks (see [Section 3.3.4](#334-ecs-service))
+
+**Key Characteristic:** These modules implement ECS-specific concepts (clusters, services, tasks, capacity providers) and would be replaced by different modules in the EKS implementation (node groups, pods, deployments).
+
+The following subsections provide detailed explanations of each infrastructure component, organized by category.
+
+---
+
+### 3.3.1. Virtual Private Cloud (VPC)
 
 **Purpose**: Provides isolated network infrastructure for all AWS resources.
 
@@ -385,11 +416,11 @@ The deployment stages must be executed in dependency order:
 | NAT Gateway | Single (one_nat_gateway = true) | Multiple (one per AZ) | Cost savings vs high availability |
 
 **Module Location**: Uses the official `terraform-aws-modules/vpc/aws` module
-**Deployment Location**: `infra-ecs/deployment/prod/vpc/`
+**Deployment Location**: `infra-ecs/deployment/app/vpc/`
 
 ---
 
-### 3.2. Elastic Container Registry (ECR)
+### 3.2.1. Elastic Container Registry (ECR)
 
 **Purpose**: Private Docker registry for storing application container images.
 
@@ -413,7 +444,7 @@ The deployment stages must be executed in dependency order:
 
 ---
 
-### 3.3. ECS Cluster
+### 3.3.2. ECS Cluster
 
 **Purpose**: Provides the compute capacity (EC2 instances) for running containerized applications.
 
@@ -453,11 +484,11 @@ The deployment stages must be executed in dependency order:
 
 **Naming Convention**: `${environment}-${project_name}-ecs-cluster`
 **Module Location**: `infra-ecs/modules/ecs_cluster/`
-**Deployment Location**: `infra-ecs/deployment/prod/ecs_cluster/`
+**Deployment Location**: `infra-ecs/deployment/app/ecs_cluster/`
 
 ---
 
-### 3.4. ECS Service
+### 3.3.4. ECS Service
 
 **Purpose**: Defines and maintains the desired state of running application containers (tasks).
 
@@ -499,11 +530,11 @@ Determines how tasks are distributed across EC2 instances:
 
 **Naming Convention**: `${environment}-${project_name}-ecs-service`
 **Module Location**: `infra-ecs/modules/ecs_service/`
-**Deployment Location**: `infra-ecs/deployment/prod/ecs_service/`
+**Deployment Location**: `infra-ecs/deployment/app/ecs_service/`
 
 ---
 
-### 3.5. Application Load Balancer (ALB)
+### 3.3.3. Application Load Balancer (ALB)
 
 **Purpose**: Distributes incoming HTTPS/HTTP traffic across healthy ECS tasks.
 
@@ -545,11 +576,11 @@ Determines how tasks are distributed across EC2 instances:
 
 **Naming Convention**: `${environment}-${project_name}-alb`
 **Module Location**: `infra-ecs/modules/alb/`
-**Deployment Location**: `infra-ecs/deployment/prod/alb/`
+**Deployment Location**: `infra-ecs/deployment/app/alb/`
 
 ---
 
-### 3.6. SSL Certificate (ACM)
+### 3.2.2. SSL Certificate (ACM)
 
 **Purpose**: Provides SSL/TLS certificate for secure HTTPS communication.
 
@@ -579,7 +610,7 @@ Determines how tasks are distributed across EC2 instances:
 
 ---
 
-### 3.7. Route 53
+### 3.2.3. Route 53
 
 **Purpose**: DNS management for routing traffic to the Application Load Balancer.
 
@@ -603,11 +634,11 @@ Determines how tasks are distributed across EC2 instances:
 | Hosted Zone force_destroy | true | false | Quick cleanup vs domain protection |
 
 **Module Location**: `infra-ecs/modules/hosted_zone/` and `infra-ecs/modules/routing/`
-**Deployment Location**: `infra-ecs/deployment/hosted_zone/` and `infra-ecs/deployment/prod/routing/`
+**Deployment Location**: `infra-ecs/deployment/hosted_zone/` and `infra-ecs/deployment/app/routing/`
 
 ---
 
-### 3.8. IAM Roles and Policies
+### 3.3.5. IAM Roles and Policies
 
 The infrastructure uses two distinct IAM roles for different levels of authorization.
 
@@ -739,7 +770,7 @@ Both roles use trust policies to define which AWS services can assume them:
 
 ---
 
-### 3.9. Security Groups
+### 3.3.6. Security Groups
 
 Security Groups act as virtual firewalls, controlling network traffic at the resource level.
 
@@ -1011,7 +1042,7 @@ All infrastructure deployment and teardown is managed through GitHub Actions wor
 
 6. **deploy-vpc** (depends on: deploy-ecr)
    - Creates VPC, subnets, NAT Gateway(s), Internet Gateway
-   - Working directory: `infra-ecs/deployment/prod/vpc/`
+   - Working directory: `infra-ecs/deployment/app/vpc/`
    - Terraform variables: `common.tfvars`
    - Uses official `terraform-aws-modules/vpc/aws` module
 
@@ -1019,14 +1050,14 @@ All infrastructure deployment and teardown is managed through GitHub Actions wor
    - Creates ECS cluster, Auto Scaling Group, Launch Template, Capacity Provider
    - Creates IAM instance role and instance profile
    - Creates cluster security group
-   - Working directory: `infra-ecs/deployment/prod/ecs_cluster/`
+   - Working directory: `infra-ecs/deployment/app/ecs_cluster/`
    - Terraform variables: `common.tfvars`, `backend.tfvars`
 
 8. **deploy-alb** (depends on: retrieve-ssl, deploy-vpc, deploy-ecs-cluster)
    - Creates Application Load Balancer, listeners, target group
    - Attaches validated ACM certificate to HTTPS listener
    - Creates ALB security group
-   - Working directory: `infra-ecs/deployment/prod/alb/`
+   - Working directory: `infra-ecs/deployment/app/alb/`
    - Terraform variables: `common.tfvars`, `backend.tfvars`
 
 9. **deploy-ecs-service** (depends on: deploy-ecr, build-and-push-app-docker-image-to-ecr, deploy-ecs-cluster, deploy-alb)
@@ -1034,12 +1065,12 @@ All infrastructure deployment and teardown is managed through GitHub Actions wor
    - Creates ECS service with load balancer integration
    - Creates task execution role and ECS tasks security group
    - Optionally creates task auto-scaling configuration
-   - Working directory: `infra-ecs/deployment/prod/ecs_service/`
+   - Working directory: `infra-ecs/deployment/app/ecs_service/`
    - Terraform variables: `common.tfvars`, `backend.tfvars`, `-var="ecr_app_image=$ECR_APP_IMAGE"`
 
 10. **deploy-routing** (depends on: deploy-alb)
     - Creates Route 53 A records (root and www) pointing to ALB
-    - Working directory: `infra-ecs/deployment/prod/routing/`
+    - Working directory: `infra-ecs/deployment/app/routing/`
     - Terraform variables: `common.tfvars`, `domain.tfvars`, `backend.tfvars`
     - Uses `terraform plan -out=tfplan.binary` for safety
 
@@ -1075,21 +1106,21 @@ Destroys the application and core services.
    - **Scales ECS service to 0 tasks**: `aws ecs update-service --desired-count 0`
    - **Waits for stability**: `aws ecs wait services-stable` (ensures tasks are drained)
    - Destroys ECS service resources with `terraform destroy`
-   - Working directory: `infra-ecs/deployment/prod/ecs_service/`
+   - Working directory: `infra-ecs/deployment/app/ecs_service/`
    - **Why Scale First**: Ensures clean shutdown of running containers before destroying infrastructure
 
 2. **destroy-routing** (depends on: destroy-ecs-service)
    - Destroys Route 53 A records
-   - Working directory: `infra-ecs/deployment/prod/routing/`
+   - Working directory: `infra-ecs/deployment/app/routing/`
 
 3. **destroy-alb** (depends on: destroy-ecs-service)
    - Destroys ALB, listeners, target group, and security group
-   - Working directory: `infra-ecs/deployment/prod/alb/`
+   - Working directory: `infra-ecs/deployment/app/alb/`
 
 4. **destroy-ecs-cluster** (depends on: destroy-ecs-service, destroy-alb)
    - Destroys ECS cluster, ASG, Launch Template, Capacity Provider
    - Destroys IAM roles and security groups
-   - Working directory: `infra-ecs/deployment/prod/ecs_cluster/`
+   - Working directory: `infra-ecs/deployment/app/ecs_cluster/`
 
 5. **destroy-ssl** (depends on: destroy-alb)
    - Destroys ACM certificate and validation records
@@ -1103,7 +1134,7 @@ Destroys the application and core services.
 
 7. **destroy-vpc** (depends on: destroy-ecs-cluster, destroy-alb, destroy-ssl, destroy-ecr)
    - Destroys VPC, subnets, NAT Gateway(s), Internet Gateway
-   - Working directory: `infra-ecs/deployment/prod/vpc/`
+   - Working directory: `infra-ecs/deployment/app/vpc/`
 
 #### Workflow 2: ecs-destroy-hosted-zone.yaml
 
@@ -1390,7 +1421,7 @@ infra-ecs/
 │   ├── ecr/                    # ECR repository
 │   ├── hosted_zone/            # Route 53 Hosted Zone
 │   ├── ssl/                    # ACM certificate
-│   ├── prod/                   # Production environment
+│   ├── app/                    # Application infrastructure (ECS-specific)
 │   │   ├── vpc/                # VPC and networking
 │   │   ├── ecs_cluster/        # ECS cluster and ASG
 │   │   ├── alb/                # Application Load Balancer

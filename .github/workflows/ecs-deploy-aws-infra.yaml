@@ -210,15 +210,15 @@ jobs:
 
       - name: Initialise Terraform on the VPC directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-ecs/deployment/prod/vpc
+        working-directory: infra-ecs/deployment/app/vpc
 
       - name: Validate IaC changes on the VPC directory
         run: terraform plan -var-file="../../common.tfvars"
-        working-directory: infra-ecs/deployment/prod/vpc
+        working-directory: infra-ecs/deployment/app/vpc
 
       - name: Deploy the VPC
         run: terraform apply -var-file="../../common.tfvars" -auto-approve
-        working-directory: infra-ecs/deployment/prod/vpc
+        working-directory: infra-ecs/deployment/app/vpc
 
   deploy-ecs-cluster:
     name: Deploy the ECS cluster on AWS
@@ -249,15 +249,15 @@ jobs:
 
       - name: Initialise Terraform on ECS cluster directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-ecs/deployment/prod/ecs_cluster
+        working-directory: infra-ecs/deployment/app/ecs_cluster
 
       - name: Validate IaC changes on ECS cluster directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
-        working-directory: infra-ecs/deployment/prod/ecs_cluster
+        working-directory: infra-ecs/deployment/app/ecs_cluster
 
       - name: Deploy the ECS cluster
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-ecs/deployment/prod/ecs_cluster
+        working-directory: infra-ecs/deployment/app/ecs_cluster
 
   deploy-alb:
     name: Deploy the ALB on AWS
@@ -288,15 +288,15 @@ jobs:
 
       - name: Initialise Terraform on the ALB directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-ecs/deployment/prod/alb
+        working-directory: infra-ecs/deployment/app/alb
 
       - name: Validate IaC changes on the ALB directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
-        working-directory: infra-ecs/deployment/prod/alb
+        working-directory: infra-ecs/deployment/app/alb
 
       - name: Deploy the ALB
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-ecs/deployment/prod/alb
+        working-directory: infra-ecs/deployment/app/alb
 
   deploy-ecs-service:
     name: Deploy the ECS service on AWS
@@ -341,15 +341,15 @@ jobs:
 
       - name: Initialise Terraform on the ECS service directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-ecs/deployment/prod/ecs_service
+        working-directory: infra-ecs/deployment/app/ecs_service
 
       - name: Validate IaC changes on the ECS service directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}"
-        working-directory: infra-ecs/deployment/prod/ecs_service
+        working-directory: infra-ecs/deployment/app/ecs_service
 
       - name: Deploy the ECS service
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -var="ecr_app_image=${{ env.ECR_APP_IMAGE }}" -auto-approve
-        working-directory: infra-ecs/deployment/prod/ecs_service
+        working-directory: infra-ecs/deployment/app/ecs_service
 
   deploy-routing:
     name: Deploy the Route53 on AWS
@@ -380,12 +380,12 @@ jobs:
 
       - name: Initialise Terraform on the routing directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-ecs/deployment/prod/routing
+        working-directory: infra-ecs/deployment/app/routing
 
       - name: Validate IaC changes on the routing directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -out=tfplan.binary
-        working-directory: infra-ecs/deployment/prod/routing
+        working-directory: infra-ecs/deployment/app/routing
 
       - name: Deploy the Route53
         run: terraform apply -auto-approve tfplan.binary
-        working-directory: infra-ecs/deployment/prod/routing
+        working-directory: infra-ecs/deployment/app/routing

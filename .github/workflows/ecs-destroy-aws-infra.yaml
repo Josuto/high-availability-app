@@ -32,7 +32,7 @@ jobs:
         run: |
           terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
           echo "ECS_CLUSTER_NAME=$(terraform output -raw ecs_cluster_name)" >> $GITHUB_ENV
-        working-directory: infra-ecs/deployment/prod/ecs_cluster
+        working-directory: infra-ecs/deployment/app/ecs_cluster
         env:
           TF_IN_AUTOMATION: true
 
@@ -41,7 +41,7 @@ jobs:
         run: |
           terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
           echo "ECS_SERVICE_NAME=$(terraform output -raw ecs_service_name)" >> $GITHUB_ENV
-        working-directory: infra-ecs/deployment/prod/ecs_service
+        working-directory: infra-ecs/deployment/app/ecs_service
         env:
           TF_IN_AUTOMATION: true
 
@@ -53,7 +53,7 @@ jobs:
 
       - name: Destroy Resources on the routing directory
         run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -var="ecr_app_image=some_non_relevant_value" -auto-approve
-        working-directory: infra-ecs/deployment/prod/ecs_service
+        working-directory: infra-ecs/deployment/app/ecs_service
 
   destroy-routing:
     name: Destroy routing-related resources
@@ -77,11 +77,11 @@ jobs:
 
       - name: Initialize Terraform on the routing directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-ecs/deployment/prod/routing
+        working-directory: infra-ecs/deployment/app/routing
 
       - name: Destroy Resources on the routing directory
         run: terraform destroy -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-ecs/deployment/prod/routing
+        working-directory: infra-ecs/deployment/app/routing
 
   destroy-alb:
     name: Destroy ALB-related resources
@@ -105,11 +105,11 @@ jobs:
 
       - name: Initialize Terraform on the ALB directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-ecs/deployment/prod/alb
+        working-directory: infra-ecs/deployment/app/alb
 
       - name: Destroy Resources on the ALB directory
         run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-ecs/deployment/prod/alb
+        working-directory: infra-ecs/deployment/app/alb
 
   destroy-ecs-cluster:
     name: Destroy ECS cluster-related resources
@@ -133,11 +133,11 @@ jobs:
 
       - name: Initialize Terraform on the ECS directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-ecs/deployment/prod/ecs_cluster
+        working-directory: infra-ecs/deployment/app/ecs_cluster
 
       - name: Destroy Resources on the ECS directory
         run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-ecs/deployment/prod/ecs_cluster
+        working-directory: infra-ecs/deployment/app/ecs_cluster
 
   destroy-ssl:
     name: Destroy SSL certificate-related resources
@@ -228,8 +228,8 @@ jobs:
 
       - name: Initialize Terraform on the VPC directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-ecs/deployment/prod/vpc
+        working-directory: infra-ecs/deployment/app/vpc
 
       - name: Destroy Resources on the VPC directory
         run: terraform destroy -var-file="../../common.tfvars" -auto-approve
-        working-directory: infra-ecs/deployment/prod/vpc
+        working-directory: infra-ecs/deployment/app/vpc
