@@ -3,7 +3,7 @@ data "terraform_remote_state" "vpc" {
   backend = "s3"
   config = {
     bucket = var.state_bucket_name
-    key    = "deployment/prod/vpc/terraform.tfstate"
+    key    = "deployment/app/vpc/terraform.tfstate"
     # region = "eu-west-1" # When omitted, region of the provider is used
   }
 }

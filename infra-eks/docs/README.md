@@ -183,7 +183,7 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 The VPC is shared between ECS and EKS implementations:
 
 ```bash
-cd ../infra/deployment/prod/vpc
+cd ../infra/deployment/app/vpc
 terraform init
 terraform plan
 terraform apply
@@ -192,7 +192,7 @@ terraform apply
 ### Step 2: Deploy EKS Cluster
 
 ```bash
-cd infra-eks/deployment/prod/eks_cluster
+cd infra-eks/deployment/app/eks_cluster
 terraform init
 terraform plan
 terraform apply
@@ -507,7 +507,7 @@ sudo journalctl -u kubelet
 
 ```bash
 # Step 1: Delete Kubernetes resources (this deletes ALB)
-cd infra-eks/deployment/prod/k8s_app
+cd infra-eks/deployment/app/k8s_app
 terraform destroy
 
 # Step 2: Delete node group
@@ -519,7 +519,7 @@ cd ../eks_cluster
 terraform destroy
 
 # Step 4: (Optional) Delete VPC if not used by ECS
-cd ../../../infra/deployment/prod/vpc
+cd ../../../infra/deployment/app/vpc
 terraform destroy
 ```
 

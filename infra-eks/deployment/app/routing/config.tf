@@ -11,7 +11,7 @@ data "terraform_remote_state" "k8s_app" {
   backend = "s3"
   config = {
     bucket = var.state_bucket_name
-    key    = "deployment/prod/k8s_app/terraform.tfstate"
+    key    = "deployment/app/k8s_app/terraform.tfstate"
     # region = "eu-west-1"  # When omitted, region of the provider is used
   }
 }

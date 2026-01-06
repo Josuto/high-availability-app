@@ -7,11 +7,11 @@ This document explains which infrastructure resources are shared between the ECS
 The following resources are deployed once and used by both ECS and EKS:
 
 ### 1. VPC and Networking
-**Location:** [infra/deployment/prod/vpc/](../../../infra/deployment/prod/vpc/)
+**Location:** [infra/deployment/app/vpc/](../../../infra/deployment/app/vpc/)
 
 **What:** Virtual Private Cloud with public and private subnets
 
-**State Path:** `deployment/prod/vpc/terraform.tfstate`
+**State Path:** `deployment/app/vpc/terraform.tfstate`
 
 **Outputs Used:**
 - `vpc_id` - VPC identifier
@@ -62,31 +62,31 @@ The following resources are deployed once and used by both ECS and EKS:
 These resources are only used by ECS:
 
 ### 4. Application Load Balancer (ECS)
-**Location:** [infra/deployment/prod/alb/](../../../infra/deployment/prod/alb/)
+**Location:** [infra/deployment/app/alb/](../../../infra/deployment/app/alb/)
 
 **What:** ALB for ECS services with target groups
 
-**State Path:** `deployment/prod/alb/terraform.tfstate`
+**State Path:** `deployment/app/alb/terraform.tfstate`
 
 **Used By:** ECS services only
 
 **Note:** EKS creates its own ALB dynamically via the AWS Load Balancer Controller when you deploy an Ingress resource.
 
 ### 5. ECS Cluster
-**Location:** [infra/deployment/prod/ecs_cluster/](../../../infra/deployment/prod/ecs_cluster/)
+**Location:** [infra/deployment/app/ecs_cluster/](../../../infra/deployment/app/ecs_cluster/)
 
 **What:** ECS cluster with EC2 capacity provider
 
-**State Path:** `deployment/prod/ecs_cluster/terraform.tfstate`
+**State Path:** `deployment/app/ecs_cluster/terraform.tfstate`
 
 **Used By:** ECS services only
 
 ### 6. ECS Service
-**Location:** [infra/deployment/prod/ecs_service/](../../../infra/deployment/prod/ecs_service/)
+**Location:** [infra/deployment/app/ecs_service/](../../../infra/deployment/app/ecs_service/)
 
 **What:** ECS task definition and service
 
-**State Path:** `deployment/prod/ecs_service/terraform.tfstate`
+**State Path:** `deployment/app/ecs_service/terraform.tfstate`
 
 **Used By:** ECS only
 
@@ -141,7 +141,7 @@ Shared Resources (infra/deployment/)
     ├── Used by ECS ALB
     └── Used by EKS Ingress
 
-ECS Resources (infra/deployment/prod/)
+ECS Resources (infra/deployment/app/)
 ├── ALB (alb/)
 │   └── References: VPC, ACM
 ├── ECS Cluster (ecs_cluster/)
@@ -164,7 +164,7 @@ EKS Resources (infra-eks/deployment-eks/prod/)
 ### Initial Setup (Shared Resources)
 ```bash
 # 1. VPC (required first)
-cd infra/deployment/prod/vpc
+cd infra/deployment/app/vpc
 terraform apply
 
 # 2. ECR (independent)
@@ -179,7 +179,7 @@ terraform apply
 ### ECS Deployment
 ```bash
 # 4. ECS ALB
-cd infra/deployment/prod/alb
+cd infra/deployment/app/alb
 terraform apply
 
 # 5. ECS Cluster
@@ -247,7 +247,7 @@ data "terraform_remote_state" "vpc" {
   backend = "s3"
   config = {
     bucket = var.state_bucket_name
-    key    = "deployment/prod/vpc/terraform.tfstate"  # ECS VPC
+    key    = "deployment/app/vpc/terraform.tfstate"  # ECS VPC
   }
 }
 
@@ -337,7 +337,7 @@ curl https://<eks-alb-url>
 # 4. Update DNS to point to EKS ALB
 
 # 5. Decommission ECS
-cd infra/deployment/prod/ecs_service && terraform destroy
+cd infra/deployment/app/ecs_service && terraform destroy
 cd ../ecs_cluster && terraform destroy
 cd ../alb && terraform destroy
 
@@ -365,12 +365,12 @@ cd ../alb && terraform destroy
 
 | Resource | Path | Shared? | State Key |
 |----------|------|---------|-----------|
-| **VPC** | infra/deployment/prod/vpc/ | ✅ Yes | deployment/prod/vpc/terraform.tfstate |
+| **VPC** | infra/deployment/app/vpc/ | ✅ Yes | deployment/app/vpc/terraform.tfstate |
 | **ECR** | infra/deployment/ecr/ | ✅ Yes | deployment/ecr/terraform.tfstate |
 | **ACM** | infra/deployment/ssl/ | ✅ Yes | deployment/ssl/terraform.tfstate |
-| **ECS ALB** | infra/deployment/prod/alb/ | ❌ ECS Only | deployment/prod/alb/terraform.tfstate |
-| **ECS Cluster** | infra/deployment/prod/ecs_cluster/ | ❌ ECS Only | deployment/prod/ecs_cluster/terraform.tfstate |
-| **ECS Service** | infra/deployment/prod/ecs_service/ | ❌ ECS Only | deployment/prod/ecs_service/terraform.tfstate |
+| **ECS ALB** | infra/deployment/app/alb/ | ❌ ECS Only | deployment/app/alb/terraform.tfstate |
+| **ECS Cluster** | infra/deployment/app/ecs_cluster/ | ❌ ECS Only | deployment/app/ecs_cluster/terraform.tfstate |
+| **ECS Service** | infra/deployment/app/ecs_service/ | ❌ ECS Only | deployment/app/ecs_service/terraform.tfstate |
 | **EKS Cluster** | infra-eks/deployment-eks/prod/eks_cluster/ | ❌ EKS Only | deployment-eks/prod/eks_cluster/terraform.tfstate |
 | **EKS Nodes** | infra-eks/deployment-eks/prod/eks_node_group/ | ❌ EKS Only | deployment-eks/prod/eks_node_group/terraform.tfstate |
 | **K8s App** | infra-eks/deployment-eks/prod/k8s_app/ | ❌ EKS Only | deployment-eks/prod/k8s_app/terraform.tfstate |

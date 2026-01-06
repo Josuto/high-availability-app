@@ -49,7 +49,7 @@ kubectl apply -f infra-eks/k8s-manifests/
 **Example Workflow:**
 ```bash
 # 1. Deploy EKS infrastructure with Terraform
-cd infra-eks/deployment/prod/eks_cluster
+cd infra-eks/deployment/app/eks_cluster
 terraform apply
 
 cd ../eks_node_group
@@ -78,7 +78,7 @@ kubectl get hpa
 
 **Location:**
 - Module: [modules/k8s_app_deployment/](modules/k8s_app_deployment/)
-- Deployment: [deployment/prod/k8s_app/](deployment/prod/k8s_app/)
+- Deployment: [deployment/app/k8s_app/](deployment/app/k8s_app/)
 
 **Module Files:**
 - [main.tf](modules/k8s_app_deployment/main.tf) - Kubernetes Deployment resource
@@ -92,7 +92,7 @@ kubectl get hpa
 
 **Deployment Method:**
 ```bash
-cd infra-eks/deployment/prod/k8s_app
+cd infra-eks/deployment/app/k8s_app
 terraform init
 terraform apply
 ```
@@ -111,14 +111,14 @@ terraform apply
 - ⚠️ Not GitOps-friendly without additional tooling
 
 **Prerequisites:**
-1. Update S3 bucket name in [deployment/prod/k8s_app/backend.tf:2](deployment/prod/k8s_app/backend.tf#L2)
+1. Update S3 bucket name in [deployment/app/k8s_app/backend.tf:2](deployment/app/k8s_app/backend.tf#L2)
 2. Set `state_bucket_name` variable
 3. Install AWS Load Balancer Controller (same as Approach 1)
 
 **Example Workflow:**
 ```bash
 # 1. Deploy EKS infrastructure with Terraform
-cd infra-eks/deployment/prod/eks_cluster
+cd infra-eks/deployment/app/eks_cluster
 terraform apply
 
 cd ../eks_node_group
@@ -236,7 +236,7 @@ data "terraform_remote_state" "ecr" {
   backend = "s3"
   config = {
     bucket = var.state_bucket_name
-    key    = "deployment/prod/ecr/terraform.tfstate"
+    key    = "deployment/app/ecr/terraform.tfstate"
   }
 }
 
@@ -351,7 +351,7 @@ resource "null_resource" "apply_manifests" {
 
 ```bash
 # Infrastructure team
-cd infra-eks/deployment/prod/eks_cluster && terraform apply
+cd infra-eks/deployment/app/eks_cluster && terraform apply
 cd ../eks_node_group && terraform apply
 
 # Application team
@@ -514,7 +514,7 @@ Both approaches deploy identical Kubernetes resources:
 
 | What | YAML Approach | Terraform Approach |
 |------|---------------|-------------------|
-| **Files** | [k8s-manifests/](k8s-manifests/) | [modules/k8s_app_deployment/](modules/k8s_app_deployment/) + [deployment/prod/k8s_app/](deployment/prod/k8s_app/) |
+| **Files** | [k8s-manifests/](k8s-manifests/) | [modules/k8s_app_deployment/](modules/k8s_app_deployment/) + [deployment/app/k8s_app/](deployment/app/k8s_app/) |
 | **Tool** | `kubectl` | `terraform` |
 | **When** | ⭐ Recommended for most teams | Use if all-Terraform workflow |
 | **Why** | Industry standard, GitOps-friendly | Unified tooling, automatic integration |

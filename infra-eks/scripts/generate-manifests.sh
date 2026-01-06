@@ -197,7 +197,7 @@ Next Steps:
    ${YELLOW}cat ${OUTPUT_DIR}/ingress.yaml${NC}
 
 2. Ensure EKS cluster is deployed and configured:
-   ${YELLOW}cd infra-eks/deployment/prod/eks_cluster && terraform apply${NC}
+   ${YELLOW}cd infra-eks/deployment/app/eks_cluster && terraform apply${NC}
    ${YELLOW}cd ../eks_node_group && terraform apply${NC}
 
 3. Configure kubectl to use the EKS cluster:

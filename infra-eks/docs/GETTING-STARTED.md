@@ -59,7 +59,7 @@ Three reusable modules:
 
 ### 2. Production Deployments
 
-**Location:** `deployment/prod/`
+**Location:** `deployment/app/`
 
 Ready-to-use configurations:
 - `eks_cluster/` - Deploy EKS cluster
@@ -100,7 +100,7 @@ Raw YAML files for kubectl deployment:
 - `ECS-vs-EKS-COMPARISON.md` - Feature comparison
 - `DEPLOYMENT-APPROACHES.md` - YAML vs Terraform
 - `COMPLETE-IMPLEMENTATION-GUIDE.md` - Everything you need to know
-- `deployment/prod/SHARED-RESOURCES.md` - Resource sharing guide
+- `deployment/app/SHARED-RESOURCES.md` - Resource sharing guide
 
 ## Choose Your Path
 
@@ -149,7 +149,7 @@ Before you start, ensure you have:
 - [x] Helm >= 3.13.0 (for Load Balancer Controller)
 
 ### AWS Resources
-- [x] VPC deployed (`infra/deployment/prod/vpc/`)
+- [x] VPC deployed (`infra/deployment/app/vpc/`)
 - [x] ECR deployed (`infra/deployment/ecr/`)
 - [x] SSL certificate (`infra/deployment/ssl/`)
 - [x] Terraform state S3 bucket
@@ -171,12 +171,12 @@ aws --version
 helm version
 
 # 2. Verify shared resources exist
-cd infra/deployment/prod/vpc && terraform output vpc_id
+cd infra/deployment/app/vpc && terraform output vpc_id
 cd ../../ecr && terraform output ecr_repository_url
 cd ../ssl && terraform output acm_certificate_validation_arn
 
 # 3. Review EKS configuration
-cd infra-eks/deployment/prod/eks_cluster
+cd infra-eks/deployment/app/eks_cluster
 cat vars.tf  # Check default values
 
 # 4. Initialize Terraform (dry run)

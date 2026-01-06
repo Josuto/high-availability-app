@@ -15,7 +15,7 @@ Get your application running on Kubernetes (EKS) in under 30 minutes!
 ### Step 1: Deploy EKS Cluster (10 min)
 
 ```bash
-cd infra-eks/deployment/prod/eks_cluster
+cd infra-eks/deployment/app/eks_cluster
 
 # Create terraform.tfvars
 cat > terraform.tfvars << EOF
@@ -271,7 +271,7 @@ kubectl delete -f k8s-manifests/
 kubectl get ingress --watch
 
 # Delete node group
-cd deployment/prod/eks_node_group
+cd deployment/app/eks_node_group
 terraform destroy -auto-approve
 
 # Delete cluster

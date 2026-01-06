@@ -8,7 +8,7 @@ data "terraform_remote_state" "eks_cluster" {
 
   config = {
     bucket = var.state_bucket_name
-    key    = "deployment/prod/eks_cluster/terraform.tfstate"
+    key    = "deployment/app/eks_cluster/terraform.tfstate"
     # region = "eu-west-1"  # When omitted, region of the provider is used
   }
 }
@@ -19,7 +19,7 @@ data "terraform_remote_state" "vpc" {
 
   config = {
     bucket = var.state_bucket_name
-    key    = "deployment/prod/vpc/terraform.tfstate"
+    key    = "deployment/app/vpc/terraform.tfstate"
     # region = "eu-west-1"  # When omitted, region of the provider is used
   }
 }

@@ -122,7 +122,7 @@ infra-eks/
 │       ├── outputs.tf                         # Module outputs
 │       └── versions.tf                        # Provider versions
 │
-├── deployment/prod/                           # Production deployments
+├── deployment/app/                           # Production deployments
 │   ├── eks_cluster/                           # EKS cluster deployment
 │   │   ├── config.tf                          # Remote state + module call
 │   │   ├── vars.tf                            # Deployment variables
@@ -174,9 +174,9 @@ These resources are deployed once and used by both ECS and EKS:
 
 ### 1. VPC (Virtual Private Cloud)
 
-**Location:** `infra/deployment/prod/vpc/`
+**Location:** `infra/deployment/app/vpc/`
 
-**State Key:** `deployment/prod/vpc/terraform.tfstate`
+**State Key:** `deployment/app/vpc/terraform.tfstate`
 
 **Resources:**
 - VPC with CIDR block
@@ -236,9 +236,9 @@ These resources are only used by EKS:
 
 **Module:** [modules/eks_cluster/](modules/eks_cluster/)
 
-**Deployment:** [deployment/prod/eks_cluster/](deployment/prod/eks_cluster/)
+**Deployment:** [deployment/app/eks_cluster/](deployment/app/eks_cluster/)
 
-**State Key:** `deployment/prod/eks_cluster/terraform.tfstate`
+**State Key:** `deployment/app/eks_cluster/terraform.tfstate`
 
 **Key Resources:**
 - EKS cluster (Kubernetes control plane)
@@ -260,9 +260,9 @@ These resources are only used by EKS:
 
 **Module:** [modules/eks_node_group/](modules/eks_node_group/)
 
-**Deployment:** [deployment/prod/eks_node_group/](deployment/prod/eks_node_group/)
+**Deployment:** [deployment/app/eks_node_group/](deployment/app/eks_node_group/)
 
-**State Key:** `deployment/prod/eks_node_group/terraform.tfstate`
+**State Key:** `deployment/app/eks_node_group/terraform.tfstate`
 
 **Key Resources:**
 - Managed node group
@@ -284,9 +284,9 @@ These resources are only used by EKS:
 
 **Module:** [modules/k8s_app_deployment/](modules/k8s_app_deployment/)
 
-**Deployment:** [deployment/prod/k8s_app/](deployment/prod/k8s_app/)
+**Deployment:** [deployment/app/k8s_app/](deployment/app/k8s_app/)
 
-**State Key:** `deployment/prod/k8s_app/terraform.tfstate`
+**State Key:** `deployment/app/k8s_app/terraform.tfstate`
 
 **Key Resources:**
 - Deployment (application pods)
@@ -350,7 +350,7 @@ kubectl apply -f infra-eks/k8s-manifests-generated/
 
 **Module:** [modules/k8s_app_deployment/](modules/k8s_app_deployment/)
 
-**Deployment:** [deployment/prod/k8s_app/](deployment/prod/k8s_app/)
+**Deployment:** [deployment/app/k8s_app/](deployment/app/k8s_app/)
 
 **Deployment Tool:** `terraform`
 
@@ -367,7 +367,7 @@ kubectl apply -f infra-eks/k8s-manifests-generated/
 
 **Deployment:**
 ```bash
-cd infra-eks/deployment/prod/k8s_app
+cd infra-eks/deployment/app/k8s_app
 terraform init
 terraform apply
 ```
@@ -441,7 +441,7 @@ cp .github/workflows/eks/*.yaml .github/workflows/
 
 1. **Shared Resources Deployed:**
    ```bash
-   cd infra/deployment/prod/vpc && terraform apply
+   cd infra/deployment/app/vpc && terraform apply
    cd ../../ecr && terraform apply
    cd ../ssl && terraform apply
    ```
@@ -462,7 +462,7 @@ cp .github/workflows/eks/*.yaml .github/workflows/
 #### Step 1: Deploy EKS Cluster
 
 ```bash
-cd infra-eks/deployment/prod/eks_cluster
+cd infra-eks/deployment/app/eks_cluster
 
 # Update backend.tf with your S3 bucket name
 # Update vars.tf with your configuration
@@ -520,7 +520,7 @@ kubectl get deployment -n kube-system aws-load-balancer-controller
 
 **Option A: Using Terraform**
 ```bash
-cd infra-eks/deployment/prod/k8s_app
+cd infra-eks/deployment/app/k8s_app
 
 terraform init
 terraform plan -var="state_bucket_name=YOUR_BUCKET"
@@ -594,7 +594,7 @@ Check the "deployment-summary" job output for the application URL.
 **Manual:**
 ```bash
 # Destroy in reverse order
-cd infra-eks/deployment/prod/k8s_app && terraform destroy
+cd infra-eks/deployment/app/k8s_app && terraform destroy
 cd ../eks_node_group && terraform destroy
 cd ../eks_cluster && terraform destroy
 ```
@@ -675,7 +675,7 @@ cd ../eks_cluster && terraform destroy
 aws sts get-caller-identity
 
 # Verify VPC subnets exist
-cd infra/deployment/prod/vpc
+cd infra/deployment/app/vpc
 terraform output vpc_private_subnets
 terraform output vpc_public_subnets
 
@@ -880,7 +880,7 @@ aws ec2 describe-security-groups
 - [QUICKSTART.md](QUICKSTART.md) - 30-minute deployment guide
 - [ECS-vs-EKS-COMPARISON.md](ECS-vs-EKS-COMPARISON.md) - Detailed comparison
 - [DEPLOYMENT-APPROACHES.md](DEPLOYMENT-APPROACHES.md) - YAML vs Terraform
-- [deployment/prod/SHARED-RESOURCES.md](deployment/prod/SHARED-RESOURCES.md) - Shared resources
+- [deployment/app/SHARED-RESOURCES.md](deployment/app/SHARED-RESOURCES.md) - Shared resources
 - [workflows/README.md](workflows/README.md) - GitHub Actions guide
 
 ### External Resources

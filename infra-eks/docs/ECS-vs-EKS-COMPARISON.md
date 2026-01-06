@@ -80,7 +80,7 @@ infra/
 ├── modules/
 │   ├── ecs_cluster/       # Cluster + ASG
 │   └── ecs_service/       # Task Definition + Service
-└── deployment/prod/
+└── deployment/app/
     ├── ecs_cluster/
     └── ecs_service/
 ```
@@ -92,7 +92,7 @@ infra-eks/
 │   ├── eks_cluster/       # EKS Control Plane
 │   ├── eks_node_group/    # Worker Nodes
 │   └── k8s_app_deployment/
-├── deployment/prod/
+├── deployment/app/
 │   ├── eks_cluster/
 │   ├── eks_node_group/
 │   └── k8s_app/

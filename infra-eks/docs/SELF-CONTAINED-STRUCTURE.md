@@ -151,7 +151,7 @@ S3 Bucket: your-terraform-state-bucket/
 All modules are referenced using relative paths within `infra-eks/`:
 
 ```hcl
-# Example from deployment/prod/eks_cluster/config.tf
+# Example from deployment/app/eks_cluster/config.tf
 module "eks_cluster" {
   source = "../../../modules/eks_cluster"  # Stays within infra-eks/
   # ...
@@ -171,16 +171,16 @@ module "ecr" {
 All remote state references point to state files within the `deployment/` prefix:
 
 ```hcl
-# Example from deployment/prod/eks_cluster/config.tf
+# Example from deployment/app/eks_cluster/config.tf
 data "terraform_remote_state" "vpc" {
   backend = "s3"
   config = {
     bucket = var.state_bucket_name
-    key    = "deployment/prod/vpc/terraform.tfstate"  # EKS VPC
+    key    = "deployment/app/vpc/terraform.tfstate"  # EKS VPC
   }
 }
 
-# Example from deployment/prod/k8s_app/config.tf
+# Example from deployment/app/k8s_app/config.tf
 data "terraform_remote_state" "ecr" {
   backend = "s3"
   config = {
@@ -218,7 +218,7 @@ cd ../k8s_app && terraform apply
 
 ### EKS Has Its Own:
 
-1. **VPC** - `infra-eks/deployment/prod/vpc/`
+1. **VPC** - `infra-eks/deployment/app/vpc/`
    - CIDR: 10.0.0.0/16
    - 3 public subnets, 3 private subnets
    - Tagged for EKS and AWS Load Balancer Controller
@@ -235,15 +235,15 @@ cd ../k8s_app && terraform apply
    - DNS management
    - Required for SSL validation
 
-5. **EKS Cluster** - `infra-eks/deployment/prod/eks_cluster/`
+5. **EKS Cluster** - `infra-eks/deployment/app/eks_cluster/`
    - Kubernetes control plane
    - $72/month cost
 
-6. **EKS Node Group** - `infra-eks/deployment/prod/eks_node_group/`
+6. **EKS Node Group** - `infra-eks/deployment/app/eks_node_group/`
    - Worker nodes (EC2 instances)
    - Auto-scaling configuration
 
-7. **Kubernetes Application** - `infra-eks/deployment/prod/k8s_app/`
+7. **Kubernetes Application** - `infra-eks/deployment/app/k8s_app/`
    - Deployment, Service, Ingress, HPA
    - Creates ALB automatically
 
@@ -346,7 +346,7 @@ cd prod/vpc && terraform apply
 
 ```bash
 # Deploy new EKS cluster with new VPC
-cd infra-eks/deployment/prod/eks_cluster && terraform apply
+cd infra-eks/deployment/app/eks_cluster && terraform apply
 cd ../eks_node_group && terraform apply
 
 # Install Load Balancer Controller

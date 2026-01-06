@@ -216,15 +216,15 @@ jobs:
 
       - name: Initialise Terraform on the VPC directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/vpc
+        working-directory: infra-eks/deployment/app/vpc
 
       - name: Validate IaC changes on the VPC directory
         run: terraform plan -var-file="../../common.tfvars"
-        working-directory: infra-eks/deployment/prod/vpc
+        working-directory: infra-eks/deployment/app/vpc
 
       - name: Deploy the VPC
         run: terraform apply -var-file="../../common.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/vpc
+        working-directory: infra-eks/deployment/app/vpc
 
   deploy-eks-cluster:
     name: Deploy EKS Cluster
@@ -256,15 +256,15 @@ jobs:
 
       - name: Initialize Terraform on EKS cluster directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/eks_cluster
+        working-directory: infra-eks/deployment/app/eks_cluster
 
       - name: Validate IaC changes on EKS cluster directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
-        working-directory: infra-eks/deployment/prod/eks_cluster
+        working-directory: infra-eks/deployment/app/eks_cluster
 
       - name: Deploy EKS cluster
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/eks_cluster
+        working-directory: infra-eks/deployment/app/eks_cluster
 
       # Export job outputs for downstream job consumption
       - name: Fetch EKS cluster outputs
@@ -273,7 +273,7 @@ jobs:
           cluster_id=$(terraform output -raw cluster_id)
           echo "cluster_id=$cluster_id" >> $GITHUB_OUTPUT
           echo "EKS Cluster ID: $cluster_id"
-        working-directory: infra-eks/deployment/prod/eks_cluster
+        working-directory: infra-eks/deployment/app/eks_cluster
         env:
           TF_IN_AUTOMATION: true
 
@@ -308,15 +308,15 @@ jobs:
 
       - name: Initialize Terraform on EKS node group directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/eks_node_group
+        working-directory: infra-eks/deployment/app/eks_node_group
 
       - name: Validate IaC changes on EKS node group directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
-        working-directory: infra-eks/deployment/prod/eks_node_group
+        working-directory: infra-eks/deployment/app/eks_node_group
 
       - name: Deploy EKS node group
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/eks_node_group
+        working-directory: infra-eks/deployment/app/eks_node_group
 
       - name: Fetch EKS node group outputs
         id: get-node-group-output
@@ -327,7 +327,7 @@ jobs:
           echo "node_group_name=$node_group_name" >> $GITHUB_OUTPUT
           echo "EKS Node Group ID: $node_group_id"
           echo "EKS Node Group Name: $node_group_name"
-        working-directory: infra-eks/deployment/prod/eks_node_group
+        working-directory: infra-eks/deployment/app/eks_node_group
         env:
           TF_IN_AUTOMATION: true
 
@@ -367,15 +367,15 @@ jobs:
 
       - name: Initialize Terraform on AWS LB Controller directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/aws_lb_controller
+        working-directory: infra-eks/deployment/app/aws_lb_controller
 
       - name: Validate IaC changes on AWS LB Controller directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../backend.tfvars"
-        working-directory: infra-eks/deployment/prod/aws_lb_controller
+        working-directory: infra-eks/deployment/app/aws_lb_controller
 
       - name: Deploy AWS Load Balancer Controller
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/aws_lb_controller
+        working-directory: infra-eks/deployment/app/aws_lb_controller
 
   deploy-k8s-application:
     name: Deploy Kubernetes Application
@@ -426,7 +426,7 @@ jobs:
 
       - name: Initialize Terraform on K8s app directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/k8s_app
+        working-directory: infra-eks/deployment/app/k8s_app
 
       - name: Create runtime tfvars with image tag
         run: |
@@ -436,15 +436,15 @@ jobs:
           EOF
           echo "Created runtime.auto.tfvars with image_tag:"
           cat runtime.auto.tfvars
-        working-directory: infra-eks/deployment/prod/k8s_app
+        working-directory: infra-eks/deployment/app/k8s_app
 
       - name: Validate IaC changes on K8s app directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars"
-        working-directory: infra-eks/deployment/prod/k8s_app
+        working-directory: infra-eks/deployment/app/k8s_app
 
       - name: Deploy Kubernetes application
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/k8s_app
+        working-directory: infra-eks/deployment/app/k8s_app
 
       - name: Debug pods on failure
         if: failure()
@@ -471,7 +471,7 @@ jobs:
           application_url=$(terraform output -raw application_url || echo "Not available yet")
           echo "application_url=$application_url" >> $GITHUB_OUTPUT
           echo "Application URL: $application_url"
-        working-directory: infra-eks/deployment/prod/k8s_app
+        working-directory: infra-eks/deployment/app/k8s_app
         env:
           TF_IN_AUTOMATION: true
 
@@ -554,15 +554,15 @@ jobs:
 
       - name: Initialise Terraform on the routing directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/routing
+        working-directory: infra-eks/deployment/app/routing
 
       - name: Validate IaC changes on the routing directory
         run: terraform plan -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars"
-        working-directory: infra-eks/deployment/prod/routing
+        working-directory: infra-eks/deployment/app/routing
 
       - name: Deploy the Route53 DNS record
         run: terraform apply -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/routing
+        working-directory: infra-eks/deployment/app/routing
 
   deployment-summary:
     name: Deployment Summary

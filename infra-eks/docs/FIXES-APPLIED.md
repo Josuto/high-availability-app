@@ -5,7 +5,7 @@ This document summarizes the corrections made to ensure the EKS infrastructure i
 ## Issue 1: Incorrect Variable Names in eks_node_group Configuration
 
 ### Problem
-The `infra-eks/deployment/prod/eks_node_group/config.tf` file was passing incorrect variable names to the `eks_node_group` module, causing Terraform validation errors:
+The `infra-eks/deployment/app/eks_node_group/config.tf` file was passing incorrect variable names to the `eks_node_group` module, causing Terraform validation errors:
 
 - ❌ `eks_cluster_endpoint` (incorrect)
 - ❌ `eks_cluster_ca_data` (incorrect)
@@ -17,7 +17,7 @@ Initially updated the configuration to use the correct variable names. However, 
 
 **Current Configuration (Simplified):**
 ```hcl
-# infra-eks/deployment/prod/eks_node_group/config.tf
+# infra-eks/deployment/app/eks_node_group/config.tf
 module "eks_node_group" {
   source = "../../../modules/eks_node_group"
 
@@ -42,7 +42,7 @@ module "eks_node_group" {
 The Terraform state paths in configuration files referenced `deployment/` but the actual folder was named `deployment/`:
 
 - **Folder:** `infra-eks/deployment/`
-- **State paths:** `deployment/prod/vpc/terraform.tfstate`
+- **State paths:** `deployment/app/vpc/terraform.tfstate`
 - **Documentation:** References to both `deployment/` and `deployment/`
 
 This inconsistency would cause confusion and potential errors when looking for resources.
@@ -71,7 +71,7 @@ Renamed the folder to match the state path convention:
      - IMPLEMENTATION-SUMMARY.md
      - SELF-CONTAINED-STRUCTURE.md
      - workflows/README.md
-     - deployment/prod/SHARED-RESOURCES.md
+     - deployment/app/SHARED-RESOURCES.md
 
 3. **Module source paths remain unchanged:**
    - Relative paths like `../../modules/ecr` still work correctly
@@ -121,7 +121,7 @@ S3: your-state-bucket/
 ### Check Terraform Configuration
 ```bash
 # Should now pass validation
-cd infra-eks/deployment/prod/eks_node_group
+cd infra-eks/deployment/app/eks_node_group
 terraform init
 terraform validate
 ```
@@ -155,7 +155,7 @@ grep -r "infra-eks/deployment/" infra-eks/*.md
 ## Related Files Modified
 
 1. **Configuration File:**
-   - `infra-eks/deployment/prod/eks_node_group/config.tf`
+   - `infra-eks/deployment/app/eks_node_group/config.tf`
 
 2. **Documentation Files (path references updated):**
    - `infra-eks/README.md`
@@ -166,7 +166,7 @@ grep -r "infra-eks/deployment/" infra-eks/*.md
    - `infra-eks/IMPLEMENTATION-SUMMARY.md`
    - `infra-eks/SELF-CONTAINED-STRUCTURE.md`
    - `.github/workflows/eks/README.md`
-   - `infra-eks/deployment/prod/SHARED-RESOURCES.md`
+   - `infra-eks/deployment/app/SHARED-RESOURCES.md`
 
 3. **Folder Renamed:**
    - `infra-eks/deployment/` → `infra-eks/deployment/`
@@ -184,7 +184,7 @@ These fixes do **NOT** break any existing deployments because:
 You can now proceed with deploying the EKS infrastructure:
 
 ```bash
-cd infra-eks/deployment/prod/eks_cluster
+cd infra-eks/deployment/app/eks_cluster
 terraform init
 terraform validate
 terraform plan

@@ -31,11 +31,11 @@ jobs:
 
       - name: Initialize Terraform on the routing directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/routing
+        working-directory: infra-eks/deployment/app/routing
 
       - name: Destroy Resources on the routing directory
         run: terraform destroy -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/routing
+        working-directory: infra-eks/deployment/app/routing
 
   destroy-k8s-application:
     name: Destroy Kubernetes Application
@@ -76,7 +76,7 @@ jobs:
           cluster_id=$(terraform output -raw cluster_id 2>/dev/null || echo "")
           echo "cluster_id=$cluster_id" >> $GITHUB_OUTPUT
           echo "EKS Cluster ID: $cluster_id"
-        working-directory: infra-eks/deployment/prod/eks_cluster
+        working-directory: infra-eks/deployment/app/eks_cluster
         continue-on-error: true
 
       - name: Configure kubectl for EKS (if cluster exists)
@@ -105,11 +105,11 @@ jobs:
 
       - name: Initialize Terraform on K8s app directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/k8s_app
+        working-directory: infra-eks/deployment/app/k8s_app
 
       - name: Destroy Kubernetes application via Terraform
         run: terraform destroy -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/k8s_app
+        working-directory: infra-eks/deployment/app/k8s_app
         continue-on-error: true
 
       - name: Verify all Ingress resources are deleted
@@ -152,12 +152,12 @@ jobs:
 
       - name: Initialize Terraform on AWS LB Controller directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/aws_lb_controller
+        working-directory: infra-eks/deployment/app/aws_lb_controller
         continue-on-error: true
 
       - name: Destroy AWS Load Balancer Controller
         run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/aws_lb_controller
+        working-directory: infra-eks/deployment/app/aws_lb_controller
         continue-on-error: true
 
   destroy-eks-node-group:
@@ -187,11 +187,11 @@ jobs:
 
       - name: Initialize Terraform on EKS node group directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/eks_node_group
+        working-directory: infra-eks/deployment/app/eks_node_group
 
       - name: Destroy EKS node group
         run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/eks_node_group
+        working-directory: infra-eks/deployment/app/eks_node_group
 
       - name: Verify node group deletion
         run: |
@@ -231,7 +231,7 @@ jobs:
           cluster_id=$(terraform output -raw cluster_id 2>/dev/null || echo "")
           echo "cluster_id=$cluster_id" >> $GITHUB_OUTPUT
           echo "Destroying EKS Cluster: $cluster_id"
-        working-directory: infra-eks/deployment/prod/eks_cluster
+        working-directory: infra-eks/deployment/app/eks_cluster
 
       - name: Delete OIDC provider manually (if exists)
         if: steps.get-cluster-name.outputs.cluster_id != ''
@@ -250,11 +250,11 @@ jobs:
 
       - name: Initialize Terraform on EKS cluster directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/eks_cluster
+        working-directory: infra-eks/deployment/app/eks_cluster
 
       - name: Destroy EKS cluster
         run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/eks_cluster
+        working-directory: infra-eks/deployment/app/eks_cluster
 
       - name: Verify cluster deletion
         run: |
@@ -432,11 +432,11 @@ jobs:
 
       - name: Initialize Terraform on the VPC directory
         run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
-        working-directory: infra-eks/deployment/prod/vpc
+        working-directory: infra-eks/deployment/app/vpc
 
       - name: Destroy Resources on the VPC directory
         run: terraform destroy -var-file="../../common.tfvars" -auto-approve
-        working-directory: infra-eks/deployment/prod/vpc
+        working-directory: infra-eks/deployment/app/vpc
 
   destruction-summary:
     name: Destruction Summary

@@ -94,7 +94,7 @@ Same tagging strategy as your ECS implementation!
 
 The following are **not** included to avoid conflicts with existing infrastructure:
 
-❌ **VPC Module** - Reuse your existing VPC from `infra/deployment/prod/vpc`
+❌ **VPC Module** - Reuse your existing VPC from `infra/deployment/app/vpc`
 ❌ **ECR Module** - Reuse your existing ECR from `infra/deployment/ecr`
 ❌ **ALB Module** - AWS Load Balancer Controller creates ALBs automatically
 ❌ **SSL Module** - Reuse your existing ACM certificate
@@ -107,8 +107,8 @@ The following are **not** included to avoid conflicts with existing infrastructu
 |---------------------|---------------------|--------|
 | infra/modules/ecs_cluster | infra-eks/modules/eks_cluster | ✅ Created |
 | infra/modules/ecs_service | infra-eks/k8s-manifests/deployment.yaml | ✅ Created |
-| infra/deployment/prod/ecs_cluster | infra-eks/deployment/prod/eks_cluster | ⏳ Template ready |
-| infra/deployment/prod/ecs_service | infra-eks/deployment/prod/k8s_app | ⏳ Template ready |
+| infra/deployment/app/ecs_cluster | infra-eks/deployment/app/eks_cluster | ⏳ Template ready |
+| infra/deployment/app/ecs_service | infra-eks/deployment/app/k8s_app | ⏳ Template ready |
 | ECS Task Definition (JSON) | Kubernetes Deployment (YAML) | ✅ Example provided |
 | ECS Service | Kubernetes Service + Ingress | ✅ Example provided |
 | ECS Auto Scaling | Horizontal Pod Autoscaler | ✅ Example provided |
@@ -212,7 +212,7 @@ EKS control plane cost is **shared** across all applications:
 
 **Equivalent to:**
 - ECS Service Auto Scaling
-- `infra/deployment/prod/ecs_service/task_autoscaling.tf`
+- `infra/deployment/app/ecs_service/task_autoscaling.tf`
 
 ## How It Works With Your Existing Setup
 
@@ -261,7 +261,7 @@ Follow [QUICKSTART.md](./QUICKSTART.md) to:
 ### Path 3: Production Deployment (1 day)
 
 1. Customize `vars.tf` files for your needs
-2. Set up deployment configurations in `deployment/prod/`
+2. Set up deployment configurations in `deployment/app/`
 3. Install additional tools (Prometheus, ArgoCD)
 4. Set up CI/CD pipeline
 5. Migrate one service for testing
