@@ -1,0 +1,488 @@
+name: Destroy EKS Infrastructure
+
+on:
+  workflow_dispatch:  # Manual trigger
+
+env:
+  TERRAFORM_VERSION: 1.10.3
+  AWS_REGION: eu-west-1
+  KUBECTL_VERSION: 1.28.0
+
+jobs:
+
+  destroy-routing:
+    name: Destroy routing resources
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on the routing directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/app/routing
+
+      - name: Destroy Resources on the routing directory
+        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/app/routing
+
+  destroy-k8s-application:
+    name: Destroy Kubernetes Application
+    needs: destroy-routing
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/v${{ env.KUBECTL_VERSION }}/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          kubectl version --client
+
+      - name: Get EKS cluster name from Terraform state
+        id: get-cluster-name
+        run: |
+          terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+          cluster_id=$(terraform output -raw cluster_id 2>/dev/null || echo "")
+          echo "cluster_id=$cluster_id" >> $GITHUB_OUTPUT
+          echo "EKS Cluster ID: $cluster_id"
+        working-directory: infra-eks/deployment/app/eks_cluster
+        continue-on-error: true
+
+      - name: Configure kubectl for EKS (if cluster exists)
+        if: steps.get-cluster-name.outputs.cluster_id != ''
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ steps.get-cluster-name.outputs.cluster_id }} \
+            --region ${{ env.AWS_REGION }} || echo "Failed to configure kubectl"
+        continue-on-error: true
+
+      - name: Delete all LoadBalancer services manually (cleanup ALBs)
+        if: steps.get-cluster-name.outputs.cluster_id != ''
+        run: |
+          echo "Deleting LoadBalancer services to cleanup ALBs..."
+          kubectl delete svc --all-namespaces --selector=type=LoadBalancer --wait=true || echo "No LoadBalancer services found"
+          sleep 30  # Wait for ALBs to be deleted
+        continue-on-error: true
+
+      - name: Delete all Ingress resources manually (cleanup ALBs)
+        if: steps.get-cluster-name.outputs.cluster_id != ''
+        run: |
+          echo "Deleting Ingress resources to cleanup ALBs..."
+          kubectl delete ingress --all-namespaces --all --wait=true || echo "No Ingress resources found"
+          sleep 60  # Wait for ALBs to be fully deleted
+        continue-on-error: true
+
+      - name: Initialize Terraform on K8s app directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/app/k8s_app
+
+      - name: Destroy Kubernetes application via Terraform
+        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../domain.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/app/k8s_app
+        continue-on-error: true
+
+      - name: Verify all Ingress resources are deleted
+        if: steps.get-cluster-name.outputs.cluster_id != ''
+        run: |
+          echo "Verifying Ingress deletion..."
+          remaining=$(kubectl get ingress --all-namespaces 2>/dev/null | wc -l)
+          if [ "$remaining" -gt 1 ]; then
+            echo "Warning: Some Ingress resources still exist"
+            kubectl get ingress --all-namespaces
+          else
+            echo "All Ingress resources deleted successfully"
+          fi
+        continue-on-error: true
+
+  uninstall-aws-load-balancer-controller:
+    name: Uninstall AWS Load Balancer Controller
+    needs: destroy-k8s-application
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on AWS LB Controller directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/app/aws_lb_controller
+        continue-on-error: true
+
+      - name: Destroy AWS Load Balancer Controller
+        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/app/aws_lb_controller
+        continue-on-error: true
+
+  destroy-eks-node-group:
+    name: Destroy EKS Node Group
+    needs: uninstall-aws-load-balancer-controller
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on EKS node group directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/app/eks_node_group
+
+      - name: Destroy EKS node group
+        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/app/eks_node_group
+
+      - name: Verify node group deletion
+        run: |
+          echo "Verifying node group deletion..."
+          sleep 60  # Wait for deletion to propagate
+          echo "Node group destroyed successfully"
+
+  destroy-eks-cluster:
+    name: Destroy EKS Cluster
+    needs: destroy-eks-node-group
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get cluster name before destruction
+        id: get-cluster-name
+        run: |
+          terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+          cluster_id=$(terraform output -raw cluster_id 2>/dev/null || echo "")
+          echo "cluster_id=$cluster_id" >> $GITHUB_OUTPUT
+          echo "Destroying EKS Cluster: $cluster_id"
+        working-directory: infra-eks/deployment/app/eks_cluster
+
+      - name: Delete OIDC provider manually (if exists)
+        if: steps.get-cluster-name.outputs.cluster_id != ''
+        run: |
+          oidc_id=$(aws eks describe-cluster \
+            --name ${{ steps.get-cluster-name.outputs.cluster_id }} \
+            --region ${{ env.AWS_REGION }} \
+            --query "cluster.identity.oidc.issuer" \
+            --output text | sed 's/https:\/\///' | awk -F'/' '{print $NF}')
+
+          if [ ! -z "$oidc_id" ]; then
+            oidc_arn="arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):oidc-provider/oidc.eks.${{ env.AWS_REGION }}.amazonaws.com/id/$oidc_id"
+            aws iam delete-open-id-connect-provider --open-id-connect-provider-arn "$oidc_arn" || echo "OIDC provider not found or already deleted"
+          fi
+        continue-on-error: true
+
+      - name: Initialize Terraform on EKS cluster directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/app/eks_cluster
+
+      - name: Destroy EKS cluster
+        run: terraform destroy -var-file="../../common.tfvars" -var-file="../../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/app/eks_cluster
+
+      - name: Verify cluster deletion
+        run: |
+          echo "Verifying EKS cluster deletion..."
+          sleep 60
+          if aws eks describe-cluster --name ${{ steps.get-cluster-name.outputs.cluster_id }} --region ${{ env.AWS_REGION }} 2>/dev/null; then
+            echo "Warning: Cluster still exists"
+          else
+            echo "EKS cluster deleted successfully"
+          fi
+        continue-on-error: true
+
+  cleanup-orphaned-resources:
+    name: Cleanup Orphaned Resources
+    needs: destroy-eks-cluster
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Check for orphaned ALBs
+        run: |
+          echo "Checking for orphaned Application Load Balancers..."
+          albs=$(aws elbv2 describe-load-balancers \
+            --query "LoadBalancers[?contains(LoadBalancerName, 'k8s')].LoadBalancerArn" \
+            --output text)
+
+          if [ ! -z "$albs" ]; then
+            echo "Warning: Found potential orphaned ALBs:"
+            echo "$albs"
+            echo "Please manually delete these ALBs if they are no longer needed"
+          else
+            echo "No orphaned ALBs found"
+          fi
+        continue-on-error: true
+
+      - name: Check for orphaned Security Groups
+        run: |
+          echo "Checking for orphaned EKS security groups..."
+          sgs=$(aws ec2 describe-security-groups \
+            --filters "Name=tag:kubernetes.io/cluster/*,Values=owned" \
+            --query "SecurityGroups[].GroupId" \
+            --output text)
+
+          if [ ! -z "$sgs" ]; then
+            echo "Warning: Found potential orphaned security groups:"
+            echo "$sgs"
+            echo "These will be cleaned up automatically by AWS after some time"
+          else
+            echo "No orphaned security groups found"
+          fi
+        continue-on-error: true
+
+      - name: Check for orphaned ENIs
+        run: |
+          echo "Checking for orphaned Elastic Network Interfaces..."
+          enis=$(aws ec2 describe-network-interfaces \
+            --filters "Name=description,Values=*eks*" "Name=status,Values=available" \
+            --query "NetworkInterfaces[].NetworkInterfaceId" \
+            --output text)
+
+          if [ ! -z "$enis" ]; then
+            echo "Warning: Found orphaned ENIs:"
+            echo "$enis"
+            echo "These will be cleaned up automatically by AWS after some time"
+          else
+            echo "No orphaned ENIs found"
+          fi
+        continue-on-error: true
+
+  destroy-ssl:
+    name: Destroy SSL certificate-related resources
+    needs: destroy-eks-cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on the SSL directory
+        run: terraform init -backend-config="../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/ssl
+
+      - name: Destroy Resources on the SSL directory
+        run: terraform destroy -var-file="../common.tfvars" -var-file="../domain.tfvars" -var-file="../backend.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/ssl
+
+  destroy-ecr:
+    name: Destroy ECR-related resources
+    runs-on: ubuntu-latest
+    needs: destroy-eks-cluster
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get ECR repository name from remote state
+        id: get_ecr_repository_name
+        run: |
+          terraform init -backend-config="../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+          echo "ECR_REPOSITORY_NAME=$(terraform output -raw ecr_repository_name)" >> $GITHUB_ENV
+        working-directory: infra-eks/deployment/ecr
+        env:
+          TF_IN_AUTOMATION: true
+
+      - name: Delete existing app images
+        run: |
+          IMAGE_IDS=$(aws ecr list-images --repository-name ${{ env.ECR_REPOSITORY_NAME }} --query 'imageIds[*]' --output json --region ${{ env.AWS_REGION }})
+          if [ "$IMAGE_IDS" != "[]" ]; then
+            aws ecr batch-delete-image \
+              --repository-name ${{ env.ECR_REPOSITORY_NAME }} \
+              --image-ids "$IMAGE_IDS" \
+              --region ${{ env.AWS_REGION }}
+          else
+            echo "No images to delete in ECR repository."
+          fi
+
+      - name: Destroy resources on the ECR directory
+        run: terraform destroy -var-file="../common.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/ecr
+
+  destroy-vpc:
+    name: Destroy VPC-related resources
+    needs: [destroy-ssl, destroy-ecr, cleanup-orphaned-resources]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code from the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Initialize Terraform on the VPC directory
+        run: terraform init -backend-config="../../backend-config.hcl" -backend-config="region=${{ env.AWS_REGION }}"
+        working-directory: infra-eks/deployment/app/vpc
+
+      - name: Destroy Resources on the VPC directory
+        run: terraform destroy -var-file="../../common.tfvars" -auto-approve
+        working-directory: infra-eks/deployment/app/vpc
+
+  destruction-summary:
+    name: Destruction Summary
+    needs: [destroy-k8s-application, uninstall-aws-load-balancer-controller, destroy-eks-node-group, destroy-eks-cluster, cleanup-orphaned-resources, destroy-ssl, destroy-ecr, destroy-vpc]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Display destruction summary
+        run: |
+          cat << 'EOF'
+          ╔════════════════════════════════════════════════════════════════╗
+          ║           EKS Infrastructure Destruction Complete              ║
+          ╚════════════════════════════════════════════════════════════════╝
+
+          Destroyed Resources:
+          ✓ Kubernetes Application (Deployment, Service, Ingress, HPA)
+          ✓ AWS Load Balancer Controller
+          ✓ EKS Node Group
+          ✓ EKS Cluster
+          ✓ Associated IAM roles and OIDC providers
+          ✓ SSL Certificate
+          ✓ ECR Repository (images deleted)
+          ✓ VPC
+
+          Important Notes:
+          1. All EKS infrastructure has been destroyed
+          2. Terraform state bucket still exists (contains state files)
+          3. Route53 hosted zone still exists (if created)
+          4. Check AWS Console for any orphaned resources
+          5. Some resources may take a few minutes to fully delete
+
+          To destroy hosted zone and state bucket, run:
+          'Destroy Route53 Hosted Zone and State Bucket (EKS)' workflow
+
+          ╚════════════════════════════════════════════════════════════════╝
+          EOF
+
+      - name: Check job statuses
+        run: |
+          echo "Job Status Summary:"
+          echo "  K8s Application: ${{ needs.destroy-k8s-application.result }}"
+          echo "  Load Balancer Controller: ${{ needs.uninstall-aws-load-balancer-controller.result }}"
+          echo "  Node Group: ${{ needs.destroy-eks-node-group.result }}"
+          echo "  EKS Cluster: ${{ needs.destroy-eks-cluster.result }}"
+          echo "  Cleanup: ${{ needs.cleanup-orphaned-resources.result }}"
+          echo "  SSL: ${{ needs.destroy-ssl.result }}"
+          echo "  ECR: ${{ needs.destroy-ecr.result }}"
+          echo "  VPC: ${{ needs.destroy-vpc.result }}"

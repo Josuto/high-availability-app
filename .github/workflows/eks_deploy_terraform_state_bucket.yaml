@@ -1,4 +1,4 @@
-name: Deploy Terraform State Bucket
+name: Deploy Terraform State Bucket (EKS)
 
 on:
   workflow_call:
@@ -17,11 +17,11 @@ on:
 
 env:
   AWS_REGION: eu-west-1
-  TERRAFORM_VERSION: 1.10.3 # Update to version when needed
+  TERRAFORM_VERSION: 1.10.3
 
 jobs:
   deploy-terraform-state-bucket:
-    name: Deploy Terraform State Bucket
+    name: Deploy Terraform State Bucket (EKS)
     runs-on: ubuntu-latest
 
     # Skip this job if the commit message starts with 'ci:' or 'docs:'
@@ -34,7 +34,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: ${{env.TERRAFORM_VERSION}}
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -54,4 +54,4 @@ jobs:
             terraform plan -var-file="../common.tfvars" -var-file="../backend.tfvars"
             terraform apply -var-file="../common.tfvars" -var-file="../backend.tfvars" -auto-approve
           fi
-        working-directory: infra-ecs/deployment/backend
+        working-directory: infra-eks/deployment/backend
