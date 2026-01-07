@@ -86,7 +86,7 @@ This EKS implementation provides a complete Kubernetes-based alternative to the 
 | **ECS Service** | Kubernetes Service | [k8s-manifests/service.yaml](k8s-manifests/service.yaml) |
 | **Target Group + ALB** | Ingress + AWS LB Controller | [k8s-manifests/ingress.yaml](k8s-manifests/ingress.yaml) |
 | **Service Auto Scaling** | Horizontal Pod Autoscaler | [k8s-manifests/hpa.yaml](k8s-manifests/hpa.yaml) |
-| **Task Role** | Service Account + IRSA | [modules/k8s_app_deployment/main.tf](modules/k8s_app_deployment/main.tf) |
+| **Task Role** | Service Account + IRSA | [modules/k8s_app/main.tf](modules/k8s_app/main.tf) |
 
 ## Directory Structure
 
@@ -112,7 +112,7 @@ infra-eks/
 │   │   # Note: AWS EKS automatically handles node bootstrapping
 │   │   # (joining cluster, authentication) for managed node groups
 │   │
-│   └── k8s_app_deployment/                    # Kubernetes application
+│   └── k8s_app/                    # Kubernetes application
 │       ├── main.tf                            # Deployment + ServiceAccount
 │       ├── service.tf                         # Kubernetes Service
 │       ├── ingress.tf                         # Ingress (creates ALB)
@@ -282,7 +282,7 @@ These resources are only used by EKS:
 
 ### 3. Kubernetes Application
 
-**Module:** [modules/k8s_app_deployment/](modules/k8s_app_deployment/)
+**Module:** [modules/k8s_app/](modules/k8s_app/)
 
 **Deployment:** [deployment/app/k8s_app/](deployment/app/k8s_app/)
 
@@ -348,7 +348,7 @@ kubectl apply -f infra-eks/k8s-manifests-generated/
 
 ### Approach 2: Terraform Kubernetes Provider
 
-**Module:** [modules/k8s_app_deployment/](modules/k8s_app_deployment/)
+**Module:** [modules/k8s_app/](modules/k8s_app/)
 
 **Deployment:** [deployment/app/k8s_app/](deployment/app/k8s_app/)
 

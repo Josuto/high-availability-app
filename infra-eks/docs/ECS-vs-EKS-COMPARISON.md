@@ -91,7 +91,7 @@ infra-eks/
 ├── modules/
 │   ├── eks_cluster/       # EKS Control Plane
 │   ├── eks_node_group/    # Worker Nodes
-│   └── k8s_app_deployment/
+│   └── k8s_app/
 ├── deployment/app/
 │   ├── eks_cluster/
 │   ├── eks_node_group/

@@ -7,7 +7,7 @@ This document explains the relationship between the two different approaches for
 This repository provides **two alternative approaches** for deploying the same Kubernetes resources:
 
 1. **[k8s-manifests/](k8s-manifests/)** - Raw YAML manifests deployed with `kubectl`
-2. **[modules/k8s_app_deployment/](modules/k8s_app_deployment/)** - Terraform module using the Kubernetes provider
+2. **[modules/k8s_app/](modules/k8s_app/)** - Terraform module using the Kubernetes provider
 
 Both deploy the exact same resources (Deployment, Service, Ingress, HPA), just using different tools.
 
@@ -74,21 +74,21 @@ kubectl get ingress
 kubectl get hpa
 ```
 
-### Approach 2: Terraform Kubernetes Provider (modules/k8s_app_deployment/)
+### Approach 2: Terraform Kubernetes Provider (modules/k8s_app/)
 
 **Location:**
-- Module: [modules/k8s_app_deployment/](modules/k8s_app_deployment/)
+- Module: [modules/k8s_app/](modules/k8s_app/)
 - Deployment: [deployment/app/k8s_app/](deployment/app/k8s_app/)
 
 **Module Files:**
-- [main.tf](modules/k8s_app_deployment/main.tf) - Kubernetes Deployment resource
-- [service.tf](modules/k8s_app_deployment/service.tf) - Kubernetes Service resource
-- [ingress.tf](modules/k8s_app_deployment/ingress.tf) - Kubernetes Ingress resource
-- [hpa.tf](modules/k8s_app_deployment/hpa.tf) - HPA resource
-- [vars.tf](modules/k8s_app_deployment/vars.tf) - Input variables
-- [outputs.tf](modules/k8s_app_deployment/outputs.tf) - Module outputs
-- [locals.tf](modules/k8s_app_deployment/locals.tf) - Common tags and labels
-- [versions.tf](modules/k8s_app_deployment/versions.tf) - Provider versions
+- [main.tf](modules/k8s_app/main.tf) - Kubernetes Deployment resource
+- [service.tf](modules/k8s_app/service.tf) - Kubernetes Service resource
+- [ingress.tf](modules/k8s_app/ingress.tf) - Kubernetes Ingress resource
+- [hpa.tf](modules/k8s_app/hpa.tf) - HPA resource
+- [vars.tf](modules/k8s_app/vars.tf) - Input variables
+- [outputs.tf](modules/k8s_app/outputs.tf) - Module outputs
+- [locals.tf](modules/k8s_app/locals.tf) - Common tags and labels
+- [versions.tf](modules/k8s_app/versions.tf) - Provider versions
 
 **Deployment Method:**
 ```bash
@@ -143,7 +143,7 @@ terraform output application_url
 
 ## Comparison Matrix
 
-| Aspect | k8s-manifests/ (YAML) | k8s_app_deployment (Terraform) |
+| Aspect | k8s-manifests/ (YAML) | k8s_app (Terraform) |
 |--------|----------------------|--------------------------------|
 | **Deployment Tool** | `kubectl` | `terraform` |
 | **Configuration Format** | YAML | HCL (Terraform) |
@@ -188,7 +188,7 @@ Infrastructure Team (Terraform)     Application Team (YAML)
 └── Security Groups                 └── Secrets
 ```
 
-### Choose **k8s_app_deployment** (Terraform) if you:
+### Choose **k8s_app** (Terraform) if you:
 
 ✅ Want **unified tooling** - Everything deployed with Terraform
 ✅ Have a **small team** - Same people manage infrastructure and apps
@@ -241,7 +241,7 @@ data "terraform_remote_state" "ecr" {
 }
 
 module "k8s_app" {
-  source = "../../../modules/k8s_app_deployment"
+  source = "../../../modules/k8s_app"
   ecr_repository_url = data.terraform_remote_state.ecr.outputs.ecr_repository_url  # ✅ Automatic
 }
 ```
@@ -445,7 +445,7 @@ terraform import kubernetes_service.app default/nestjs-app-service
 terraform show
 
 # 3. Refactor into module
-mv generated.tf modules/k8s_app_deployment/main.tf
+mv generated.tf modules/k8s_app/main.tf
 
 # 4. Apply with Terraform
 terraform apply
@@ -487,7 +487,7 @@ Since the goal is to compare ECS vs EKS, I recommend:
 - More representative of real-world K8s usage
 - Better learning experience
 
-**Secondary Approach: Terraform Module** ([modules/k8s_app_deployment/](modules/k8s_app_deployment/))
+**Secondary Approach: Terraform Module** ([modules/k8s_app/](modules/k8s_app/))
 - Keep for demonstration purposes
 - Shows unified Terraform workflow
 - Useful for teams already using Terraform everywhere
@@ -514,7 +514,7 @@ Both approaches deploy identical Kubernetes resources:
 
 | What | YAML Approach | Terraform Approach |
 |------|---------------|-------------------|
-| **Files** | [k8s-manifests/](k8s-manifests/) | [modules/k8s_app_deployment/](modules/k8s_app_deployment/) + [deployment/app/k8s_app/](deployment/app/k8s_app/) |
+| **Files** | [k8s-manifests/](k8s-manifests/) | [modules/k8s_app/](modules/k8s_app/) + [deployment/app/k8s_app/](deployment/app/k8s_app/) |
 | **Tool** | `kubectl` | `terraform` |
 | **When** | ⭐ Recommended for most teams | Use if all-Terraform workflow |
 | **Why** | Industry standard, GitOps-friendly | Unified tooling, automatic integration |

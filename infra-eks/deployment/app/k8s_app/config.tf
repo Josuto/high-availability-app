@@ -40,7 +40,7 @@ data "terraform_remote_state" "acm" {
 #####################################
 
 module "k8s_app" {
-  source = "../../../modules/k8s_app_deployment"
+  source = "../../../modules/k8s_app"
 
   # Project Configuration
   project_name = var.project_name

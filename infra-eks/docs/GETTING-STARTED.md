@@ -55,7 +55,7 @@ Your AWS Account
 Three reusable modules:
 - `eks_cluster/` - EKS control plane with security and logging
 - `eks_node_group/` - Managed worker nodes with auto-scaling
-- `k8s_app_deployment/` - Kubernetes application deployment
+- `k8s_app/` - Kubernetes application deployment
 
 ### 2. Production Deployments
 

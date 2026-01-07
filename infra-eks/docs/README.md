@@ -39,7 +39,7 @@ infra-eks/
 │   │   # Note: AWS EKS automatically handles node bootstrapping
 │   │   # for managed node groups. No custom user data needed.
 │   │
-│   └── k8s_app_deployment/    # Kubernetes manifests via Terraform
+│   └── k8s_app/    # Kubernetes manifests via Terraform
 │       ├── main.tf
 │       ├── deployment.tf
 │       ├── service.tf

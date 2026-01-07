@@ -37,7 +37,7 @@ infra-eks/                                      # Self-contained EKS infrastruct
 │   ├── hosted_zone/                            # Route53 hosted zone (copied from infra/)
 │   ├── eks_cluster/                            # EKS control plane (EKS-specific)
 │   ├── eks_node_group/                         # EKS worker nodes (EKS-specific)
-│   └── k8s_app_deployment/                     # Kubernetes app (EKS-specific)
+│   └── k8s_app/                     # Kubernetes app (EKS-specific)
 │
 ├── deployment/                                 # All deployment configurations
 │   │

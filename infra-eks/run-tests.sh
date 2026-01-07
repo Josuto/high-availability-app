@@ -149,7 +149,7 @@ run_module_tests "ssl" "tests/unit/ssl.tftest.hcl" || ANY_FAILED=true
 run_module_tests "eks_cluster" "tests/unit/eks_cluster.tftest.hcl" || ANY_FAILED=true
 run_module_tests "eks_node_group" "tests/unit/eks_node_group.tftest.hcl" || ANY_FAILED=true
 run_module_tests "aws_lb_controller" "tests/unit/aws_lb_controller.tftest.hcl" || ANY_FAILED=true
-run_module_tests "k8s_app_deployment" "tests/unit/k8s_app_deployment.tftest.hcl" || ANY_FAILED=true
+run_module_tests "k8s_app" "tests/unit/k8s_app.tftest.hcl" || ANY_FAILED=true
 
 # Re-enable exit on error
 set -e

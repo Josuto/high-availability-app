@@ -8,7 +8,7 @@ locals {
     Project     = var.project_name
     Environment = var.environment
     ManagedBy   = "Terraform"
-    Module      = "k8s_app_deployment"
+    Module      = "k8s_app"
     CreatedDate = timestamp()
   }
 

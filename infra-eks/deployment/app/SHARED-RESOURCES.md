@@ -279,7 +279,7 @@ data "terraform_remote_state" "acm" {
 }
 
 module "k8s_app" {
-  source = "../../../modules/k8s_app_deployment"
+  source = "../../../modules/k8s_app"
 
   ecr_repository_url  = data.terraform_remote_state.ecr.outputs.ecr_repository_url
   acm_certificate_arn = data.terraform_remote_state.acm.outputs.acm_certificate_validation_arn
