@@ -31,9 +31,8 @@ This directory contains the complete Terraform infrastructure for deploying a hi
    - [5.3. Infrastructure Teardown](#53-infrastructure-teardown)
 6. [Terraform Testing](#6-terraform-testing)
    - [6.1. Running Tests](#61-running-tests)
-   - [6.2. Maintenance](#62-maintenance)
-   - [6.3. Troubleshooting](#63-troubleshooting)
-   - [6.4. Test Files Explained](#64-test-files-explained)
+   - [6.2. Troubleshooting](#62-troubleshooting)
+   - [6.3. Test Files Explained](#63-test-files-explained)
 7. [Project Structure](#7-project-structure)
 
 ---
@@ -1200,41 +1199,11 @@ chmod +x run-tests.sh
 
 ---
 
-### 6.2. Maintenance
+### 6.2. Troubleshooting
 
-#### Adding a New Module Test
+For general troubleshooting advice on Terraform testing (test failures, permission errors, Terraform version issues, etc.), refer to the [Troubleshooting section in docs/TESTING.md](../docs/TESTING.md#troubleshooting).
 
-1. Create test file: `tests/unit/new_module.tftest.hcl`
-2. Add test run to script:
-   ```bash
-   run_module_tests "new_module" "tests/unit/new_module.tftest.hcl" || ANY_FAILED=true
-   ```
-3. Test locally: `./run-tests.sh`
-
-#### Skipping Tests (Not Recommended)
-
-**Pre-commit:**
-```bash
-git commit --no-verify
-```
-
-**Note:** CI/CD tests cannot be skipped and will still block deployments.
-
----
-
-### 6.3. Troubleshooting
-
-#### Tests Fail Locally But Pass in CI
-
-- Check Terraform version: `terraform version` (requires 1.7.0+)
-- Ensure modules are up to date: `cd infra-ecs && git pull`
-- Clean temporary files: `rm -rf tests/.tmp`
-
-#### Permission Denied Error
-
-```bash
-chmod +x run-tests.sh
-```
+This section covers ECS-specific testing issues:
 
 #### ECS Cluster Module Fails to Initialize
 
@@ -1254,24 +1223,15 @@ export AWS_DEFAULT_REGION="eu-west-1"
 - Mock credentials satisfy this requirement without making actual AWS API calls
 - CI/CD pipeline automatically provides these credentials
 
-#### Tests Take Too Long
-
-The script runs all tests sequentially. This is intentional to:
-- Ensure clean state between module tests
-- Avoid resource conflicts
-- Provide clear, isolated failure messages
-
-Typical run time: 1-3 minutes for all modules.
-
 ---
 
-### 6.4. Test Files Explained
+### 6.3. Test Files Explained
 
 All test files use Terraform's native testing framework (introduced in Terraform 1.6+). Tests use mock AWS credentials and validate module configuration without creating real resources.
 
 ---
 
-#### 5.2.1. alb.tftest.hcl
+#### 6.3.1. alb.tftest.hcl
 
 **Module Tested**: `modules/alb/`
 **Purpose**: Validates ALB configuration, listeners, target groups, and security groups.
@@ -1317,7 +1277,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 ---
 
-#### 5.2.2. ecr.tftest.hcl
+#### 6.3.2. ecr.tftest.hcl
 
 **Module Tested**: `modules/ecr/`
 **Purpose**: Validates ECR repository configuration, security settings, and lifecycle policies.
@@ -1364,7 +1324,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 ---
 
-#### 5.2.3. ecs_cluster.tftest.hcl
+#### 6.3.3. ecs_cluster.tftest.hcl
 
 **Module Tested**: `modules/ecs_cluster/`
 **Purpose**: Validates ECS cluster, Auto Scaling Group, Launch Template, and IAM configuration.
@@ -1414,7 +1374,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 ---
 
-#### 5.2.4. ecs_service.tftest.hcl
+#### 6.3.4. ecs_service.tftest.hcl
 
 **Module Tested**: `modules/ecs_service/`
 **Purpose**: Validates ECS task definition, service configuration, auto-scaling, and security.
@@ -1461,7 +1421,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 ---
 
-#### 5.2.5. ssl.tftest.hcl
+#### 6.3.5. ssl.tftest.hcl
 
 **Module Tested**: `modules/ssl/`
 **Purpose**: Validates ACM certificate configuration, DNS validation, SANs, and lifecycle rules.
