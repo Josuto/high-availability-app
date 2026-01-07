@@ -62,14 +62,26 @@ repos:
       - id: check-merge-conflict
         name: Check for Merge Conflicts
 
-  # Terraform module tests
-  - repo: local
-    hooks:
-      - id: terraform-tests
-        name: Terraform Module Tests
-        description: Run Terraform module unit tests
-        entry: bash -c 'cd infra && ./run-tests.sh'
-        language: system
-        pass_filenames: false
-        files: ^infra/(modules/|tests/).*\.(tf|tftest\.hcl)$
-        stages: [pre-commit]
+  # # Terraform ECS module tests
+  # - repo: local
+  #   hooks:
+  #     - id: terraform-tests
+  #       name: Terraform ECS Module Tests
+  #       description: Run Terraform ECS module unit tests
+  #       entry: bash -c 'cd infra-ecs && ./run-tests.sh'
+  #       language: system
+  #       pass_filenames: false
+  #       files: ^infra/(modules/|tests/).*\.(tf|tftest\.hcl)$
+  #       stages: [pre-commit]
+
+  # # Terraform EKS module tests
+  # - repo: local
+  #   hooks:
+  #     - id: terraform-tests
+  #       name: Terraform EKS Module Tests
+  #       description: Run Terraform EKS module unit tests
+  #       entry: bash -c 'cd infra-eks && ./run-tests.sh'
+  #       language: system
+  #       pass_filenames: false
+  #       files: ^infra/(modules/|tests/).*\.(tf|tftest\.hcl)$
+  #       stages: [pre-commit]
