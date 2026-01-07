@@ -2,6 +2,8 @@
 
 This document explains the Terraform testing framework for this project, including how to run tests locally, write new tests, and integrate tests into CI/CD pipelines.
 
+All examples are based on the ECS-based solution included at `infra-ecs/`. However, the testing principles and practices explained at this document apply the EKS-based approach at `infra-eks/` as well.
+
 ## Overview
 
 This project uses Terraform's native testing framework (available in Terraform 1.6+) to validate infrastructure as code. The testing strategy includes:
@@ -9,7 +11,7 @@ This project uses Terraform's native testing framework (available in Terraform 1
 - **Unit Tests**: Test individual modules in isolation to verify resource configuration
 - **Validation Tests**: Verify that variable validation rules work as expected
 
-## Test Structure
+## Test Structure (ECS Example)
 
 ```
 infra-ecs/
@@ -27,8 +29,6 @@ infra-ecs/
     ├── ecr/
     └── ssl/
 ```
-
-**Total: 34 test runs** covering all critical infrastructure components.
 
 ## Prerequisites
 
@@ -54,7 +54,6 @@ cd infra-ecs
 This script:
 - ✅ Validates all module syntax
 - ✅ Runs all unit tests
-- ✅ Provides colored output and clear pass/fail status
 - ✅ Same behavior as CI/CD and pre-commit hooks
 
 ### Alternative: Direct Terraform Test Commands
@@ -62,22 +61,13 @@ This script:
 You can also run specific tests directly using Terraform:
 
 ```bash
-# Test ALB module only
 cd infra-ecs
-# Follow manual test setup...
-
-# Or use terraform test with filters (requires proper setup)
+terraform init
+# Run only the ALB basic configuration test
 terraform test -filter=tests/unit/alb.tftest.hcl
 ```
 
 **Note**: Direct Terraform test commands require proper module initialization and path configuration. The `run-tests.sh` script handles this automatically.
-
-### Run a Specific Test Run
-
-```bash
-# Run only the ALB basic configuration test
-terraform test -filter=tests/unit/alb.tftest.hcl -verbose
-```
 
 ### Verbose Output
 
@@ -86,35 +76,11 @@ For detailed output including all assertions:
 terraform test -verbose
 ```
 
-## Test Output
-
-Successful test output:
-```
-Testing unit/alb.tftest.hcl... in progress
-  run "alb_valid_configuration"... pass
-  run "alb_production_configuration"... pass
-  run "alb_listeners_configured"... pass
-  run "alb_target_group_configuration"... pass
-  run "alb_security_group_rules"... pass
-  run "alb_resource_tagging"... pass
-Testing unit/alb.tftest.hcl... 6/6 passed, 0 failed
-```
-
-Failed test output shows which assertion failed:
-```
-Testing unit/alb.tftest.hcl... in progress
-  run "alb_valid_configuration"... fail
-    ✗ ALB name should match environment and project name pattern
-      Condition: aws_alb.alb.name == "dev-test-project-alb"
-      Actual: "test-project-alb"
-Testing unit/alb.tftest.hcl... 0/1 passed, 1 failed
-```
-
 ## Understanding Test Files
 
 ### Test File Structure
 
-Each `.tftest.hcl` file contains one or more test runs using **in-place testing**:
+Each `.tftest.hcl` file contains one or more test runs using **in-place testing pattern**:
 
 ```hcl
 # Test suite description at the top
@@ -175,18 +141,11 @@ run "test_name" {
 
 ## Writing New Tests
 
-### Step 1: Determine Test Type
+### Step 1: Crate Unit Test File
 
-- **Unit Test**: Testing a single module in isolation → Create in `tests/unit/`
+`tests/unit/new_module.tftest.hcl`
 
-### Step 2: Create Test File
-
-```bash
-# Create new unit test file
-touch infra-ecs/tests/unit/my_module.tftest.hcl
-```
-
-### Step 3: Write Test Runs
+### Step 2: Write Test Runs
 
 Use this template for **in-place testing**:
 
@@ -256,11 +215,17 @@ run "module_validation" {
 }
 ```
 
-### Step 4: Test Your Tests
+### Step 3: Add Test Run to Script
 
 ```bash
-cd infra-ecs/tests
-terraform test -filter=tests/unit/my_module.tftest.hcl -verbose
+run_module_tests "new_module" "tests/unit/new_module.tftest.hcl" || ANY_FAILED=true
+```
+
+### Step 4: Run Tests Locally
+
+```bash
+cd infra-ecs
+./run-tests.sh
 ```
 
 ## Best Practices
@@ -395,72 +360,23 @@ assert {
 
 ## CI/CD Integration
 
-### GitHub Actions - ✅ IMPLEMENTED
+### GitHub Actions
 
 The project includes automated testing in the CI/CD pipeline. Tests are run:
 - ✅ On every push to main branch
 - ✅ Before deploying any infrastructure
 - ✅ As the first job in the deployment pipeline
 
-**Implementation Location:** [.github/workflows/deploy_aws_infra.yaml](../.github/workflows/deploy_aws_infra.yaml)
+**Implementation Location:** [.github/workflows/ecs_deploy_aws_infra.yaml](../.github/workflows/ecs_deploy_aws_infra.yaml)
 
-The `test-terraform-modules` job runs first and blocks all deployments if tests fail. The job:
+The `test-ecs-terraform-modules` job runs first and blocks all deployments if tests fail. The job:
 
 1. **Validates module syntax** - Runs `terraform validate` on all modules
 2. **Runs unit tests** - Tests each module (ALB, ECS Cluster, ECS Service, ECR)
 3. **Reports results** - Provides clear pass/fail status with error messages
 4. **Blocks deployment** - All other jobs depend on tests passing
 
-### Job Dependencies
-
-```
-test-terraform-modules (runs first)
-    ├─> deploy-terraform-state-bucket
-    │       ├─> deploy-ecr
-    │       │       ├─> build-and-push-app-docker-image-to-ecr
-    │       │       ├─> deploy-vpc
-    │       │       │       └─> deploy-ecs-cluster
-    │       │       │               └─> deploy-alb
-    │       │       │                       ├─> deploy-ecs-service
-    │       │       │                       └─> deploy-routing
-    │       └─> retrieve-ssl
-    │               └─> deploy-alb
-```
-
-All deployment jobs transitively depend on tests passing.
-
-### Test Job Implementation
-
-The test job uses the centralized test script [infra-ecs/run-tests.sh](../infra-ecs/run-tests.sh):
-
-```yaml
-test-terraform-modules:
-  name: Test Terraform Modules
-  runs-on: ubuntu-latest
-
-  steps:
-    - name: Checkout code from the repository
-      uses: actions/checkout@v4
-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: ${{env.TERRAFORM_VERSION}}
-
-    - name: Run Terraform module tests
-      run: |
-        cd infra-ecs
-        chmod +x run-tests.sh
-        ./run-tests.sh
-```
-
-The script:
-1. Validates all module syntax with `terraform validate`
-2. Runs unit tests for each module (ALB, ECS Cluster, ECS Service, ECR)
-3. Provides GitHub Actions annotations (::error::, ::notice::)
-4. Exits with error if any test fails
-
-### Pre-Commit Hook Integration - ✅ IMPLEMENTED
+### Pre-Commit Hook Integration
 
 Tests also run automatically as a pre-commit hook when committing changes to Terraform files.
 
@@ -472,15 +388,9 @@ The pre-commit hook:
 - **Blocks commits**: If tests fail
 - **Provides**: Immediate feedback before pushing code
 
-To skip the test hook (not recommended):
+To skip the test hook (⚠️ not recommended):
 ```bash
 git commit --no-verify
-```
-
-To run tests manually before committing:
-```bash
-cd infra-ecs
-./run-tests.sh
 ```
 
 ### Viewing Test Results
@@ -498,20 +408,10 @@ When the workflow runs, you can view test results in the GitHub Actions UI:
 ### Test Failure Behavior
 
 If tests fail:
-- ❌ The `test-terraform-modules` job fails
+- ❌ The `test-ecs-terraform-modules` job fails
 - 🛑 All deployment jobs are skipped (they depend on tests)
-- 📧 GitHub sends notification email
 - 🔴 Workflow shows as failed in GitHub UI
 - 💬 Error messages indicate which module/test failed
-
-Example failure output:
-```
-::error::Tests failed for alb module
-Testing alb module...
-tests/alb.tftest.hcl... fail
-  run "alb_valid_configuration"... fail
-    ✗ ALB name should match environment and project name pattern
-```
 
 ## Troubleshooting
 
@@ -559,6 +459,12 @@ terraform test -filter=tests/unit/my_module.tftest.hcl -verbose
     terraform_version: 1.11.2  # Match your local version
 ```
 
+#### Tests Fail Locally But Pass in CI
+
+- Check Terraform version: `terraform version` (requires 1.7.0+)
+- Ensure modules are up to date: `cd infra-ecs && git pull`
+- Clean temporary files: `rm -rf tests/.tmp`
+
 ### Testing Validation Rules
 
 **Problem**: Want to verify that invalid input is rejected.
@@ -576,6 +482,12 @@ can(regex("\"key\"\\s*:\\s*\"value\"", json_content))
 
 # Escape dots in domain names
 can(regex("ecs-tasks\\.amazonaws\\.com", content))
+```
+
+#### Permission Denied Error
+
+```bash
+chmod +x run-tests.sh
 ```
 
 ## Test Maintenance
@@ -626,91 +538,8 @@ Update tests when:
 - [Security Documentation](SECURITY.md) - Security requirements tested
 - [ADRs](adr/) - Architecture decisions that influence tests
 
-## Example Test Sessions
-
-### Running Complete Test Suite
-
-```bash
-$ cd infra-ecs/tests
-$ terraform init
-$ terraform test
-
-Testing unit/alb.tftest.hcl... in progress
-  run "alb_valid_configuration"... pass
-  run "alb_production_configuration"... pass
-  run "alb_listeners_configured"... pass
-  run "alb_target_group_configuration"... pass
-  run "alb_security_group_rules"... pass
-  run "alb_resource_tagging"... pass
-Testing unit/alb.tftest.hcl... 6/6 passed, 0 failed
-
-Testing unit/ecs_cluster.tftest.hcl... in progress
-  run "ecs_cluster_basic_configuration"... pass
-  run "ecs_asg_configuration"... pass
-  run "ecs_asg_dev_configuration"... pass
-  run "ecs_asg_production_configuration"... pass
-  run "ecs_launch_template_configuration"... pass
-  run "ecs_security_group"... pass
-  run "ecs_iam_roles"... pass
-Testing unit/ecs_cluster.tftest.hcl... 7/7 passed, 0 failed
-
-Testing unit/ecs_service.tftest.hcl... in progress
-  run "ecs_service_basic_configuration"... pass
-  run "ecs_task_definition_configuration"... pass
-  run "ecs_service_deployment_configuration"... pass
-  run "ecs_service_load_balancer_integration"... pass
-  run "ecs_service_security_group"... pass
-  run "ecs_cloudwatch_logs"... pass
-  run "ecs_iam_roles"... pass
-Testing unit/ecs_service.tftest.hcl... 8/8 passed, 0 failed
-
-Testing unit/ecr.tftest.hcl... in progress
-  run "ecr_repository_basic_configuration"... pass
-  run "ecr_repository_tagging"... pass
-  run "ecr_lifecycle_policy_exists"... pass
-  run "ecr_lifecycle_policy_untagged_images"... pass
-  run "ecr_lifecycle_policy_dev_retention"... pass
-  run "ecr_lifecycle_policy_prod_retention"... pass
-  run "ecr_variable_validation_retention_count"... pass
-  run "ecr_variable_validation_environment"... pass
-Testing unit/ecr.tftest.hcl... 8/8 passed, 0 failed
-
-Testing unit/ssl.tftest.hcl... in progress
-  run "ssl_certificate_basic_configuration"... pass
-  run "ssl_validation_records_configuration"... pass
-  run "ssl_certificate_validation_configuration"... pass
-  run "ssl_production_environment"... pass
-  run "ssl_san_wildcard_coverage"... pass
-  run "ssl_validation_method_dns_only"... pass
-Testing unit/ssl.tftest.hcl... 6/6 passed, 0 failed
-
-Summary: 34/34 tests passed, 0 failed
-```
-
-### Testing Single Module
-
-```bash
-$ cd infra-ecs/tests
-$ terraform test -filter=tests/unit/ecr.tftest.hcl -verbose
-
-Testing unit/ecr.tftest.hcl... in progress
-  run "ecr_repository_basic_configuration"...
-    ✓ ECR repository name should match environment and project pattern
-    ✓ ECR repository should have IMMUTABLE tag mutability for image integrity
-    ✓ ECR repository should have scan_on_push enabled for security
-  run "ecr_repository_basic_configuration"... pass
-
-  run "ecr_lifecycle_policy_dev_retention"...
-    ✓ Lifecycle policy should use dev- tag prefix for dev environment
-    ✓ Lifecycle policy should use configured retention count for dev
-  run "ecr_lifecycle_policy_dev_retention"... pass
-
-Testing unit/ecr.tftest.hcl... 8/8 passed, 0 failed
-```
-
 ## Summary
 
-- **34 test runs** across 5 test files validate all critical infrastructure modules
 - **Unit tests** verify individual module configuration and behavior
 - **Plan mode** tests avoid AWS costs while validating configuration
 - **Clear assertions** with descriptive error messages aid debugging
@@ -720,7 +549,7 @@ Run `./run-tests.sh` before committing changes to catch issues early!
 
 ## Maintenance
 
-**Last Updated:** 2025-11-28
+**Last Updated:** 2026-01-07
 
 Review and update this documentation when:
 - Adding new test files or test patterns
