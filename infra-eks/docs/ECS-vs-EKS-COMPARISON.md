@@ -96,7 +96,6 @@ infra-eks/
 │   ├── eks_cluster/
 │   ├── eks_node_group/
 │   └── k8s_app/
-└── k8s-manifests/         # Raw K8s YAML
 ```
 
 ## Feature Comparison

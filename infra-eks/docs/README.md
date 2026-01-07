@@ -54,7 +54,6 @@ infra-eks/
 │       ├── eks_node_group/    # Deploy worker nodes
 │       └── k8s_app/           # Deploy application to Kubernetes
 │
-├── k8s-manifests/             # Raw Kubernetes YAML manifests
 │   ├── deployment.yaml
 │   ├── service.yaml
 │   ├── ingress.yaml

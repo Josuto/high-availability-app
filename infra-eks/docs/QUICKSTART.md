@@ -102,35 +102,33 @@ kubectl wait --for=condition=ready pod \
   --timeout=90s
 ```
 
-### Step 5: Deploy Your Application (3 min)
+### Step 5: Deploy Your Application with Terraform (5 min)
 
 ```bash
-cd ../../k8s-manifests
+cd ../k8s_app
 
-# Update ECR image URL in deployment.yaml
-ECR_REPO=$(aws ecr describe-repositories --repository-names YOUR_APP_NAME --query 'repositories[0].repositoryUri' --output text)
+# Create terraform.tfvars
+cat > terraform.tfvars << EOF
+project_name = "terraform-course-dummy-nestjs-app"
+environment  = "prod"
+root_domain  = "yourdomain.com"
+ecr_app_image = "YOUR_ECR_REPO_URL:prod-COMMIT_SHA"
+EOF
 
-sed -i '' "s|<ECR_REPOSITORY_URL>|$ECR_REPO|g" deployment.yaml
-
-# Get ACM certificate ARN
-CERT_ARN=$(aws acm list-certificates --query 'CertificateSummaryList[0].CertificateArn' --output text)
-
-sed -i '' "s|<ACM_CERTIFICATE_ARN>|$CERT_ARN|g" ingress.yaml
-
-# Deploy application
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
-kubectl apply -f ingress.yaml
-kubectl apply -f hpa.yaml
+# Deploy all Kubernetes resources (Deployment, Service, Ingress, HPA)
+terraform init
+terraform apply -auto-approve
 
 # Wait for pods to be ready
 kubectl wait --for=condition=ready pod -l app=nestjs-app --timeout=120s
 
-# Get ALB URL
+# Get ALB URL (created by Ingress)
 ALB_URL=$(kubectl get ingress nestjs-app-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 
 echo "Your app is available at: http://$ALB_URL"
 ```
+
+**Note**: This project uses Terraform's Kubernetes provider to manage all Kubernetes resources, providing unified infrastructure-as-code management and automatic integration with Terraform remote state.
 
 ### Step 6: Test Your Application
 
@@ -265,7 +263,6 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 
 ```bash
 # Delete application
-kubectl delete -f k8s-manifests/
 
 # Wait for ALB to be deleted (2-3 minutes)
 kubectl get ingress --watch

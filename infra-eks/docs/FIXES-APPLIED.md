@@ -94,7 +94,6 @@ infra-eks/
 │       ├── eks_node_group/         # ✅ Fixed variable names
 │       └── k8s_app/
 ├── modules/
-├── k8s-manifests/
 ├── scripts/
 └── workflows/
 ```

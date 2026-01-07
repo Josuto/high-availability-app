@@ -82,10 +82,6 @@ This EKS implementation provides a complete Kubernetes-based alternative to the 
 |---------------|----------------|----------|
 | **ECS Cluster** | EKS Cluster | [modules/eks_cluster/](modules/eks_cluster/) |
 | **EC2 + ASG** | EKS Node Group | [modules/eks_node_group/](modules/eks_node_group/) |
-| **Task Definition** | Kubernetes Deployment | [k8s-manifests/deployment.yaml](k8s-manifests/deployment.yaml) |
-| **ECS Service** | Kubernetes Service | [k8s-manifests/service.yaml](k8s-manifests/service.yaml) |
-| **Target Group + ALB** | Ingress + AWS LB Controller | [k8s-manifests/ingress.yaml](k8s-manifests/ingress.yaml) |
-| **Service Auto Scaling** | Horizontal Pod Autoscaler | [k8s-manifests/hpa.yaml](k8s-manifests/hpa.yaml) |
 | **Task Role** | Service Account + IRSA | [modules/k8s_app/main.tf](modules/k8s_app/main.tf) |
 
 ## Directory Structure
@@ -146,14 +142,12 @@ infra-eks/
 │   │
 │   └── SHARED-RESOURCES.md                    # Shared resources guide
 │
-├── k8s-manifests/                             # Raw YAML manifests
 │   ├── deployment.yaml                        # Application deployment
 │   ├── service.yaml                           # Kubernetes service
 │   ├── ingress.yaml                           # ALB Ingress
 │   └── hpa.yaml                               # Autoscaler
 │
 ├── scripts/                                   # Helper scripts
-│   └── generate-manifests.sh                  # Generate manifests with values
 │
 ├── workflows/                                 # GitHub Actions workflows
 │   ├── deploy_eks_infra.yaml                  # Deployment workflow
@@ -323,7 +317,6 @@ This implementation provides **two alternative approaches** for deploying Kubern
 
 ### Approach 1: Raw YAML Manifests (Recommended)
 
-**Location:** [k8s-manifests/](k8s-manifests/)
 
 **Deployment Tool:** `kubectl`
 
@@ -340,10 +333,8 @@ This implementation provides **two alternative approaches** for deploying Kubern
 **Deployment:**
 ```bash
 # Generate manifests with actual values
-./infra-eks/scripts/generate-manifests.sh my-state-bucket eu-west-1
 
 # Deploy to Kubernetes
-kubectl apply -f infra-eks/k8s-manifests-generated/
 ```
 
 ### Approach 2: Terraform Kubernetes Provider
@@ -533,10 +524,8 @@ terraform output application_url
 **Option B: Using kubectl**
 ```bash
 # Generate manifests with actual values
-./infra-eks/scripts/generate-manifests.sh YOUR_BUCKET eu-west-1
 
 # Deploy to Kubernetes
-kubectl apply -f infra-eks/k8s-manifests-generated/
 
 # Get ALB URL
 kubectl get ingress nestjs-app-ingress \

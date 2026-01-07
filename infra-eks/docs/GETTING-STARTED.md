@@ -68,7 +68,6 @@ Ready-to-use configurations:
 
 ### 3. Kubernetes Manifests
 
-**Location:** `k8s-manifests/`
 
 Raw YAML files for kubectl deployment:
 - `deployment.yaml` - Application pods
@@ -80,7 +79,6 @@ Raw YAML files for kubectl deployment:
 
 **Location:** `scripts/`
 
-- `generate-manifests.sh` - Replace placeholders with actual values from Terraform state
 
 ### 5. GitHub Actions Workflows
 

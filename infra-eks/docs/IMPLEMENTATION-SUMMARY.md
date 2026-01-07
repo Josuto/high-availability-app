@@ -28,7 +28,6 @@ infra-eks/                           # NEW - EKS alternative implementation
 │       # AWS EKS automatically handles node bootstrapping
 │       # for managed node groups (no custom user data needed)
 │
-├── k8s-manifests/                   # Kubernetes YAML manifests
 │   ├── deployment.yaml              # Application deployment
 │   ├── service.yaml                 # Service (internal LB)
 │   ├── ingress.yaml                 # ALB Ingress
@@ -106,7 +105,6 @@ The following are **not** included to avoid conflicts with existing infrastructu
 | What You Have (ECS) | What You Get (EKS) | Status |
 |---------------------|---------------------|--------|
 | infra/modules/ecs_cluster | infra-eks/modules/eks_cluster | ✅ Created |
-| infra/modules/ecs_service | infra-eks/k8s-manifests/deployment.yaml | ✅ Created |
 | infra/deployment/app/ecs_cluster | infra-eks/deployment/app/eks_cluster | ⏳ Template ready |
 | infra/deployment/app/ecs_service | infra-eks/deployment/app/k8s_app | ⏳ Template ready |
 | ECS Task Definition (JSON) | Kubernetes Deployment (YAML) | ✅ Example provided |
@@ -255,7 +253,6 @@ Follow [QUICKSTART.md](./QUICKSTART.md) to:
 1. Read [README.md](./README.md) - Complete guide
 2. Read [ECS-vs-EKS-COMPARISON.md](./ECS-vs-EKS-COMPARISON.md) - Detailed comparison
 3. Review module code in `modules/`
-4. Review Kubernetes manifests in `k8s-manifests/`
 5. Deploy step-by-step
 
 ### Path 3: Production Deployment (1 day)

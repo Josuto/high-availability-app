@@ -717,65 +717,15 @@ endpoint_private_access = true # API server accessible from VPC
 **Module Location**: `infra-eks/modules/k8s_app/` <br>
 **Deployment Location**: `infra-eks/deployment/app/k8s_app/`
 
-**Resource Manifest Overview**:
-```yaml
-# Deployment (managed by Terraform via kubernetes provider)
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nestjs-app-deployment
-spec:
-  replicas: 3
-  template:
-    spec:
-      containers:
-      - name: nestjs-app
-        image: <ECR_IMAGE>
-        ports:
-        - containerPort: 3000
-        resources:
-          requests:
-            cpu: 250m
-            memory: 512Mi
-          limits:
-            cpu: 500m
-            memory: 1024Mi
+#### Alternative Approach: Raw Kubernetes Manifests
 
-# Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: nestjs-app-service
-spec:
-  type: ClusterIP
-  selector:
-    app: nestjs-app
-  ports:
-  - port: 80
-    targetPort: 3000
+**Note**: This project uses Terraform's native Kubernetes provider to manage all Kubernetes resources (Deployment, Service, Ingress, HPA) as infrastructure-as-code. This approach provides several advantages:
+- **Single Tool**: All infrastructure managed through Terraform
+- **State Management**: Terraform tracks all resource states consistently
+- **Dependency Management**: Automatic dependency resolution between resources
+- **Remote State Integration**: Seamless integration with other Terraform-managed resources (ECR, ACM certificates, VPC)
 
-# Ingress (triggers ALB creation)
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: nestjs-app-ingress
-  annotations:
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/certificate-arn: <ACM_CERT_ARN>
-spec:
-  ingressClassName: alb
-  rules:
-  - host: example.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: nestjs-app-service
-            port:
-              number: 80
-```
+An alternative approach exists where Kubernetes resources are defined as raw YAML manifests (e.g., `deployment.yaml`, `service.yaml`, `ingress.yaml`, `hpa.yaml`) and applied using `kubectl apply -f`. While this is a common pattern in Kubernetes deployments, **it is out of scope for this project** as we prioritize infrastructure consistency and unified tooling through Terraform.
 
 ---
 
@@ -1329,15 +1279,9 @@ infra-eks/
 │   ├── eks_cluster/            # EKS cluster module
 │   ├── eks_node_group/         # EKS node group module
 │   ├── hosted_zone/            # Route 53 Hosted Zone module
-│   ├── k8s_app/     # Kubernetes application module
+│   ├── k8s_app/                # Kubernetes application module
 │   ├── routing/                # Route 53 routing module
 │   └── ssl/                    # ACM certificate module
-│
-├── k8s-manifests/              # Optional: Raw Kubernetes manifests (for reference)
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   ├── ingress.yaml
-│   └── hpa.yaml
 │
 ├── tests/                      # Terraform tests
 │   ├── unit/                   # Unit tests for modules
@@ -1355,9 +1299,6 @@ infra-eks/
 │   ├── QUICKSTART.md
 │   ├── ECS-vs-EKS-COMPARISON.md
 │   └── ...
-│
-├── scripts/                    # Utility scripts
-│   └── generate-manifests.sh
 │
 ├── run-tests.sh                # Test runner script
 ├── test-runner.tf              # Test configuration

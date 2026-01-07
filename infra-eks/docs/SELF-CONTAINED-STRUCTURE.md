@@ -95,14 +95,12 @@ infra-eks/                                      # Self-contained EKS infrastruct
 │           ├── provider.tf
 │           └── backend.tf
 │
-├── k8s-manifests/                              # Kubernetes YAML manifests
 │   ├── deployment.yaml
 │   ├── service.yaml
 │   ├── ingress.yaml
 │   └── hpa.yaml
 │
 ├── scripts/                                    # Helper scripts
-│   └── generate-manifests.sh
 │
 ├── workflows/                                  # GitHub Actions workflows
 │   ├── deploy_eks_infra.yaml
