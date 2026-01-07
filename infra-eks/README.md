@@ -31,7 +31,9 @@ This directory contains the complete Terraform infrastructure for deploying a hi
    - [5.3. Infrastructure Teardown](#53-infrastructure-teardown)
 6. [Terraform Testing](#6-terraform-testing)
    - [6.1. Running Tests](#61-running-tests)
-   - [6.2. Test Files Explained](#62-test-files-explained)
+   - [6.2. Maintenance](#62-maintenance)
+   - [6.3. Troubleshooting](#63-troubleshooting)
+   - [6.4. Test Files Explained](#64-test-files-explained)
 7. [Project Structure](#7-project-structure)
 
 ---
@@ -1223,7 +1225,88 @@ chmod +x run-tests.sh
 
 ---
 
-### 6.2. Test Files Explained
+### 6.2. Maintenance
+
+#### Adding a New Module Test
+
+1. Create test file: `tests/unit/new_module.tftest.hcl`
+2. Add test run to script:
+   ```bash
+   run_module_tests "new_module" "tests/unit/new_module.tftest.hcl" || ANY_FAILED=true
+   ```
+3. Test locally: `./run-tests.sh`
+
+#### Skipping Tests (Not Recommended)
+
+**Pre-commit:**
+```bash
+git commit --no-verify
+```
+
+**Note:** CI/CD tests cannot be skipped and will still block deployments.
+
+---
+
+### 6.3. Troubleshooting
+
+#### Tests Fail Locally But Pass in CI
+
+- Check Terraform version: `terraform version` (requires 1.7.0+)
+- Ensure modules are up to date: `cd infra-eks && git pull`
+- Clean temporary files: `rm -rf tests/.tmp`
+
+#### Permission Denied Error
+
+```bash
+chmod +x run-tests.sh
+```
+
+#### EKS Cluster Module Fails to Initialize
+
+If you see "Failed to initialize eks_cluster for validation", you need mock AWS credentials:
+
+```bash
+# The eks_cluster module has data sources that require AWS credentials
+export AWS_ACCESS_KEY_ID="mock-access-key"
+export AWS_SECRET_ACCESS_KEY="mock-secret-key" # pragma: allowlist secret
+export AWS_DEFAULT_REGION="eu-west-1"
+./run-tests.sh
+```
+
+**Why this is needed:**
+- EKS modules may query AWS resources or require provider initialization
+- Terraform requires credentials to initialize the AWS provider, even for validation
+- Mock credentials satisfy this requirement without making actual AWS API calls
+- CI/CD pipeline automatically provides these credentials
+
+#### Kubernetes Provider Authentication Issues
+
+If you see authentication errors with the Kubernetes provider in tests:
+
+```bash
+# Tests use mock Kubernetes provider configuration
+# Ensure you're not connected to a real cluster during testing
+unset KUBECONFIG
+./run-tests.sh
+```
+
+**Why this matters:**
+- Tests should use mock credentials, not real cluster access
+- `kubeconfig` environment variable can interfere with test execution
+- Tests run in plan mode only and don't need actual cluster connectivity
+
+#### Tests Take Too Long
+
+The script runs all tests sequentially. This is intentional to:
+- Ensure clean state between module tests
+- Avoid resource conflicts
+- Provide clear, isolated failure messages
+
+Typical run time: 2-4 minutes for all modules (slightly longer than ECS due to additional modules).
+
+---
+
+### 6.4. Test Files Explained
 
 All test files use Terraform's native testing framework (introduced in Terraform 1.6+). Tests use mock AWS credentials and validate module configuration without creating real resources.
 
