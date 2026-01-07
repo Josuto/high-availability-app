@@ -1233,7 +1233,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.1. alb.tftest.hcl
 
-**Module Tested**: `modules/alb/`
+**Module Tested**: `modules/alb/` <br>
 **Purpose**: Validates ALB configuration, listeners, target groups, and security groups.
 
 **Test Suites**:
@@ -1279,7 +1279,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.2. ecr.tftest.hcl
 
-**Module Tested**: `modules/ecr/`
+**Module Tested**: `modules/ecr/` <br>
 **Purpose**: Validates ECR repository configuration, security settings, and lifecycle policies.
 
 **Test Suites**:
@@ -1326,7 +1326,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.3. ecs_cluster.tftest.hcl
 
-**Module Tested**: `modules/ecs_cluster/`
+**Module Tested**: `modules/ecs_cluster/` <br>
 **Purpose**: Validates ECS cluster, Auto Scaling Group, Launch Template, and IAM configuration.
 
 **Data Overrides**: Tests use `override_data` blocks to mock SSM parameter and AMI data sources (avoids real AWS API calls).
@@ -1376,7 +1376,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.4. ecs_service.tftest.hcl
 
-**Module Tested**: `modules/ecs_service/`
+**Module Tested**: `modules/ecs_service/` <br>
 **Purpose**: Validates ECS task definition, service configuration, auto-scaling, and security.
 
 **Test Suites**:
@@ -1423,7 +1423,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.5. ssl.tftest.hcl
 
-**Module Tested**: `modules/ssl/`
+**Module Tested**: `modules/ssl/` <br>
 **Purpose**: Validates ACM certificate configuration, DNS validation, SANs, and lifecycle rules.
 
 **Test Suites**:

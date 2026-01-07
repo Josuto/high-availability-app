@@ -1274,7 +1274,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.1. ecr.tftest.hcl
 
-**Module Tested**: `modules/ecr/`
+**Module Tested**: `modules/ecr/` <br>
 **Purpose**: Validates ECR repository configuration, security settings, and lifecycle policies.
 
 **Test Suites**:
@@ -1321,7 +1321,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.2. ssl.tftest.hcl
 
-**Module Tested**: `modules/ssl/`
+**Module Tested**: `modules/ssl/` <br>
 **Purpose**: Validates ACM certificate configuration, DNS validation, SANs, and lifecycle rules.
 
 **Test Suites**:
@@ -1360,7 +1360,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.3. hosted_zone.tftest.hcl
 
-**Module Tested**: `modules/hosted_zone/`
+**Module Tested**: `modules/hosted_zone/` <br>
 **Purpose**: Validates Route 53 Hosted Zone configuration and environment-specific settings.
 
 **Test Suites**:
@@ -1398,7 +1398,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.4. eks_cluster.tftest.hcl
 
-**Module Tested**: `modules/eks_cluster/`
+**Module Tested**: `modules/eks_cluster/` <br>
 **Purpose**: Validates EKS cluster, IAM roles, security groups, and environment-specific configurations.
 
 **Test Suites**:
@@ -1474,7 +1474,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.5. eks_node_group.tftest.hcl
 
-**Module Tested**: `modules/eks_node_group/`
+**Module Tested**: `modules/eks_node_group/` <br>
 **Purpose**: Validates node group configuration, scaling, IAM roles, and environment-specific settings.
 
 **Test Suites**:
@@ -1552,7 +1552,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.6. aws_lb_controller.tftest.hcl
 
-**Module Tested**: `modules/aws_lb_controller/`
+**Module Tested**: `modules/aws_lb_controller/` <br>
 **Purpose**: Validates OIDC provider, IAM configuration, and Helm chart deployment.
 
 **Test Suites**:
@@ -1618,7 +1618,7 @@ All test files use Terraform's native testing framework (introduced in Terraform
 
 #### 6.3.7. k8s_app.tftest.hcl
 
-**Module Tested**: `modules/k8s_app/`
+**Module Tested**: `modules/k8s_app/` <br>
 **Purpose**: Validates Kubernetes application deployment, service, HPA, ingress, and environment-specific configurations.
 
 **Test Suites**:
