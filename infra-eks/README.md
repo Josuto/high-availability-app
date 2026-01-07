@@ -74,17 +74,6 @@ Internet
 - **Modularity**: Reusable Terraform modules following Single Responsibility Principle
 - **Environment Flexibility**: Configuration-driven differences between dev and prod environments
 
-### EKS vs ECS Key Differences
-
-| Aspect | EKS (This Implementation) | ECS (Alternative) |
-|--------|---------------------------|-------------------|
-| **Orchestration** | Kubernetes (open-source, portable) | AWS ECS (AWS-specific) |
-| **Control Plane** | Managed by AWS EKS | Managed by AWS ECS |
-| **Load Balancing** | AWS Load Balancer Controller (via Ingress) | ALB directly managed by Terraform |
-| **Scaling** | Horizontal Pod Autoscaler (HPA) + Cluster Autoscaler | ECS Service auto-scaling + Capacity Provider |
-| **Workload Definition** | Deployment + Service + Ingress | Task Definition + Service |
-| **Networking** | Kubernetes CNI (AWS VPC CNI) | awsvpc mode with ENI per task |
-
 ---
 
 ## 2. Prerequisites and First-Time Setup
