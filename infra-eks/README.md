@@ -392,9 +392,9 @@ These root modules represent **approach-agnostic infrastructure** - components t
 
 **Approach-Agnostic Modules:**
 - **`backend/`**: S3 bucket for Terraform remote state storage
-- **`hosted_zone/`**: Route53 hosted zone for DNS management (see [Section 3.2.3](#323-route-53))
-- **`ssl/`**: ACM SSL certificate for HTTPS (see [Section 3.2.2](#322-ssl-certificate-acm))
 - **`ecr/`**: Docker container registry (see [Section 3.2.1](#321-elastic-container-registry-ecr))
+- **`ssl/`**: ACM SSL certificate for HTTPS (see [Section 3.2.2](#322-ssl-certificate-acm))
+- **`hosted_zone/`**: Route53 hosted zone for DNS management (see [Section 3.2.3](#323-route-53))
 
 **Key Characteristic:** These modules are not specific to EKS - the same modules are also used in the ECS implementation (`infra-ecs/`), providing shared infrastructure across both approaches.
 
@@ -416,8 +416,8 @@ These root modules represent **approach-agnostic infrastructure** - components t
 |---------|-----|------|-----------|
 | Tagged Image Retention | 3 images | 10 images | Storage cost vs rollback depth |
 
-**Naming Convention**: `${environment}-${project_name}-ecr-repository`
-**Module Location**: `infra-eks/modules/ecr/`
+**Naming Convention**: `${environment}-${project_name}-ecr-repository` <br>
+**Module Location**: `infra-eks/modules/ecr/` <br>
 **Deployment Location**: `infra-eks/deployment/ecr/`
 
 **CI/CD Integration**: Docker images are built and pushed with tags following `${environment}-${git_sha}` format.
@@ -444,7 +444,7 @@ These root modules represent **approach-agnostic infrastructure** - components t
 3. `aws_acm_certificate_validation` resource waits for validation to complete
 4. Validated certificate ARN becomes available for Ingress attachment
 
-**Module Location**: `infra-eks/modules/ssl/`
+**Module Location**: `infra-eks/modules/ssl/` <br>
 **Deployment Location**: `infra-eks/deployment/ssl/`
 
 **Prerequisites**:
@@ -469,7 +469,7 @@ These root modules represent **approach-agnostic infrastructure** - components t
 |---------|-----|------|-----------|
 | Hosted Zone force_destroy | true | false | Quick cleanup vs domain protection |
 
-**Module Location**: `infra-eks/modules/hosted_zone/`
+**Module Location**: `infra-eks/modules/hosted_zone/` <br>
 **Deployment Location**: `infra-eks/deployment/hosted_zone/`
 
 **Note**: DNS records (A records) that point to the Application Load Balancer are created by the approach-specific routing module (see [Section 3.3.6](#336-routing)).
@@ -515,7 +515,7 @@ The following subsections provide detailed explanations of each infrastructure c
 |---------|-----|------|-----------|
 | NAT Gateway | Single (single_nat_gateway = true) | Multiple (one per AZ) | Cost savings vs high availability |
 
-**Module Location**: Uses the official `terraform-aws-modules/vpc/aws` module
+**Module Location**: Uses the official `terraform-aws-modules/vpc/aws` module <br>
 **Deployment Location**: `infra-eks/deployment/app/vpc/`
 
 **Critical Tags Configuration**:
@@ -567,8 +567,8 @@ endpoint_public_access = true  # API server accessible from internet
 endpoint_private_access = true # API server accessible from VPC
 ```
 
-**Naming Convention**: `${environment}-${project_name}-eks-cluster`
-**Module Location**: `infra-eks/modules/eks_cluster/`
+**Naming Convention**: `${environment}-${project_name}-eks-cluster` <br>
+**Module Location**: `infra-eks/modules/eks_cluster/` <br>
 **Deployment Location**: `infra-eks/deployment/app/eks_cluster/`
 
 ---
@@ -612,8 +612,8 @@ endpoint_private_access = true # API server accessible from VPC
 | Capacity Type | SPOT | ON_DEMAND | Cost savings vs reliability |
 | Disk Size | 20GB | 40GB | Storage cost vs container image cache |
 
-**Naming Convention**: `${environment}-${project_name}-node-group`
-**Module Location**: `infra-eks/modules/eks_node_group/`
+**Naming Convention**: `${environment}-${project_name}-node-group` <br>
+**Module Location**: `infra-eks/modules/eks_node_group/` <br>
 **Deployment Location**: `infra-eks/deployment/app/eks_node_group/`
 
 ---
@@ -653,7 +653,7 @@ endpoint_private_access = true # API server accessible from VPC
 4. Controller continuously syncs Kubernetes state with AWS resources
 5. When Ingress is deleted, controller cleans up AWS resources
 
-**Module Location**: `infra-eks/modules/aws_lb_controller/`
+**Module Location**: `infra-eks/modules/aws_lb_controller/` <br>
 **Deployment Location**: `infra-eks/deployment/app/aws_lb_controller/`
 
 ---
@@ -714,7 +714,7 @@ endpoint_private_access = true # API server accessible from VPC
 | HPA Min | 2 | 3 | Minimum replicas |
 | HPA Max | 5 | 10 | Maximum replicas |
 
-**Module Location**: `infra-eks/modules/k8s_app/`
+**Module Location**: `infra-eks/modules/k8s_app/` <br>
 **Deployment Location**: `infra-eks/deployment/app/k8s_app/`
 
 **Resource Manifest Overview**:
@@ -796,7 +796,7 @@ spec:
 **Why This Is EKS-Specific**:
 The routing module depends on outputs from the `k8s_app` deployment, specifically the ALB hostname created dynamically by the AWS Load Balancer Controller when the Ingress resource is deployed. In the ECS implementation, routing depends on the ALB created directly by Terraform, making each routing implementation approach-specific.
 
-**Module Location**: `infra-eks/modules/routing/`
+**Module Location**: `infra-eks/modules/routing/` <br>
 **Deployment Location**: `infra-eks/deployment/app/routing/`
 
 ---

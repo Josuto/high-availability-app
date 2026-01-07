@@ -401,8 +401,8 @@ These root modules represent **approach-agnostic infrastructure** - components t
 |---------|-----|------|-----------|
 | Tagged Image Retention | 3 images | 10 images | Storage cost vs rollback depth |
 
-**Naming Convention**: `${environment}-${project_name}-ecr-repository`
-**Module Location**: `infra-ecs/modules/ecr/`
+**Naming Convention**: `${environment}-${project_name}-ecr-repository` <br>
+**Module Location**: `infra-ecs/modules/ecr/` <br>
 **Deployment Location**: `infra-ecs/deployment/ecr/`
 
 **CI/CD Integration**: Docker images are built and pushed with tags following `${environment}-${git_sha}` format.
@@ -429,7 +429,7 @@ These root modules represent **approach-agnostic infrastructure** - components t
 3. `aws_acm_certificate_validation` resource waits for validation to complete
 4. Validated certificate ARN becomes available for ALB attachment
 
-**Module Location**: `infra-ecs/modules/ssl/`
+**Module Location**: `infra-ecs/modules/ssl/` <br>
 **Deployment Location**: `infra-ecs/deployment/ssl/`
 
 **Prerequisites**:
@@ -454,7 +454,7 @@ These root modules represent **approach-agnostic infrastructure** - components t
 |---------|-----|------|-----------|
 | Hosted Zone force_destroy | true | false | Quick cleanup vs domain protection |
 
-**Module Location**: `infra-ecs/modules/hosted_zone/`
+**Module Location**: `infra-ecs/modules/hosted_zone/` <br>
 **Deployment Location**: `infra-ecs/deployment/hosted_zone/`
 
 **Note**: DNS records (A records) that point to the Application Load Balancer are created by the approach-specific routing module (see [Section 3.3.5](#335-routing)).
@@ -495,7 +495,7 @@ The following subsections provide detailed explanations of each infrastructure c
 |---------|-----|------|-----------|
 | NAT Gateway | Single (one_nat_gateway = true) | Multiple (one per AZ) | Cost savings vs high availability |
 
-**Module Location**: Uses the official `terraform-aws-modules/vpc/aws` module
+**Module Location**: Uses the official `terraform-aws-modules/vpc/aws` module <br>
 **Deployment Location**: `infra-ecs/deployment/app/vpc/`
 
 ---
@@ -538,8 +538,8 @@ The following subsections provide detailed explanations of each infrastructure c
 | Cluster Max Utilization | 100% | 75% | Cost optimization vs scaling buffer |
 | Scale-In Protection (ASG) | false | true | Quick teardown vs stability |
 
-**Naming Convention**: `${environment}-${project_name}-ecs-cluster`
-**Module Location**: `infra-ecs/modules/ecs_cluster/`
+**Naming Convention**: `${environment}-${project_name}-ecs-cluster` <br>
+**Module Location**: `infra-ecs/modules/ecs_cluster/` <br>
 **Deployment Location**: `infra-ecs/deployment/app/ecs_cluster/`
 
 ---
@@ -584,8 +584,8 @@ The following subsections provide detailed explanations of each infrastructure c
 |---------|-----|------|-----------|
 | Deletion Protection | false | true | Flexibility vs safety |
 
-**Naming Convention**: `${environment}-${project_name}-alb`
-**Module Location**: `infra-ecs/modules/alb/`
+**Naming Convention**: `${environment}-${project_name}-alb` <br>
+**Module Location**: `infra-ecs/modules/alb/` <br>
 **Deployment Location**: `infra-ecs/deployment/app/alb/`
 
 ---
@@ -630,8 +630,8 @@ Determines how tasks are distributed across EC2 instances:
 |---------|-----|------|-----------|
 | Task Placement | binpack:cpu | spread:az, spread:instanceId | Cost vs fault tolerance |
 
-**Naming Convention**: `${environment}-${project_name}-ecs-service`
-**Module Location**: `infra-ecs/modules/ecs_service/`
+**Naming Convention**: `${environment}-${project_name}-ecs-service` <br>
+**Module Location**: `infra-ecs/modules/ecs_service/` <br>
 **Deployment Location**: `infra-ecs/deployment/app/ecs_service/`
 
 ---
@@ -654,7 +654,7 @@ Determines how tasks are distributed across EC2 instances:
 **Why This Is ECS-Specific**:
 The routing module depends on outputs from the `alb` deployment, which is created directly by Terraform as part of the ECS infrastructure. In the EKS implementation, routing depends on the ALB created dynamically by the AWS Load Balancer Controller, making each routing implementation approach-specific.
 
-**Module Location**: `infra-ecs/modules/routing/`
+**Module Location**: `infra-ecs/modules/routing/` <br>
 **Deployment Location**: `infra-ecs/deployment/app/routing/`
 
 ---
