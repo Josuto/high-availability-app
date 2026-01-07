@@ -1,4 +1,4 @@
-# High-Availability NestJS App with AWS & Terraform
+# High-Availability App with AWS & Terraform
 
 [![Terraform](https://img.shields.io/badge/Terraform-1.0+-623CE4?logo=terraform&logoColor=white)](https://terraform.io)
 [![AWS](https://img.shields.io/badge/AWS-ECS%20%7C%20EKS-FF9900?logo=amazon-aws&logoColor=white)](https://aws.amazon.com)
@@ -326,7 +326,7 @@ Both implementations include complete GitHub Actions workflows:
 3. Copy and paste either ECS or EKS workflow files into your `.github/workflows/` directory
 4. Trigger workflows via GitHub UI or `git push`
 
-📖 **ECS Workflows**: [infra-ecs/README.md - Section 5](infra-ecs/README.md#5-cicd-workflows)
+📖 **ECS Workflows**: [infra-ecs/README.md - Section 5](infra-ecs/README.md#5-cicd-workflows) <br>
 📖 **EKS Workflows**: [infra-eks/README.md - Section 5](infra-eks/README.md#5-cicd-workflows)
 
 ---
