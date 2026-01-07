@@ -15,14 +15,15 @@ This directory contains the complete Terraform infrastructure for deploying a hi
    - [3.2. Foundational Infrastructure (Approach-Agnostic)](#32-foundational-infrastructure-approach-agnostic)
      - [3.2.1. Elastic Container Registry (ECR)](#321-elastic-container-registry-ecr)
      - [3.2.2. SSL Certificate (ACM)](#322-ssl-certificate-acm)
-     - [3.2.3. Route 53](#323-route-53)
+     - [3.2.3. Route 53 Hosted Zone](#323-route-53-hosted-zone)
    - [3.3. Application Deployment Infrastructure (ECS-Specific)](#33-application-deployment-infrastructure-ecs-specific)
      - [3.3.1. Virtual Private Cloud (VPC)](#331-virtual-private-cloud-vpc)
      - [3.3.2. ECS Cluster](#332-ecs-cluster)
      - [3.3.3. Application Load Balancer (ALB)](#333-application-load-balancer-alb)
      - [3.3.4. ECS Service](#334-ecs-service)
-     - [3.3.5. IAM Roles and Policies](#335-iam-roles-and-policies)
-     - [3.3.6. Security Groups](#336-security-groups)
+     - [3.3.5. Routing](#335-routing)
+     - [3.3.6. IAM Roles and Policies](#336-iam-roles-and-policies)
+     - [3.3.7. Security Groups](#337-security-groups)
 4. [Environment Configuration Differences](#4-environment-configuration-differences)
 5. [CI/CD Workflows](#5-cicd-workflows)
    - [5.1. Initial Setup](#51-initial-setup)
@@ -376,54 +377,15 @@ These root modules represent **approach-agnostic infrastructure** - components t
 
 **Approach-Agnostic Modules:**
 - **`backend/`**: S3 bucket for Terraform remote state storage
-- **`hosted_zone/`**: Route53 hosted zone for DNS management
+- **`hosted_zone/`**: Route53 hosted zone for DNS management (see [Section 3.2.3](#323-route-53-hosted-zone))
 - **`ssl/`**: ACM SSL certificate for HTTPS (see [Section 3.2.2](#322-ssl-certificate-acm))
 - **`ecr/`**: Docker container registry (see [Section 3.2.1](#321-elastic-container-registry-ecr))
-- **`routing/`**: Route53 A records pointing to load balancer (see [Section 3.2.3](#323-route-53))
 
 **Key Characteristic:** These modules are not specific to ECS - the same modules are also used in the EKS implementation (`infra-eks/`), providing shared infrastructure across both approaches.
 
 ---
 
-### 3.3. Application Deployment Infrastructure (ECS-Specific)
-
-These root modules represent **ECS-specific application infrastructure** - components that are unique to the ECS cluster-based container orchestration approach. They reside under `infra-ecs/deployment/app/` and implement the compute, networking, and load balancing layers specific to running containers on ECS with EC2 instances.
-
-**ECS-Specific Modules:**
-- **`app/vpc/`**: Network infrastructure for ECS deployment (see [Section 3.3.1](#331-virtual-private-cloud-vpc))
-- **`app/ecs_cluster/`**: ECS cluster with EC2 Auto Scaling Group (see [Section 3.3.2](#332-ecs-cluster))
-- **`app/alb/`**: Application Load Balancer for traffic distribution (see [Section 3.3.3](#333-application-load-balancer-alb))
-- **`app/ecs_service/`**: ECS service managing containerized tasks (see [Section 3.3.4](#334-ecs-service))
-
-**Key Characteristic:** These modules implement ECS-specific concepts (clusters, services, tasks, capacity providers) and would be replaced by different modules in the EKS implementation (node groups, pods, deployments).
-
-The following subsections provide detailed explanations of each infrastructure component, organized by category.
-
----
-
-### 3.3.1. Virtual Private Cloud (VPC)
-
-**Purpose**: Provides isolated network infrastructure for all AWS resources.
-
-**Key Features**:
-- **Multi-AZ Architecture**: Spans multiple Availability Zones for fault tolerance
-- **Subnet Strategy**:
-  - **Public Subnets**: Host NAT Gateways and Application Load Balancer
-  - **Private Subnets**: Host EC2 instances running ECS tasks, isolated from direct internet access
-- **NAT Gateway**: Enables outbound internet connectivity for resources in private subnets (e.g., pulling Docker images, accessing AWS services)
-- **Internet Gateway**: Provides internet access to resources in public subnets
-
-**Environment Differences**:
-| Setting | dev | prod | Rationale |
-|---------|-----|------|-----------|
-| NAT Gateway | Single (one_nat_gateway = true) | Multiple (one per AZ) | Cost savings vs high availability |
-
-**Module Location**: Uses the official `terraform-aws-modules/vpc/aws` module
-**Deployment Location**: `infra-ecs/deployment/app/vpc/`
-
----
-
-### 3.2.1. Elastic Container Registry (ECR)
+#### 3.2.1. Elastic Container Registry (ECR)
 
 **Purpose**: Private Docker registry for storing application container images.
 
@@ -447,7 +409,98 @@ The following subsections provide detailed explanations of each infrastructure c
 
 ---
 
-### 3.3.2. ECS Cluster
+#### 3.2.2. SSL Certificate (ACM)
+
+**Purpose**: Provides SSL/TLS certificate for secure HTTPS communication.
+
+**Key Features**:
+- **Validation Method**: DNS (automated, no manual email approval required)
+- **Domain Coverage**:
+  - **Primary Domain**: Root domain (e.g., `example.com`)
+  - **Subject Alternative Name (SAN)**: Wildcard domain (e.g., `*.example.com`)
+- **DNS Validation Records**: Automatically created in Route 53 Hosted Zone
+  - **TTL**: 60 seconds for faster propagation
+  - **Allow Overwrite**: Enabled for redeployments
+- **Lifecycle Rule**: `create_before_destroy = true` ensures zero-downtime certificate rotation
+
+**Validation Workflow**:
+1. ACM certificate request created with DNS validation
+2. Validation DNS records (CNAME) created in Route 53
+3. `aws_acm_certificate_validation` resource waits for validation to complete
+4. Validated certificate ARN becomes available for ALB attachment
+
+**Module Location**: `infra-ecs/modules/ssl/`
+**Deployment Location**: `infra-ecs/deployment/ssl/`
+
+**Prerequisites**:
+- Route 53 Hosted Zone must exist
+- Domain DNS nameservers must point to Route 53 nameservers
+- DNS propagation must be complete (can take minutes to hours)
+
+---
+
+#### 3.2.3. Route 53 Hosted Zone
+
+**Purpose**: Manages DNS namespace for the domain.
+
+**Key Features**:
+- **Purpose**: Central DNS management for the domain
+- **Created During**: Initial setup (before SSL certificate)
+- **Nameservers**: Must be configured at domain registrar after creation
+- **Force Destroy**: Enabled for dev, disabled for prod (protects production domain)
+
+**Environment Differences**:
+| Setting | dev | prod | Rationale |
+|---------|-----|------|-----------|
+| Hosted Zone force_destroy | true | false | Quick cleanup vs domain protection |
+
+**Module Location**: `infra-ecs/modules/hosted_zone/`
+**Deployment Location**: `infra-ecs/deployment/hosted_zone/`
+
+**Note**: DNS records (A records) that point to the Application Load Balancer are created by the approach-specific routing module (see [Section 3.3.5](#335-routing)).
+
+---
+
+### 3.3. Application Deployment Infrastructure (ECS-Specific)
+
+These root modules represent **ECS-specific application infrastructure** - components that are unique to the ECS cluster-based container orchestration approach. They reside under `infra-ecs/deployment/app/` and implement the compute, networking, and load balancing layers specific to running containers on ECS with EC2 instances.
+
+**ECS-Specific Modules:**
+- **`app/vpc/`**: Network infrastructure for ECS deployment (see [Section 3.3.1](#331-virtual-private-cloud-vpc))
+- **`app/ecs_cluster/`**: ECS cluster with EC2 Auto Scaling Group (see [Section 3.3.2](#332-ecs-cluster))
+- **`app/alb/`**: Application Load Balancer for traffic distribution (see [Section 3.3.3](#333-application-load-balancer-alb))
+- **`app/ecs_service/`**: ECS service managing containerized tasks (see [Section 3.3.4](#334-ecs-service))
+- **`app/routing/`**: Route 53 A records pointing to ALB (see [Section 3.3.5](#335-routing))
+
+**Key Characteristic:** These modules implement ECS-specific concepts (clusters, services, tasks, capacity providers) and would be replaced by different modules in the EKS implementation (node groups, pods, deployments).
+
+The following subsections provide detailed explanations of each infrastructure component, organized by category.
+
+---
+
+#### 3.3.1. Virtual Private Cloud (VPC)
+
+**Purpose**: Provides isolated network infrastructure for all AWS resources.
+
+**Key Features**:
+- **Multi-AZ Architecture**: Spans multiple Availability Zones for fault tolerance
+- **Subnet Strategy**:
+  - **Public Subnets**: Host NAT Gateways and Application Load Balancer
+  - **Private Subnets**: Host EC2 instances running ECS tasks, isolated from direct internet access
+- **NAT Gateway**: Enables outbound internet connectivity for resources in private subnets (e.g., pulling Docker images, accessing AWS services)
+- **Internet Gateway**: Provides internet access to resources in public subnets
+
+**Environment Differences**:
+| Setting | dev | prod | Rationale |
+|---------|-----|------|-----------|
+| NAT Gateway | Single (one_nat_gateway = true) | Multiple (one per AZ) | Cost savings vs high availability |
+
+**Module Location**: Uses the official `terraform-aws-modules/vpc/aws` module
+**Deployment Location**: `infra-ecs/deployment/app/vpc/`
+
+---
+
+#### 3.3.2. ECS Cluster
 
 **Purpose**: Provides the compute capacity (EC2 instances) for running containerized applications.
 
@@ -491,53 +544,7 @@ The following subsections provide detailed explanations of each infrastructure c
 
 ---
 
-### 3.3.4. ECS Service
-
-**Purpose**: Defines and maintains the desired state of running application containers (tasks).
-
-**Key Components**:
-
-#### a) ECS Task Definition
-- Defines container configuration: image, CPU, memory, port mappings
-- **Network Mode**: `awsvpc` - Each task receives its own Elastic Network Interface (ENI) with a private IP
-- **Container Definition**:
-  - **Image**: Pulled from ECR repository
-  - **Port Mapping**: Exposes container port (default: 3000)
-  - **Logging**: CloudWatch Logs integration with `awslogs` driver
-  - **Essential**: Set to `true` - task fails if this container stops
-
-#### b) ECS Service
-- Maintains desired count of running tasks
-- **Deployment Configuration**:
-  - **Minimum Healthy Percent**: 50% (allows rolling updates with temporary capacity reduction)
-  - **Maximum Percent**: 200% (allows new tasks to start before old ones stop)
-- **Load Balancer Integration**: Registers tasks with ALB Target Group
-- **Capacity Provider Strategy**: Uses cluster's capacity provider for EC2-based task placement
-- **Network Configuration**: Places tasks in private subnets with `ecs-tasks-sg` security group
-
-#### c) Task Placement Strategy
-Determines how tasks are distributed across EC2 instances:
-- **dev**: `binpack` on CPU (pack as many tasks as possible on fewer instances for cost savings)
-- **prod**: `spread` across AZs, then `spread` across instances (maximize fault tolerance)
-
-#### d) Task Auto Scaling (Optional)
-- **Target Tracking Policy**: Scales task count based on ECS Service average CPU utilization
-- **Min/Max Capacity**: Configurable per environment
-- **Scale-In Cooldown**: 60 seconds (prevents rapid scale-in after scale-out)
-- **Scale-Out Cooldown**: 60 seconds
-
-**Environment Differences**:
-| Setting | dev | prod | Rationale |
-|---------|-----|------|-----------|
-| Task Placement | binpack:cpu | spread:az, spread:instanceId | Cost vs fault tolerance |
-
-**Naming Convention**: `${environment}-${project_name}-ecs-service`
-**Module Location**: `infra-ecs/modules/ecs_service/`
-**Deployment Location**: `infra-ecs/deployment/app/ecs_service/`
-
----
-
-### 3.3.3. Application Load Balancer (ALB)
+#### 3.3.3. Application Load Balancer (ALB)
 
 **Purpose**: Distributes incoming HTTPS/HTTP traffic across healthy ECS tasks.
 
@@ -583,65 +590,76 @@ Determines how tasks are distributed across EC2 instances:
 
 ---
 
-### 3.2.2. SSL Certificate (ACM)
+#### 3.3.4. ECS Service
 
-**Purpose**: Provides SSL/TLS certificate for secure HTTPS communication.
-
-**Key Features**:
-- **Validation Method**: DNS (automated, no manual email approval required)
-- **Domain Coverage**:
-  - **Primary Domain**: Root domain (e.g., `example.com`)
-  - **Subject Alternative Name (SAN)**: Wildcard domain (e.g., `*.example.com`)
-- **DNS Validation Records**: Automatically created in Route 53 Hosted Zone
-  - **TTL**: 60 seconds for faster propagation
-  - **Allow Overwrite**: Enabled for redeployments
-- **Lifecycle Rule**: `create_before_destroy = true` ensures zero-downtime certificate rotation
-
-**Validation Workflow**:
-1. ACM certificate request created with DNS validation
-2. Validation DNS records (CNAME) created in Route 53
-3. `aws_acm_certificate_validation` resource waits for validation to complete
-4. Validated certificate ARN becomes available for ALB attachment
-
-**Module Location**: `infra-ecs/modules/ssl/`
-**Deployment Location**: `infra-ecs/deployment/ssl/`
-
-**Prerequisites**:
-- Route 53 Hosted Zone must exist
-- Domain DNS nameservers must point to Route 53 nameservers
-- DNS propagation must be complete (can take minutes to hours)
-
----
-
-### 3.2.3. Route 53
-
-**Purpose**: DNS management for routing traffic to the Application Load Balancer.
+**Purpose**: Defines and maintains the desired state of running application containers (tasks).
 
 **Key Components**:
 
-#### a) Hosted Zone
-- **Purpose**: Manages DNS records for the domain
-- **Created During**: Initial setup (before SSL certificate)
-- **Nameservers**: Must be configured at domain registrar after creation
-- **Force Destroy**: Enabled for dev, disabled for prod (protects production domain)
+#### a) ECS Task Definition
+- Defines container configuration: image, CPU, memory, port mappings
+- **Network Mode**: `awsvpc` - Each task receives its own Elastic Network Interface (ENI) with a private IP
+- **Container Definition**:
+  - **Image**: Pulled from ECR repository
+  - **Port Mapping**: Exposes container port (default: 3000)
+  - **Logging**: CloudWatch Logs integration with `awslogs` driver
+  - **Essential**: Set to `true` - task fails if this container stops
 
-#### b) DNS Records (A Records)
-- **Root Domain**: Points to ALB (e.g., `example.com` → ALB DNS)
-- **WWW Subdomain**: Points to ALB (e.g., `www.example.com` → ALB DNS)
-- **Record Type**: A record with alias to ALB
-- **Evaluate Target Health**: Enabled (Route 53 checks ALB health)
+#### b) ECS Service
+- Maintains desired count of running tasks
+- **Deployment Configuration**:
+  - **Minimum Healthy Percent**: 50% (allows rolling updates with temporary capacity reduction)
+  - **Maximum Percent**: 200% (allows new tasks to start before old ones stop)
+- **Load Balancer Integration**: Registers tasks with ALB Target Group
+- **Capacity Provider Strategy**: Uses cluster's capacity provider for EC2-based task placement
+- **Network Configuration**: Places tasks in private subnets with `ecs-tasks-sg` security group
+
+#### c) Task Placement Strategy
+Determines how tasks are distributed across EC2 instances:
+- **dev**: `binpack` on CPU (pack as many tasks as possible on fewer instances for cost savings)
+- **prod**: `spread` across AZs, then `spread` across instances (maximize fault tolerance)
+
+#### d) Task Auto Scaling (Optional)
+- **Target Tracking Policy**: Scales task count based on ECS Service average CPU utilization
+- **Min/Max Capacity**: Configurable per environment
+- **Scale-In Cooldown**: 60 seconds (prevents rapid scale-in after scale-out)
+- **Scale-Out Cooldown**: 60 seconds
 
 **Environment Differences**:
 | Setting | dev | prod | Rationale |
 |---------|-----|------|-----------|
-| Hosted Zone force_destroy | true | false | Quick cleanup vs domain protection |
+| Task Placement | binpack:cpu | spread:az, spread:instanceId | Cost vs fault tolerance |
 
-**Module Location**: `infra-ecs/modules/hosted_zone/` and `infra-ecs/modules/routing/`
-**Deployment Location**: `infra-ecs/deployment/hosted_zone/` and `infra-ecs/deployment/app/routing/`
+**Naming Convention**: `${environment}-${project_name}-ecs-service`
+**Module Location**: `infra-ecs/modules/ecs_service/`
+**Deployment Location**: `infra-ecs/deployment/app/ecs_service/`
 
 ---
 
-### 3.3.5. IAM Roles and Policies
+#### 3.3.5. Routing
+
+**Purpose**: Creates DNS records (A records) that route traffic from the domain to the Application Load Balancer.
+
+**Key Features**:
+- **Root Domain**: Points to ALB (e.g., `example.com` → ALB DNS)
+- **WWW Subdomain**: Points to ALB (e.g., `www.example.com` → ALB DNS)
+- **Record Type**: A record with alias to ALB
+- **Evaluate Target Health**: Enabled (Route 53 checks ALB health)
+- **Data Source**: ALB DNS name and zone ID are read from ALB outputs via remote state
+
+**Dependencies**:
+- **hosted_zone**: Requires hosted zone ID from foundational infrastructure
+- **alb**: Requires ALB DNS name and hosted zone ID (ECS-specific)
+
+**Why This Is ECS-Specific**:
+The routing module depends on outputs from the `alb` deployment, which is created directly by Terraform as part of the ECS infrastructure. In the EKS implementation, routing depends on the ALB created dynamically by the AWS Load Balancer Controller, making each routing implementation approach-specific.
+
+**Module Location**: `infra-ecs/modules/routing/`
+**Deployment Location**: `infra-ecs/deployment/app/routing/`
+
+---
+
+#### 3.3.6. IAM Roles and Policies
 
 The infrastructure uses two distinct IAM roles for different levels of authorization.
 
@@ -773,7 +791,7 @@ Both roles use trust policies to define which AWS services can assume them:
 
 ---
 
-### 3.3.6. Security Groups
+#### 3.3.7. Security Groups
 
 Security Groups act as virtual firewalls, controlling network traffic at the resource level.
 
