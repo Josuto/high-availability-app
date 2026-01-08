@@ -19,14 +19,15 @@ A hands-on learning project demonstrating production-ready, highly-available AWS
 4. [Infrastructure Approaches](#infrastructure-approaches)
    - [ECS Approach (Simpler)](#ecs-approach-simpler)
    - [EKS Approach (Kubernetes)](#eks-approach-kubernetes)
-   - [EKS vs ECS Key Differences](#eks-vs-ecs-key-differences)
-5. [Developer Setup: Pre-commit Hooks](#developer-setup-pre-commit-hooks)
-6. [Quick Start](#quick-start)
-7. [Project Structure](#project-structure)
-8. [Known Limitations](#known-limitations)
-9. [Contributing](#contributing)
-10. [License](#license)
-11. [Questions or Issues?](#questions-or-issues)
+   - [EKS vs ECS](#eks-vs-ecs)
+5. [Choose Your Path](#choose-your-path)
+6. [Developer Setup: Pre-commit Hooks](#developer-setup-pre-commit-hooks)
+7. [Quick Start](#quick-start)
+8. [Project Structure](#project-structure)
+9. [Known Limitations](#known-limitations)
+10. [Contributing](#contributing)
+11. [License](#license)
+12. [Questions or Issues?](#questions-or-issues)
 
 ---
 
@@ -172,7 +173,84 @@ AWS Elastic Kubernetes Service (EKS) provides a managed Kubernetes control plane
 
 ---
 
-### EKS vs ECS Key Differences
+### EKS vs ECS
+
+#### Key Differences
+
+#### 1. Container Orchestration
+
+**ECS:**
+- AWS-proprietary container orchestration
+- Task definitions define containers
+- ECS service manages desired count
+- Tightly integrated with AWS services
+
+**EKS:**
+- Standard Kubernetes (K8s) orchestration
+- Deployments + Pods define containers
+- ReplicaSets manage desired count
+- Portable across clouds (AWS, GCP, Azure, on-prem)
+
+#### 2. Networking
+
+**ECS:**
+- ECS tasks use ENIs (awsvpc mode)
+- ALB target groups register tasks directly
+- Security groups on tasks
+
+**EKS:**
+- Pods use AWS VPC CNI for IP addresses
+- ALB Ingress Controller creates target groups
+- Security groups on nodes + network policies
+
+#### 3. Scaling
+
+**ECS:**
+- ECS Capacity Provider scales EC2 instances
+- ECS Service Auto Scaling scales tasks
+- Target tracking based on CPU/memory
+
+**EKS:**
+- Cluster Autoscaler scales nodes
+- Horizontal Pod Autoscaler (HPA) scales pods
+- Metrics Server provides resource metrics
+
+#### 4. Service Discovery
+
+**ECS:**
+- AWS Cloud Map for service discovery
+- ALB for external load balancing
+- ECS service connects to target groups
+
+**EKS:**
+- Kubernetes DNS (CoreDNS) for service discovery
+- AWS Load Balancer Controller for external LB
+- Ingress resources create ALBs automatically
+
+#### 5. IAM Permissions
+
+**ECS:**
+- Task Role: IAM role for application
+- Execution Role: IAM role for ECS agent
+- Directly attached to task definition
+
+**EKS:**
+- ServiceAccount: Kubernetes identity for pods
+- IRSA (IAM Roles for Service Accounts): Maps K8s SA to IAM role
+- Annotated on ServiceAccount
+
+#### ECS → EKS Component Mapping
+
+| ECS Component | EKS Equivalent | Description |
+|---------------|----------------|-------------|
+| **ECS Cluster** | **EKS Cluster** | Control plane for container orchestration |
+| **ECS EC2 Launch Template + ASG** | **EKS Node Group** | Managed EC2 instances running Kubernetes |
+| **ECS Task Definition** | **Kubernetes Deployment** | Application container specifications |
+| **ECS Service** | **Kubernetes Service + Ingress** | Load balancing and service discovery |
+| **ALB Target Group** | **AWS Load Balancer Controller** | Ingress controller managing ALB |
+| **ECS Task Role** | **Kubernetes ServiceAccount + IRSA** | Pod-level IAM permissions |
+
+#### Summary Comparison
 
 | Aspect | ECS (infra-ecs/) | EKS (infra-eks/) |
 |--------|------------------|------------------|
@@ -190,6 +268,81 @@ AWS Elastic Kubernetes Service (EKS) provides a managed Kubernetes control plane
 | **Use Case** | AWS-committed workloads | Kubernetes-native or multi-cloud |
 
 **Can I run both simultaneously?** Yes! The implementations use separate Terraform state files (`deployment/` vs `deployment/app/`) and independent resources, allowing side-by-side deployment for comparison.
+
+---
+
+## Choose Your Path
+
+Ready to get started? Choose the path that matches your goal:
+
+### Path 1: I Want to Deploy the ECS-Based Solution
+
+**Best for**: Quickly getting a production-ready AWS infrastructure running with minimal Kubernetes complexity.
+
+**Steps**:
+1. **Review Prerequisites**: Check [ECS Prerequisites](infra-ecs/README.md#21-prerequisites)
+2. **Configure Your Settings**: Follow [Required Configuration Changes](infra-ecs/README.md#22-required-configuration-changes)
+3. **Deploy Using CI/CD**: Use [GitHub Actions Workflows](infra-ecs/README.md#5-cicd-workflows) for automated deployment
+4. **Verify Deployment**: Access your application at `https://yourdomain.com`
+
+**Estimated Time**: 30-45 minutes
+
+---
+
+### Path 2: I Want to Deploy the EKS-Based Solution
+
+**Best for**: Learning Kubernetes on AWS or preparing for multi-cloud/portable deployments.
+
+**Steps**:
+1. **Review Prerequisites**: Check [EKS Prerequisites](infra-eks/README.md#21-prerequisites)
+2. **Configure Your Settings**: Follow [Required Configuration Changes](infra-eks/README.md#22-required-configuration-changes)
+3. **Deploy Using CI/CD**: Use [GitHub Actions Workflows](infra-eks/README.md#5-cicd-workflows) for automated deployment
+4. **Verify Deployment**: Configure kubectl and access your application at `https://yourdomain.com`
+
+**Estimated Time**: 45-60 minutes
+
+---
+
+### Path 3: I Want to Understand the ECS-Based Solution
+
+**Best for**: Learning AWS-native container orchestration without Kubernetes complexity.
+
+**Learning Journey**:
+1. **Start with Overview**: Read [ECS High-Level Overview](infra-ecs/README.md#1-high-level-overview)
+2. **Module Architecture**: Understand [Root vs Child Modules](infra-ecs/README.md#31-module-architecture-root-modules-vs-child-modules)
+3. **Deep Dive into Components**:
+   - [VPC & Networking](infra-ecs/README.md#311-shared-resources-vpc-ecr-ssl-hosted-zone)
+   - [ECS Cluster](infra-ecs/README.md#312-ecs-cluster)
+   - [Application Load Balancer](infra-ecs/README.md#313-application-load-balancer-alb)
+   - [ECS Service](infra-ecs/README.md#314-ecs-service)
+   - [IAM Roles](infra-ecs/README.md#315-iam-roles-and-permissions)
+   - [Security Groups](infra-ecs/README.md#316-security-groups)
+4. **Environment Configuration**: Study [dev vs prod Differences](infra-ecs/README.md#4-environment-configuration-differences)
+5. **Explore Testing**: Review [Terraform Testing](infra-ecs/README.md#6-terraform-testing)
+
+**Key Concepts**: ECS Task Definitions, Capacity Providers, awsvpc networking, task placement strategies
+
+---
+
+### Path 4: I Want to Understand the EKS-Based Solution
+
+**Best for**: Learning Kubernetes on AWS and cloud-agnostic container orchestration.
+
+**Learning Journey**:
+1. **Start with Overview**: Read [EKS High-Level Overview](infra-eks/README.md#1-high-level-overview)
+2. **Module Architecture**: Understand [Root vs Child Modules](infra-eks/README.md#31-module-architecture-root-modules-vs-child-modules)
+3. **Deep Dive into Components**:
+   - [VPC & Networking](infra-eks/README.md#311-shared-resources-vpc-ecr-ssl-hosted-zone)
+   - [EKS Cluster](infra-eks/README.md#312-eks-cluster)
+   - [EKS Node Group](infra-eks/README.md#313-eks-node-group)
+   - [AWS Load Balancer Controller](infra-eks/README.md#314-aws-load-balancer-controller)
+   - [Kubernetes Application](infra-eks/README.md#315-kubernetes-application-k8s_app)
+   - [IAM Roles (IRSA)](infra-eks/README.md#316-iam-roles-and-permissions)
+4. **Environment Configuration**: Study [dev vs prod Differences](infra-eks/README.md#4-environment-configuration-differences)
+5. **Explore Testing**: Review [Terraform Testing](infra-eks/README.md#6-terraform-testing)
+6. **Compare Approaches**: Read [EKS vs ECS Comparison](infra-eks/docs/ECS-vs-EKS-COMPARISON.md)
+
+**Key Concepts**: Kubernetes Deployments, HPA, IRSA, AWS Load Balancer Controller, Managed Node Groups
 
 ---
 
