@@ -78,7 +78,7 @@ locals {
 
 ```
 ┌─────────────────────────────────────────┐
-│   Provider Default Tags (Layer 1)      │
+│   Provider Default Tags (Layer 1)       │
 │   ┌─────────────────────────────────┐   │
 │   │ ManagedBy, Environment, Project │   │
 │   │ Owner, CostCenter               │   │
