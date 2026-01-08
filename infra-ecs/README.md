@@ -48,18 +48,30 @@ Internet
     ↓
 [Route 53] → Points to ALB DNS
     ↓
-[Application Load Balancer]
+[Application Load Balancer (ALB)]
     ↓ (HTTPS:443 / HTTP:80→HTTPS)
 [ALB Target Group] ← Health checks ECS Tasks
     ↓
 [ECS Tasks] (in awsvpc mode)
     ↓ Running on
-[EC2 Instances] (in private subnets)
+[EC2 Instances] (in private VPC subnets)
     ↓ Managed by
 [Auto Scaling Group + Capacity Provider]
     ↓ Part of
 [ECS Cluster]
 ```
+
+#### Component Roles
+
+| AWS Service | Role in the Architecture |
+| :--- | :--- |
+| **Route 53 & ACM** | The Route 53 Hosted Zone manages DNS records. AWS Certificate Manager (ACM) provides and validates the SSL certificate, which is attached to the ALB's HTTPS listener to enable secure communication. |
+| **Application Load Balancer (ALB)** | Distributes incoming traffic. It listens on Port 443 (HTTPS) and redirects all Port 80 (HTTP) traffic to HTTPS (301 Permanent Redirect). The ALB forwards traffic to an ALB Target Group, which acts as the dynamic list of healthy ECS Tasks. |
+| **ECS Task** | The fundamental unit of deployment (the running container). Deployed onto EC2 instances, tasks receive a private IP via `awsvpc` networking and are registered with the ALB Target Group. |
+| **Virtual Private Cloud (VPC)** | Provides an isolated network, defining public and private subnets across multiple AZs for high availability. NAT Gateways enable private resources to access the internet. |
+| **ECS Service** | The deployment mechanism that defines how many copies of a specific task definition should run on a given ECS cluster, automatically maintaining that desired count and integrating with an Elastic Load Balancer for traffic distribution. |
+| **ECS Cluster** | The compute capacity (EC2 instances) running within private subnets. It uses an Auto Scaling Group (ASG) and a Capacity Provider who tells the ECS how to manage the ASG scaling. A critical element in the cluster is the ECS Control Plane, the central component that coordinates containers (i.e., tasks) and ensures cluster wellbeing. Furthermore, each EC2 instance includes an ECS Agent that reports containers health to the Control Plane. |
+| **Elastic Container Registry (ECR)** | A private Docker registry storing application container images. Uses priority rules (Rule 1: untagged, Rule 2: tagged) to aggressively expire images while safely retaining a configurable count of environment-tagged (`dev-`, `prod-`) images. |
 
 ### Traffic Flow
 
@@ -73,6 +85,16 @@ Internet
 - **Scalability**: Auto Scaling Groups for EC2 instances, ECS Service auto-scaling for tasks
 - **Modularity**: Reusable Terraform modules following Single Responsibility Principle
 - **Environment Flexibility**: Configuration-driven differences between dev and prod environments
+
+### High-Level Architecture
+
+#### Focus on incomming traffic from Internet to containers
+
+![Alt text](docs/diagrams/aws_infrastructure-incoming_traffic.svg "AWS Infrastructure - Incomming Traffic")
+
+#### Focus on outgoing traffic from containers to the other AWS services or the Internet
+
+![Alt text](docs/diagrams/aws_infrastructure-outgoing_traffic.svg "AWS Infrastructure - Outgoing Traffic")
 
 ---
 
@@ -670,17 +692,17 @@ The infrastructure uses two distinct IAM roles for different levels of authoriza
 
 **Purpose**: Grants EC2 instances permissions to interact with AWS services at the infrastructure level.
 
-**Managed Policies Attached**:
-1. **AmazonEC2ContainerServiceforEC2Role** (`arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role`)
-   - Allows EC2 instance to register as a container instance with ECS cluster
+1. **Managed Policies Attached**:
+- **AmazonEC2ContainerServiceforEC2Role** (`arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role`)
+   - Enables EC2 instances to join/leave the cluster, poll for tasks, and manage container operations
    - Permissions: `ecs:RegisterContainerInstance`, `ecs:DeregisterContainerInstance`, `ecs:SubmitContainerStateChange`, `ecs:SubmitTaskStateChange`
 
-2. **AmazonSSMManagedInstanceCore** (`arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore`)
-   - Enables AWS Systems Manager Session Manager for secure shell access
+- **AmazonSSMManagedInstanceCore** (`arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore`)
+   - Enables AWS Session Manager (SSM) for secure shell access
    - Eliminates need for SSH keys and bastion hosts
    - Permissions: `ssm:UpdateInstanceInformation`, `ssmmessages:*`, `ec2messages:*`
 
-**Custom Inline Policy** (`ecs_instance_policy`):
+2. **Custom Inline Policy** (`ecs_instance_policy`):
 ```json
 {
   "Version": "2012-10-17",
@@ -707,8 +729,6 @@ The infrastructure uses two distinct IAM roles for different levels of authoriza
   ]
 }
 ```
-
-**Why This Matters**:
 - **ECR Access**: Allows EC2 instances to authenticate with ECR and pull Docker images
 - **CloudWatch Logs**: Enables operational logging from EC2 instance-level processes
 
@@ -722,13 +742,13 @@ The infrastructure uses two distinct IAM roles for different levels of authoriza
 
 **Purpose**: Grants the ECS service permissions to perform actions on behalf of your tasks.
 
-**Managed Policy Attached**:
+1. **Managed Policy Attached**:
 - **AmazonECSTaskExecutionRolePolicy** (`arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy`)
   - Allows ECS to pull container images from ECR
   - Allows ECS to write container application logs to CloudWatch
   - Permissions: `ecr:GetAuthorizationToken`, `ecr:BatchCheckLayerAvailability`, `ecr:GetDownloadUrlForLayer`, `ecr:BatchGetImage`, `logs:CreateLogStream`, `logs:PutLogEvents`
 
-**Custom Inline Policy** (`ecs_task_execution_policy`):
+2. **Custom Inline Policy** (`ecs_task_execution_policy`):
 ```json
 {
   "Version": "2012-10-17",
@@ -745,8 +765,6 @@ The infrastructure uses two distinct IAM roles for different levels of authoriza
   ]
 }
 ```
-
-**Why This Matters**:
 - **Image Pull**: ECS service pulls Docker images during task startup
 - **Application Logs**: Container stdout/stderr is written to CloudWatch Log Group (`/ecs/${project_name}`)
 
