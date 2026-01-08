@@ -34,6 +34,7 @@ This directory contains the complete Terraform infrastructure for deploying a hi
    - [6.2. Troubleshooting](#62-troubleshooting)
    - [6.3. Test Files Explained](#63-test-files-explained)
 7. [Project Structure](#7-project-structure)
+8. [8. Kubernetes and AWS EKS Basics](#8-kubernetes-and-aws-eks-basics)
 
 ---
 
@@ -48,7 +49,7 @@ Internet
     ↓
 [Route 53] → Points to ALB DNS (created by Ingress)
     ↓
-[Application Load Balancer] ← Created by AWS Load Balancer Controller
+[Application Load Balancer (ALB)] ← Created by AWS Load Balancer Controller
     ↓ (HTTPS:443 / HTTP:80→HTTPS)
 [Kubernetes Service] ← ClusterIP, load balanced internally
     ↓
@@ -74,6 +75,47 @@ Internet
 - **Kubernetes-Native**: Ingress resources for ALB management, native Kubernetes service discovery and load balancing
 - **Modularity**: Reusable Terraform modules following Single Responsibility Principle
 - **Environment Flexibility**: Configuration-driven differences between dev and prod environments
+
+### High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         AWS Cloud                               │
+│                                                                 │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │                    VPC (Shared)                            │ │
+│  │                                                            │ │
+│  │  ┌──────────────┐                  ┌──────────────┐        │ │
+│  │  │   Public     │                  │   Public     │        │ │
+│  │  │  Subnet 1    │                  │  Subnet 2    │        │ │
+│  │  │              │                  │              │        │ │
+│  │  │  ┌────────┐  │                  │  ┌────────┐  │        │ │
+│  │  │  │  ALB   │  │                  │  │  ALB   │  │        │ │
+│  │  │  │ (EKS)  │  │                  │  │ (EKS)  │  │        │ │
+│  │  │  └────────┘  │                  │  └────────┘  │        │ │
+│  │  └──────────────┘                  └──────────────┘        │ │
+│  │                                                            │ │
+│  │  ┌──────────────┐                  ┌──────────────┐        │ │
+│  │  │   Private    │                  │   Private    │        │ │
+│  │  │  Subnet 1    │                  │  Subnet 2    │        │ │
+│  │  │              │                  │              │        │ │
+│  │  │  ┌────────┐  │                  │  ┌────────┐  │        │ │
+│  │  │  │  EKS   │  │                  │  │  EKS   │  │        │ │
+│  │  │  │  Node  │  │                  │  │  Node  │  │        │ │
+│  │  │  │        │  │                  │  │        │  │        │ │
+│  │  │  │ [Pods] │  │                  │  │ [Pods] │  │        │ │
+│  │  │  └────────┘  │                  │  └────────┘  │        │ │
+│  │  └──────────────┘                  └──────────────┘        │ │
+│  │                                                            │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│  ┌────────────┐   ┌────────────┐   ┌─────────────────────────┐  │
+│  │    ECR     │   │    ACM     │   │    EKS Control Plane    │  │
+│  │  (Shared)  │   │  (Shared)  │   │     (EKS-Specific)      │  │
+│  └────────────┘   └────────────┘   └─────────────────────────┘  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -1752,16 +1794,46 @@ infra-eks/
 │   │   └── ssl.tftest.hcl
 │   └── versions.tf             # Provider versions for tests
 │
-├── docs/                       # Additional documentation
-│   ├── GETTING-STARTED.md
-│   ├── QUICKSTART.md
-│   ├── ECS-vs-EKS-COMPARISON.md
-│   └── ...
-│
+├── docs/                       # Documentation
 ├── run-tests.sh                # Test runner script
 ├── test-runner.tf              # Test configuration
 └── test.log                    # Test output log
 ```
+
+---
+
+## 8. Kubernetes and AWS EKS Basics
+
+### Kubernetes Main Concepts
+
+If new to Kubernetes, understand these concepts:
+
+1. **Pod**: Smallest deployable unit (1+ containers)
+2. **Deployment**: Manages replicas of pods
+3. **Service**: Internal load balancer + DNS
+4. **Ingress**: External load balancer (ALB)
+5. **ConfigMap**: Configuration data
+6. **Secret**: Sensitive data
+7. **HPA**: Horizontal Pod Autoscaler
+
+### AWS EKS Specifics
+
+If new to AWS EKS, know these components:
+
+1. **AWS Load Balancer Controller**: Creates ALBs from Ingress
+2. **VPC CNI**: Gives pods VPC IP addresses
+3. **IAM Roles for Service Accounts (IRSA)**: Pod-level IAM
+4. **EBS CSI Driver**: For persistent volumes
+5. **CloudWatch Container Insights**: For monitoring
+
+### Learning Resources
+- [Kubernetes Basics](https://kubernetes.io/docs/tutorials/kubernetes-basics/)
+- [Kubernetes Documentation](https://kubernetes.io/docs/home/)
+- [AWS EKS Documentation](https://docs.aws.amazon.com/eks/)
+- [AWS EKS Best Practices Guide](https://aws.github.io/aws-eks-best-practices/)
+- [AWS EKS Workshop](https://www.eksworkshop.com/)
+- [Terraform AWS EKS Module](https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest)
+- [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/)
 
 ---
 
