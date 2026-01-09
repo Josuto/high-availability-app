@@ -18,6 +18,8 @@ chmod +x run-tests.sh
 
 **CI/CD Integration**: Tests automatically run in the `test-terraform-modules` job before any deployment.
 
+**Pre-Push Hook Integration**: Tests also run automatically via the `terraform-ecs-tests` pre-push hook when you push changes that affect Terraform files in the `infra-ecs/` directory. See [../../docs/TESTING.md](../../docs/TESTING.md#pre-commit-and-pre-push-hook-integration) for details.
+
 ---
 
 ## 2. Troubleshooting

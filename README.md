@@ -299,7 +299,8 @@ brew install detect-secrets
 brew install terraform-docs
 
 # 6. Install the pre-commit hooks
-pre-commit install
+pre-commit install # To allow running hooks that exec before each commit
+pre-commit install --hook-type pre-push # To allow running hooks that exec before pushing code
 
 # 7. (Optional) Test hooks against all files
 pre-commit run --all-files
@@ -307,7 +308,17 @@ pre-commit run --all-files
 
 ### Usage
 
-Once installed, hooks run automatically on `git commit`:
+Hooks run automatically at two stages:
+
+#### Pre-Commit Hooks
+
+Run automatically on `git commit`:
+- `terraform_fmt` - Format Terraform files
+- `terraform_validate` - Validate Terraform syntax
+- `terraform_tflint` - Lint Terraform code
+- `terraform_trivy` - Security vulnerability scanning
+- `terraform_docs` - Generate module documentation
+- `detect-secrets` - Prevent commits including secrets
 
 **If hooks fail due to formatting:**
 ```bash
@@ -328,19 +339,23 @@ git add .
 git commit -m "Your message"
 ```
 
-**To skip hooks** (⚠️ not recommended):
+**To skip pre-commit hooks** (⚠️ not recommended):
 ```bash
 git commit --no-verify
 ```
 
-**Available hooks:**
-- `terraform_fmt` - Format Terraform files
-- `terraform_validate` - Validate Terraform syntax
-- `terraform_tflint` - Lint Terraform code
-- `terraform_trivy` - Security vulnerability scanning
-- `terraform_docs` - Generate module documentation
-- `detect-secrets` - Prevent commits including secrets
-- `terraform_test` - Run Terraform tests
+#### Pre-Push Hooks (Terraform Tests)
+
+Run automatically on `git push` when Terraform files have changed:
+- `terraform-ecs-tests` - Runs all ECS module tests if changes detected in `infra-ecs/`
+- `terraform-eks-tests` - Runs all EKS module tests if changes detected in `infra-eks/`
+
+These hooks validate your Terraform modules before pushing to the remote repository. Tests can take several minutes to complete.
+
+**To skip pre-push hooks** (⚠️ not recommended):
+```bash
+git push --no-verify
+```
 
 ---
 

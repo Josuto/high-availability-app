@@ -376,19 +376,52 @@ The `test-ecs-terraform-modules` job runs first and blocks all deployments if te
 3. **Reports results** - Provides clear pass/fail status with error messages
 4. **Blocks deployment** - All other jobs depend on tests passing
 
-### Pre-Commit Hook Integration
+### Pre-Commit and Pre-Push Hook Integration
 
-Tests also run automatically as a pre-commit hook when committing changes to Terraform files.
+Tests run automatically at two stages to ensure code quality:
 
 **Configuration Location:** [.pre-commit-config.yaml](../.pre-commit-config.yaml)
 
-The pre-commit hook:
-- **Triggers on**: Changes to `*.tf` or `*.tftest.hcl` files in `infra-ecs/modules/` or `infra-ecs/tests/`
-- **Runs**: The same `run-tests.sh` script used in CI/CD
-- **Blocks commits**: If tests fail
-- **Provides**: Immediate feedback before pushing code
+#### Pre-Commit Hooks
 
-To skip the test hook (⚠️ not recommended):
+Standard pre-commit hooks run when committing changes:
+- **terraform_fmt** - Format Terraform files
+- **terraform_validate** - Validate Terraform syntax
+- **terraform_tflint** - Lint Terraform code
+- **terraform_trivy** - Security vulnerability scanning
+- **terraform_docs** - Generate module documentation
+- **detect-secrets** - Prevent commits including secrets
+
+These hooks run on every commit to enforce code quality and security standards before code is committed.
+
+#### Pre-Push Hooks (Terraform Tests)
+
+Terraform module tests run automatically when pushing changes to the remote repository:
+
+**Hook ID:** `terraform-ecs-tests`
+- **Triggers on**: Any push where changes were made to `*.tf`, `*.tfvars`, or `*.tftest.hcl` files within `infra-ecs/` directory tree
+- **Runs**: `./pre-push.sh infra-ecs` which executes `infra-ecs/run-tests.sh`
+- **Blocks push**: If any ECS module tests fail
+- **Purpose**: Validates all ECS Terraform modules before code reaches the remote repository
+
+**Hook ID:** `terraform-eks-tests`
+- **Triggers on**: Any push where changes were made to `*.tf`, `*.tfvars`, or `*.tftest.hcl` files within `infra-eks/` directory tree
+- **Runs**: `./pre-push.sh infra-eks` which executes `infra-eks/run-tests.sh`
+- **Blocks push**: If any EKS module tests fail
+- **Purpose**: Validates all EKS Terraform modules before code reaches the remote repository
+
+**Why Pre-Push Instead of Pre-Commit?**
+- Terraform tests can take several minutes to complete
+- Running on push (rather than commit) provides faster commit cycles
+- Tests only run when relevant Terraform files have changed
+- Still catches issues before code reaches CI/CD pipeline
+
+To skip the test hooks (⚠️ not recommended):
+```bash
+git push --no-verify
+```
+
+To skip pre-commit hooks (⚠️ not recommended):
 ```bash
 git commit --no-verify
 ```

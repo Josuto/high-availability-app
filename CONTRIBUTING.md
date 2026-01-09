@@ -43,7 +43,9 @@ Before contributing, ensure you have:
 
 3. **Install pre-commit hooks**:
    ```bash
-   pre-commit install
+   pre-commit install # To allow running hooks that exec before each commit
+   pre-commit install --hook-type pre-push # To allow running hooks that exec before pushing code
+
    ```
 
 4. **Install dependencies** (for NestJS app):
@@ -185,7 +187,20 @@ chore(deps): upgrade Terraform AWS provider to v5.0
    pre-commit run --all-files
    ```
 
-2. **Terraform validation**:
+2. **Run Terraform module tests**:
+   ```bash
+   # For ECS modules
+   cd infra-ecs/
+   ./run-tests.sh
+
+   # For EKS modules
+   cd infra-eks/
+   ./run-tests.sh
+   ```
+
+   **Note:** These tests also run automatically via pre-push hooks when you push changes to Terraform files.
+
+3. **Terraform validation** (if not using test script):
    ```bash
    # Validate all modules
    cd infra-ecs/modules/<module-name>
