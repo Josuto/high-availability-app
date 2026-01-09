@@ -11,6 +11,16 @@
 
 A hands-on learning project demonstrating production-ready, highly-available AWS infrastructure deployment using Terraform. This repository implements the same containerized NestJS application using **two different orchestration approaches**: AWS ECS (simpler, AWS-native) and AWS EKS (Kubernetes-based, cloud-agnostic).
 
+## Documentation Index
+
+| Document | Description |
+|----------|-------------|
+| **[EKS vs ECS Comparison](docs/EKS_VS_ECS_COMPARISON.md)** | Comprehensive comparison of AWS ECS and EKS orchestration approaches, including key differences, component mappings, and decision guidance |
+| **[Terraform Testing](docs/TESTING.md)** | Testing framework documentation covering unit tests, validation tests, CI/CD integration, and best practices for both ECS and EKS implementations |
+| **[Variable Validation Rules](docs/VARIABLE_VALIDATION.md)** | Complete reference of input validation rules, patterns, and examples for catching configuration errors early in both implementations |
+
+---
+
 ## Table of Contents
 
 1. [Motivation & Learning Goals](#motivation--learning-goals)
@@ -19,7 +29,6 @@ A hands-on learning project demonstrating production-ready, highly-available AWS
 4. [Infrastructure Approaches](#infrastructure-approaches)
    - [ECS Approach (Simpler)](#ecs-approach-simpler)
    - [EKS Approach (Kubernetes)](#eks-approach-kubernetes)
-   - [EKS vs ECS](#eks-vs-ecs)
 5. [Choose Your Path](#choose-your-path)
 6. [Developer Setup: Pre-commit Hooks](#developer-setup-pre-commit-hooks)
 7. [Quick Start](#quick-start)
@@ -173,101 +182,15 @@ AWS Elastic Kubernetes Service (EKS) provides a managed Kubernetes control plane
 
 ---
 
-### EKS vs ECS
+### Choosing Between EKS and ECS
 
-#### Key Differences
+Not sure which approach to use? Both implementations deploy the same application but use different orchestration strategies with distinct trade-offs.
 
-#### 1. Container Orchestration
+**Quick Decision Guide:**
+- **Choose ECS** if you're committed to AWS, want lower costs, and prefer simpler AWS-native services
+- **Choose EKS** if you need multi-cloud portability, Kubernetes skills, or complex microservices architectures
 
-**ECS:**
-- AWS-proprietary container orchestration
-- Task definitions define containers
-- ECS service manages desired count
-- Tightly integrated with AWS services
-
-**EKS:**
-- Standard Kubernetes (K8s) orchestration
-- Deployments + Pods define containers
-- ReplicaSets manage desired count
-- Portable across clouds (AWS, GCP, Azure, on-prem)
-
-#### 2. Networking
-
-**ECS:**
-- ECS tasks use ENIs (awsvpc mode)
-- ALB target groups register tasks directly
-- Security groups on tasks
-
-**EKS:**
-- Pods use AWS VPC CNI for IP addresses
-- ALB Ingress Controller creates target groups
-- Security groups on nodes + network policies
-
-#### 3. Scaling
-
-**ECS:**
-- ECS Capacity Provider scales EC2 instances
-- ECS Service Auto Scaling scales tasks
-- Target tracking based on CPU/memory
-
-**EKS:**
-- Cluster Autoscaler scales nodes
-- Horizontal Pod Autoscaler (HPA) scales pods
-- Metrics Server provides resource metrics
-
-#### 4. Service Discovery
-
-**ECS:**
-- AWS Cloud Map for service discovery
-- ALB for external load balancing
-- ECS service connects to target groups
-
-**EKS:**
-- Kubernetes DNS (CoreDNS) for service discovery
-- AWS Load Balancer Controller for external LB
-- Ingress resources create ALBs automatically
-
-#### 5. IAM Permissions
-
-**ECS:**
-- Task Role: IAM role for application
-- Execution Role: IAM role for ECS agent
-- Directly attached to task definition
-
-**EKS:**
-- ServiceAccount: Kubernetes identity for pods
-- IRSA (IAM Roles for Service Accounts): Maps K8s SA to IAM role
-- Annotated on ServiceAccount
-
-#### ECS → EKS Component Mapping
-
-| ECS Component | EKS Equivalent | Description |
-|---------------|----------------|-------------|
-| **ECS Cluster** | **EKS Cluster** | Control plane for container orchestration |
-| **ECS EC2 Launch Template + ASG** | **EKS Node Group** | Managed EC2 instances running Kubernetes |
-| **ECS Task Definition** | **Kubernetes Deployment** | Application container specifications |
-| **ECS Service** | **Kubernetes Service + Ingress** | Load balancing and service discovery |
-| **ALB Target Group** | **AWS Load Balancer Controller** | Ingress controller managing ALB |
-| **ECS Task Role** | **Kubernetes ServiceAccount + IRSA** | Pod-level IAM permissions |
-
-#### Summary Comparison
-
-| Aspect | ECS (infra-ecs/) | EKS (infra-eks/) |
-|--------|------------------|------------------|
-| **Orchestration** | AWS ECS (proprietary) | Kubernetes (open-source) |
-| **Control Plane** | Free, managed by AWS ECS | Not free, managed by AWS EKS |
-| **Total Monthly Cost** | Cheap (`x`) | Expensive (`2x`) |
-| **Learning Curve** | Easier | Steeper |
-| **Complexity** | Lower | Higher |
-| **Portability** | AWS-only | Multi-cloud |
-| **Ecosystem** | AWS services | Kubernetes ecosystem |
-| **Load Balancing** | ALB managed by Terraform | ALB managed by Ingress Controller |
-| **Scaling** | ECS Service auto-scaling + Capacity Provider | Horizontal Pod Autoscaler (HPA) + Cluster Autoscaler |
-| **Workload Definition** | Task Definition + Service | Deployment + Service + Ingress |
-| **Networking** | awsvpc mode with ENI per task | Kubernetes CNI (AWS VPC CNI) |
-| **Use Case** | AWS-committed workloads | Kubernetes-native or multi-cloud |
-
-**Can I run both simultaneously?** Yes! The implementations use separate Terraform state files (`deployment/` vs `deployment/app/`) and independent resources, allowing side-by-side deployment for comparison.
+📖 **[Complete EKS vs ECS Comparison →](docs/EKS_VS_ECS_COMPARISON.md)** - Detailed comparison covering orchestration differences, networking, scaling, IAM, component mappings, and cost analysis.
 
 ---
 
@@ -340,7 +263,7 @@ Ready to get started? Choose the path that matches your goal:
    - [IAM Roles (IRSA)](infra-eks/README.md#316-iam-roles-and-permissions)
 4. **Environment Configuration**: Study [dev vs prod Differences](infra-eks/README.md#4-environment-configuration-differences)
 5. **Explore Testing**: Review [Terraform Testing](infra-eks/README.md#6-terraform-testing)
-6. **Compare Approaches**: Read [EKS vs ECS Comparison](infra-eks/docs/ECS-vs-EKS-COMPARISON.md)
+6. **Compare Approaches**: Read [EKS vs ECS Comparison](docs/EKS_VS_ECS_COMPARISON.md)
 
 **Key Concepts**: Kubernetes Deployments, HPA, IRSA, AWS Load Balancer Controller, Managed Node Groups
 
