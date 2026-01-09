@@ -203,9 +203,9 @@ Ready to get started? Choose the path that matches your goal:
 **Best for**: Quickly getting a production-ready AWS infrastructure running with minimal Kubernetes complexity.
 
 **Steps**:
-1. **Review Prerequisites**: Check [ECS Prerequisites](infra-ecs/README.md#21-prerequisites)
-2. **Configure Your Settings**: Follow [Required Configuration Changes](infra-ecs/README.md#22-required-configuration-changes)
-3. **Deploy Using CI/CD**: Use [GitHub Actions Workflows](infra-ecs/README.md#5-cicd-workflows) for automated deployment
+1. **Review Prerequisites**: Check [ECS Prerequisites](infra-ecs/docs/PREREQUISITES_AND_SETUP.md#1-prerequisites)
+2. **Configure Your Settings**: Follow [Required Configuration Changes](infra-ecs/docs/PREREQUISITES_AND_SETUP.md#2-required-configuration-changes)
+3. **Deploy Using CI/CD**: Use [GitHub Actions Workflows](infra-ecs/docs/CICD_WORKFLOWS.md) for automated deployment
 4. **Verify Deployment**: Access your application at `https://yourdomain.com`
 
 **Estimated Time**: 30-45 minutes
@@ -217,9 +217,9 @@ Ready to get started? Choose the path that matches your goal:
 **Best for**: Learning Kubernetes on AWS or preparing for multi-cloud/portable deployments.
 
 **Steps**:
-1. **Review Prerequisites**: Check [EKS Prerequisites](infra-eks/README.md#21-prerequisites)
-2. **Configure Your Settings**: Follow [Required Configuration Changes](infra-eks/README.md#22-required-configuration-changes)
-3. **Deploy Using CI/CD**: Use [GitHub Actions Workflows](infra-eks/README.md#5-cicd-workflows) for automated deployment
+1. **Review Prerequisites**: Check [EKS Prerequisites](infra-eks/docs/PREREQUISITES_AND_SETUP.md#1-prerequisites)
+2. **Configure Your Settings**: Follow [Required Configuration Changes](infra-eks/docs/PREREQUISITES_AND_SETUP.md#2-required-configuration-changes)
+3. **Deploy Using CI/CD**: Use [GitHub Actions Workflows](infra-eks/docs/CICD_WORKFLOWS.md) for automated deployment
 4. **Verify Deployment**: Configure kubectl and access your application at `https://yourdomain.com`
 
 **Estimated Time**: 45-60 minutes
@@ -232,16 +232,16 @@ Ready to get started? Choose the path that matches your goal:
 
 **Learning Journey**:
 1. **Start with Overview**: Read [ECS High-Level Overview](infra-ecs/README.md#1-high-level-overview)
-2. **Module Architecture**: Understand [Root vs Child Modules](infra-ecs/README.md#31-module-architecture-root-modules-vs-child-modules)
+2. **Module Architecture**: Understand [Root vs Child Modules](infra-ecs/docs/AWS_RESOURCES_DEEP_DIVE.md#1-module-architecture-root-modules-vs-child-modules)
 3. **Deep Dive into Components**:
-   - [VPC & Networking](infra-ecs/README.md#311-shared-resources-vpc-ecr-ssl-hosted-zone)
-   - [ECS Cluster](infra-ecs/README.md#312-ecs-cluster)
-   - [Application Load Balancer](infra-ecs/README.md#313-application-load-balancer-alb)
-   - [ECS Service](infra-ecs/README.md#314-ecs-service)
-   - [IAM Roles](infra-ecs/README.md#315-iam-roles-and-permissions)
-   - [Security Groups](infra-ecs/README.md#316-security-groups)
-4. **Environment Configuration**: Study [dev vs prod Differences](infra-ecs/README.md#4-environment-configuration-differences)
-5. **Explore Testing**: Review [Terraform Testing](infra-ecs/README.md#6-terraform-testing)
+   - [VPC & Networking](infra-ecs/docs/AWS_RESOURCES_DEEP_DIVE.md#31-virtual-private-cloud-vpc)
+   - [ECS Cluster](infra-ecs/docs/AWS_RESOURCES_DEEP_DIVE.md#32-ecs-cluster)
+   - [Application Load Balancer](infra-ecs/docs/AWS_RESOURCES_DEEP_DIVE.md#33-application-load-balancer-alb)
+   - [ECS Service](infra-ecs/docs/AWS_RESOURCES_DEEP_DIVE.md#34-ecs-service)
+   - [IAM Roles](infra-ecs/docs/AWS_RESOURCES_DEEP_DIVE.md#36-iam-roles-and-policies)
+   - [Security Groups](infra-ecs/docs/AWS_RESOURCES_DEEP_DIVE.md#37-security-groups)
+4. **Environment Configuration**: Study [dev vs prod Differences](infra-ecs/README.md#3-environment-configuration-differences)
+5. **Explore Testing**: Review [Terraform Testing](infra-ecs/docs/TERRAFORM_TESTING.md)
 
 **Key Concepts**: ECS Task Definitions, Capacity Providers, awsvpc networking, task placement strategies
 
@@ -253,16 +253,16 @@ Ready to get started? Choose the path that matches your goal:
 
 **Learning Journey**:
 1. **Start with Overview**: Read [EKS High-Level Overview](infra-eks/README.md#1-high-level-overview)
-2. **Module Architecture**: Understand [Root vs Child Modules](infra-eks/README.md#31-module-architecture-root-modules-vs-child-modules)
+2. **Module Architecture**: Understand [Root vs Child Modules](infra-eks/docs/AWS_RESOURCES_DEEP_DIVE.md#1-module-architecture-root-modules-vs-child-modules)
 3. **Deep Dive into Components**:
-   - [VPC & Networking](infra-eks/README.md#311-shared-resources-vpc-ecr-ssl-hosted-zone)
-   - [EKS Cluster](infra-eks/README.md#312-eks-cluster)
-   - [EKS Node Group](infra-eks/README.md#313-eks-node-group)
-   - [AWS Load Balancer Controller](infra-eks/README.md#314-aws-load-balancer-controller)
-   - [Kubernetes Application](infra-eks/README.md#315-kubernetes-application-k8s_app)
-   - [IAM Roles (IRSA)](infra-eks/README.md#316-iam-roles-and-permissions)
-4. **Environment Configuration**: Study [dev vs prod Differences](infra-eks/README.md#4-environment-configuration-differences)
-5. **Explore Testing**: Review [Terraform Testing](infra-eks/README.md#6-terraform-testing)
+   - [VPC & Networking](infra-eks/docs/AWS_RESOURCES_DEEP_DIVE.md#31-virtual-private-cloud-vpc)
+   - [EKS Cluster](infra-eks/docs/AWS_RESOURCES_DEEP_DIVE.md#32-eks-cluster)
+   - [EKS Node Group](infra-eks/docs/AWS_RESOURCES_DEEP_DIVE.md#33-eks-node-group)
+   - [AWS Load Balancer Controller](infra-eks/docs/AWS_RESOURCES_DEEP_DIVE.md#34-aws-load-balancer-controller)
+   - [Kubernetes Application](infra-eks/docs/AWS_RESOURCES_DEEP_DIVE.md#35-kubernetes-application-deployment)
+   - [IAM Roles (IRSA)](infra-eks/docs/AWS_RESOURCES_DEEP_DIVE.md#37-iam-roles-and-policies)
+4. **Environment Configuration**: Study [dev vs prod Differences](infra-eks/README.md#3-environment-configuration-differences)
+5. **Explore Testing**: Review [Terraform Testing](infra-eks/docs/TERRAFORM_TESTING.md)
 6. **Compare Approaches**: Read [EKS vs ECS Comparison](docs/EKS_VS_ECS_COMPARISON.md)
 
 **Key Concepts**: Kubernetes Deployments, HPA, IRSA, AWS Load Balancer Controller, Managed Node Groups
@@ -373,7 +373,7 @@ cd deployment/
 # https://yourdomain.com
 ```
 
-📖 **[Detailed ECS Quick Start →](infra-ecs/README.md#2-prerequisites-and-first-time-setup)**
+📖 **[Detailed ECS Quick Start →](infra-ecs/docs/PREREQUISITES_AND_SETUP.md)**
 
 #### Option 2: EKS (Kubernetes) - 45 Minutes
 
@@ -391,7 +391,7 @@ cd deployment/
 # https://yourdomain.com
 ```
 
-📖 **[Detailed EKS Quick Start →](infra-eks/README.md#2-prerequisites-and-first-time-setup)**
+📖 **[Detailed EKS Quick Start →](infra-eks/docs/PREREQUISITES_AND_SETUP.md)**
 
 ### Using GitHub Actions (CI/CD)
 
@@ -402,8 +402,8 @@ Both implementations include complete GitHub Actions workflows:
 3. Copy and paste either ECS or EKS workflow files into your `.github/workflows/` directory
 4. Trigger workflows via GitHub UI or `git push`
 
-📖 **ECS Workflows**: [infra-ecs/README.md - Section 5](infra-ecs/README.md#5-cicd-workflows) <br>
-📖 **EKS Workflows**: [infra-eks/README.md - Section 5](infra-eks/README.md#5-cicd-workflows)
+📖 **ECS Workflows**: [infra-ecs/docs/CICD_WORKFLOWS.md](infra-ecs/docs/CICD_WORKFLOWS.md) <br>
+📖 **EKS Workflows**: [infra-eks/docs/CICD_WORKFLOWS.md](infra-eks/docs/CICD_WORKFLOWS.md)
 
 ---
 
