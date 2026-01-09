@@ -68,11 +68,10 @@ repos:
       - id: terraform-ecs-tests
         name: Terraform ECS Module Tests
         description: Run Terraform ECS module unit tests
-        entry: bash -c 'cd infra-ecs && ./run-tests.sh'
+        entry: ./pre-push.sh infra-ecs
         language: system
-        pass_filenames: false
-        files: ^infra-ecs/(modules/|tests/).*\.(tf|tfvars|tftest\.hcl)$
         stages: [pre-push]
+        pass_filenames: false
 
   # Terraform EKS module tests
   - repo: local
@@ -80,8 +79,7 @@ repos:
       - id: terraform-eks-tests
         name: Terraform EKS Module Tests
         description: Run Terraform EKS module unit tests
-        entry: bash -c 'cd infra-eks && ./run-tests.sh'
+        entry: ./pre-push.sh infra-eks
         language: system
-        pass_filenames: false
-        files: ^infra-eks/(modules/|tests/).*\.(tf|tfvars|tftest\.hcl)$
         stages: [pre-push]
+        pass_filenames: false
