@@ -72,6 +72,7 @@ repos:
         language: system
         stages: [pre-push]
         pass_filenames: false
+        always_run: true
 
   # Terraform EKS module tests
   - repo: local
@@ -83,3 +84,4 @@ repos:
         language: system
         stages: [pre-push]
         pass_filenames: false
+        always_run: true
