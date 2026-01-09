@@ -38,4 +38,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_hosted_zone_id"></a> [hosted\_zone\_id](#output\_hosted\_zone\_id) | The ID of the Route53 hosted zone for the domain |
+| <a name="output_name_servers"></a> [name\_servers](#output\_name\_servers) | The name servers for the hosted zone |
 <!-- END_TF_DOCS -->
