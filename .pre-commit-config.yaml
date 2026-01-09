@@ -9,16 +9,19 @@ repos:
       - id: terraform_fmt
         name: Terraform Format
         description: Rewrites Terraform files to canonical format
+        stages: [pre-commit]
 
       - id: terraform_validate
         name: Terraform Validate
         description: Validates Terraform configuration files
+        stages: [pre-commit]
 
       - id: terraform_tflint
         name: TFLint
         description: Lints Terraform code for best practices
         args:
           - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+        stages: [pre-commit]
 
       - id: terraform_trivy
         name: Terraform Trivy
@@ -26,6 +29,7 @@ repos:
         args:
           - --args=--severity=HIGH,CRITICAL
           - --args=--ignorefile=__GIT_WORKING_DIR__/.trivyignore
+        stages: [pre-commit]
 
       - id: terraform_docs
         name: Terraform Docs
@@ -34,7 +38,8 @@ repos:
           - --hook-config=--path-to-file=README.md
           - --hook-config=--add-to-existing-file=true
           - --hook-config=--create-file-if-not-exist=true
-        files: ^infra/modules/
+        files: ^(infra-ecs|infra-eks)/modules/
+        stages: [pre-commit]
 
   # Secret detection
   - repo: https://github.com/Yelp/detect-secrets
@@ -45,6 +50,7 @@ repos:
         description: Prevents accidental secret commits
         args: ['--baseline', '.secrets.baseline']
         exclude: package-lock.json
+        stages: [pre-commit]
 
   # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -52,15 +58,20 @@ repos:
     hooks:
       - id: trailing-whitespace
         name: Trim Trailing Whitespace
+        stages: [pre-commit]
       - id: end-of-file-fixer
         name: Fix End of Files
+        stages: [pre-commit]
       - id: check-yaml
         name: Check YAML Syntax
+        stages: [pre-commit]
       - id: check-added-large-files
         name: Check for Large Files
         args: ['--maxkb=1000']
+        stages: [pre-commit]
       - id: check-merge-conflict
         name: Check for Merge Conflicts
+        stages: [pre-commit]
 
   # Terraform ECS module tests
   - repo: local
@@ -70,9 +81,9 @@ repos:
         description: Run Terraform ECS module unit tests
         entry: ./pre-push.sh infra-ecs
         language: system
-        stages: [pre-push]
         pass_filenames: false
         always_run: true
+        stages: [pre-push]
 
   # Terraform EKS module tests
   - repo: local
@@ -82,6 +93,6 @@ repos:
         description: Run Terraform EKS module unit tests
         entry: ./pre-push.sh infra-eks
         language: system
-        stages: [pre-push]
         pass_filenames: false
         always_run: true
+        stages: [pre-push]
