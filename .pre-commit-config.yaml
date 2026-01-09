@@ -71,7 +71,7 @@ repos:
         entry: bash -c 'cd infra-ecs && ./run-tests.sh'
         language: system
         pass_filenames: false
-        files: ^infra-ecs/(modules/|tests/).*\.(tf|tftest\.hcl)$
+        files: ^infra-ecs/(modules/|tests/).*\.(tf|tfvars|tftest\.hcl)$
         stages: [pre-push]
 
   # Terraform EKS module tests
@@ -83,5 +83,5 @@ repos:
         entry: bash -c 'cd infra-eks && ./run-tests.sh'
         language: system
         pass_filenames: false
-        files: ^infra-eks/(modules/|tests/).*\.(tf|tftest\.hcl)$
+        files: ^infra-eks/(modules/|tests/).*\.(tf|tfvars|tftest\.hcl)$
         stages: [pre-push]
