@@ -27,7 +27,7 @@ Before contributing, ensure you have:
 - **AWS Account** with appropriate IAM permissions
 - **Terraform** 1.0+ installed
 - **Pre-commit** framework installed
-- **TFLint**, **tfsec**, **terraform-docs**, **detect-secrets** installed
+- **TFLint**, **Trivy**, **terraform-docs**, **detect-secrets** installed
 - **Node.js** and **pnpm** for application development
 - **kubectl** and **helm** (for EKS contributions)
 
@@ -225,9 +225,9 @@ chore(deps): upgrade Terraform AWS provider to v5.0
 
 4. **Security scanning**:
    ```bash
-   # tfsec should run via pre-commit, but you can run manually:
-   tfsec infra-ecs/
-   tfsec infra-eks/
+   # Trivy should run via pre-commit, but you can run manually:
+   trivy infra-ecs/
+   trivy infra-eks/
    ```
 
 5. **Documentation generation**:

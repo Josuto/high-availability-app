@@ -13,7 +13,7 @@ Ensure you have the following before starting:
 - **kubectl** installed for Kubernetes cluster management ([Installation Guide](https://kubernetes.io/docs/tasks/tools/))
 - **(Optional) Helm CLI** for package management ([Installation Guide](https://helm.sh/docs/intro/install/))
 - **(Optional) GitHub Repository** if you plan to use the included CI/CD workflows
-- **(Optional) Pre-commit Tools** for local development: TFLint, tfsec, detect-secrets, terraform-docs
+- **(Optional) Pre-commit Tools** for local development: TFLint, Trivy, detect-secrets, terraform-docs
 
 ## 2. Required Configuration Changes
 

@@ -42,12 +42,12 @@ pnpm lint              # Lint and fix with ESLint
 
 ### Terraform Infrastructure
 
-**Pre-commit hooks**: Run `pre-commit install` and `pre-commit install --hook-type pre-push` after initial clone. Hooks automatically format Terraform, validate syntax, check security (tfsec), and prevent secret commits.
+**Pre-commit hooks**: Run `pre-commit install` and `pre-commit install --hook-type pre-push` after initial clone. Hooks automatically format Terraform, validate syntax, check security (Trivy), and prevent secret commits.
 
 **Prerequisites for deployment**:
 - Owned domain name (for SSL certificate)
 - AWS credentials configured
-- Required tools: Terraform 1.0+, TFLint, tfsec, detect-secrets, terraform-docs
+- Required tools: Terraform 1.0+, TFLint, Trivy, detect-secrets, terraform-docs
 
 **Format Terraform before committing**:
 ```bash

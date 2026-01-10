@@ -40,7 +40,7 @@ Each ADR follows this structure:
 
 ## Relationship to Security Scanning
 
-These ADRs document **intentional design decisions** that security scanners (Trivy, tfsec) may flag as findings. Each ADR:
+These ADRs document **intentional design decisions** that security scanner (Trivy) may flag as findings. Each ADR:
 
 1. Acknowledges the security scanner finding
 2. Evaluates alternative approaches

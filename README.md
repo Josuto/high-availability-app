@@ -271,7 +271,7 @@ Ready to get started? Choose the path that matches your goal:
 
 ## Developer Setup: Pre-commit Hooks
 
-This project uses pre-commit hooks to enforce code quality, security, and formatting standards before commits. The hooks automatically format Terraform files, validate syntax, check for security issues, and prevent secret commits.
+This project uses pre-commit hooks to enforce code quality, security, and formatting standards before commits and pushes to the remote repository. The hooks automatically format Terraform files, validate syntax, check for security issues, and prevent secret commits.
 
 ### Prerequisites
 
@@ -289,8 +289,8 @@ brew install pre-commit
 brew install tflint
 tflint --init  # Install TFLint AWS plugin
 
-# 3. Install tfsec (security scanner)
-brew install tfsec
+# 3. Install Trivy (security scanner)
+brew install trivy
 
 # 4. Install detect-secrets
 brew install detect-secrets

@@ -11,7 +11,7 @@ Ensure you have the following before starting:
 - **Terraform 1.0+** installed locally ([Installation Guide](https://developer.hashicorp.com/terraform/downloads))
 - **AWS CLI** installed and configured ([Installation Guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html))
 - **(Optional) GitHub Repository** if you plan to use the included CI/CD workflows
-- **(Optional) Pre-commit Tools** for local development: TFLint, tfsec, detect-secrets, terraform-docs
+- **(Optional) Pre-commit Tools** for local development: TF validate, TF format, TFLint, Trivy, detect-secrets, terraform-docs
 
 ## 2. Required Configuration Changes
 
