@@ -74,20 +74,20 @@ variable "ecs_task_desired_count" {
 }
 
 variable "deployment_minimum_healthy_percent" {
-  description = "Lower limit of healthy tasks that must be running during deployment so that the service remains available"
+  description = "Lower limit of desired tasks that must be running during a new deployment to ensure zero downtime"
   type        = number
   default     = 100
 
   validation {
     condition     = var.deployment_minimum_healthy_percent >= 0 && var.deployment_minimum_healthy_percent <= 100
-    error_message = "Deployment minimum healthy percent must be between 0 and 100."
+    error_message = "Deployment minimum healthy task percent must be between 0 and 100."
   }
 }
 
 variable "deployment_maximum_percent" {
-  description = "Upper limit of health tasks that must be running during deployment"
+  description = "Upper limit of desired tasks that must be running during a new deployment, considering both old (from previous deployment) and new tasks"
   type        = number
-  default     = 200
+  default     = 200 # Double the number of desired (old and new) tasks during deployment - ECS default rollout strategy
 
   validation {
     condition     = var.deployment_maximum_percent >= 100 && var.deployment_maximum_percent <= 200

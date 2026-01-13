@@ -41,8 +41,8 @@ No modules.
 | <a name="input_container_name"></a> [container\_name](#input\_container\_name) | Name of the app container to be deployed | `string` | n/a | yes |
 | <a name="input_container_port"></a> [container\_port](#input\_container\_port) | Port the app container is available from | `number` | `3000` | no |
 | <a name="input_cpu_limit"></a> [cpu\_limit](#input\_cpu\_limit) | The limit of usage of CPU on a task/container | `number` | `256` | no |
-| <a name="input_deployment_maximum_percent"></a> [deployment\_maximum\_percent](#input\_deployment\_maximum\_percent) | Upper limit of health tasks that must be running during deployment | `number` | `200` | no |
-| <a name="input_deployment_minimum_healthy_percent"></a> [deployment\_minimum\_healthy\_percent](#input\_deployment\_minimum\_healthy\_percent) | Lower limit of healthy tasks that must be running during deployment so that the service remains available | `number` | `100` | no |
+| <a name="input_deployment_maximum_percent"></a> [deployment\_maximum\_percent](#input\_deployment\_maximum\_percent) | Upper limit of desired tasks that must be running during a new deployment, considering both old (from previous deployment) and new tasks | `number` | `200` | no |
+| <a name="input_deployment_minimum_healthy_percent"></a> [deployment\_minimum\_healthy\_percent](#input\_deployment\_minimum\_healthy\_percent) | Lower limit of desired tasks that must be running during a new deployment to ensure zero downtime | `number` | `100` | no |
 | <a name="input_ecr_app_image"></a> [ecr\_app\_image](#input\_ecr\_app\_image) | App ECR Image. Specified at the infra creation/destruction pipelines | `string` | n/a | yes |
 | <a name="input_ecs_capacity_provider_name"></a> [ecs\_capacity\_provider\_name](#input\_ecs\_capacity\_provider\_name) | The name of the ECS Capacity Provider that enables app auto-scaling | `string` | n/a | yes |
 | <a name="input_ecs_cluster_arn"></a> [ecs\_cluster\_arn](#input\_ecs\_cluster\_arn) | ECS cluster ARN | `string` | n/a | yes |
