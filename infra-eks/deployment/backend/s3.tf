@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "terraform_state_bucket" {
-  bucket = var.state_bucket_name
+  bucket        = var.state_bucket_name
+  force_destroy = true # Required since versioning is enabled and thus AWS does not delete non-current versions by default
 
   tags = {
     Name        = var.state_bucket_name
