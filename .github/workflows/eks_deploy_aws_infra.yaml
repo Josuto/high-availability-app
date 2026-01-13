@@ -17,7 +17,10 @@ jobs:
     runs-on: ubuntu-latest
 
     # Skip this job if the commit message starts with 'ci:' or 'docs:'
-    if: ${{ !startsWith(inputs.github_head_commit_message, 'ci:') && !startsWith(inputs.github_head_commit_message, 'docs:') }}
+    if: |
+      github.event_name == 'push' &&
+      !startsWith(github.event.head_commit.message, 'ci:') &&
+      !startsWith(github.event.head_commit.message, 'docs:')
 
     steps:
       - name: Checkout code from the repository
