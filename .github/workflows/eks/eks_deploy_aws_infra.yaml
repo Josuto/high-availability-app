@@ -574,7 +574,6 @@ jobs:
     name: Deployment Summary
     needs: [deploy-ecr, retrieve-ssl, build-and-push-app-docker-image-to-ecr, deploy-vpc, deploy-eks-cluster, deploy-eks-node-group, install-aws-load-balancer-controller, deploy-k8s-application, deploy-routing]
     runs-on: ubuntu-latest
-    if: always()
 
     steps:
       - name: Display deployment summary
